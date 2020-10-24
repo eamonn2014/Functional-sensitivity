@@ -364,7 +364,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                        ###https://stackoverflow.com/questions/49616376/r-shiny-radiobuttons-how-to-change-the-colors-of-some-of-the-choices
                                        
                                        radioButtons(
-                                           inputId = "dist",
+                                           inputId = "ana",
                                            label =  div(h5(tags$span(style="color:blue","Analysis model :"))),
                                            choiceNames = list(
                                                HTML("<font color='blue'>Best scenario</font>"), 
@@ -381,10 +381,10 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                tags$span(style = "color:blue", "Square X and Y Y^2=a+X^2/b")
                                                
                                            ),
-                                           choiceValues = c( "best","model1", "model2", "model3",  "model4", "model5", "model6",
-                                                             "model7", "model8", "model9",  "model10", "model11")
+                                           choiceValues = c( "best","1", "2", "3",  "4", "5", "6",
+                                                             "7", "8", "9",  "10", "11")
                                            ,
-                                           selected=c("model1")
+                                           selected=c("1")
                                        )
                                        
                                    ),
@@ -765,8 +765,28 @@ server <- shinyServer(function(input, output   ) {
         y <- d$y
         x <- d$x
         
-        loq(x=x, y=y, model=1, spec=100) 
+        
+        ssr <- rep(NA,11)
+        
+        for (j in 1:11) {
+            
+            res <- loq(x=x, y=y, model=j, spec=100, print.plot=0) # don't print
+            ssr[j] <- res
+            
+        }
+        
+        
+        if (input$ana %in% "best") {
+            
+            loq(x=x, y=y, model=which(ssr==min(ssr)), spec=100, print.plot = 1)
+            
+        } else {
+            
+        loq(x=x, y=y, model=as.numeric(input$ana), spec=100) 
          
+        }
+        
+        
     })
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
