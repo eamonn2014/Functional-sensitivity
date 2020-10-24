@@ -28,7 +28,7 @@ fig.width1 <- 1380
 fig.width8 <- 1380
 fig.height1 <- 700
 fig.width7 <- 700
-fig.height7 <- 500
+fig.height7 <- 770
 fig.width6 <- 680
 
 ## convenience functions
@@ -203,22 +203,41 @@ loq <- function (x, y, model, spec, print.plot=1) {
     p <- p + theme_bw()
     p <- p + xlab('Independent variable') 
     p <- p + ylab('Dependent variable')
-    
-    p <- p + ggtitle(paste("Model for the curve #",model," ",mod,", ","\nExploration of model fitting at response of", spec ,", ",p2f(txpre),"and 95% CI: (",p2f(txlow),",",p2f(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
-                           # ", R2 transformed x, y ",p2(v1),", R2 x, trans. back pred. y",p2(v2),
-                           sep=" ")) + theme(plot.title = element_text(lineheight=1, face="bold", color="black", size=11))
-    
-     
-        
     p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
-    p <- p + labs(x = "Independent variable", y = "Response")
-    p <- p + theme(axis.title.y = element_text(size = rel(1.1), angle = 90))
-    p <- p + theme(axis.title.x = element_text(size = rel(1.1), angle = 00))
+    p <- p + labs(x = "Independent variable", y = "Response") 
+   # p <- p + theme(axis.title.y = element_text(size = rel(1.1), angle = 90))
+   # p <- p + theme(axis.title.x = element_text(size = rel(1.1), angle = 00)) +
+        
+    p <- p +  theme(panel.background=element_blank(),
+              plot.title=element_text(size=16), 
+              plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+              legend.text=element_text(size=12),
+              legend.title=element_text(size=14),
+              axis.text.x  = element_text(size=12),
+              axis.text.y  = element_text(size=12),
+              axis.line.x = element_line(color="black"),
+              axis.line.y = element_line(color="black"),
+              plot.caption=element_text(hjust = 0, size = 11),
+              axis.title.y = element_text(size = rel(1.1), angle = 90),
+              axis.title.x = element_text(size = rel(1.1), angle = 00),
+              axis.title = element_text(size = 16, angle = 00)
+        )   
+        
     
+    
+    p <- p + labs(title = paste("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response of", spec ,", the estimate of x is",
+                                p2f(txpre),"and 95% CI: (",p2f(txlow),",",
+                                p2f(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
+                                   sep=" "),
+                  #  subtitle = paste("Model for the curve #",model," ",mod,""),
+                    caption = paste0("We are interested in the independent variable value when y = ",p4(spec),"")
+    )     
+        
+
     if (print.plot==1) {print(p)}
     
     
-    return(list(ssr=ssr,r=r, foo=foo))
+    return(list(ssr=ssr,r=r, foo=foo, f=f))
     
 }
 
@@ -415,7 +434,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                             .navbar-default .navbar-nav > li > a[data-value='t3'] {color: green;background-color: lightgreen;}
                    ")),
                                    
-                                   tabPanel( "xxxxxxxxxxxxxxxxxxxx",
+                                   tabPanel( "1 Model fitting",
                                              
                                              
                                              
@@ -435,49 +454,52 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                             
                                                      ))),#
                                              
-                                             h4(paste("xxxxxxxxxxxxxxx
+                                             #h4(paste("xxxxxxxxxxxxxxx
 
-                                                 ")),
+                                              #   ")),
                                              
                                              
                                              
                                              
                                              
-                                             h4(paste("Table 2 xxxxxxxxxxxxx")),
+                                             h4(paste("Figure 1 Model Fit")),
                                              
                                            #  div( verbatimTextOutput("zz") )  ,
                                              # h4(htmlOutput("textWithNumber99",) ),
                                              # div( verbatimTextOutput("mse.target") )  ,
-                                             h4(paste("xxxxxxxxxxxxxxxxx")),
+                                           #  h4(paste("xxxxxxxxxxxxxxxxx")),
                                         #     div( verbatimTextOutput("betas") )  ,
                                              width = 30 )     ,
                                 
                                    
                                    # here have action buttons clicking will load a pre run simulation that can be examined
-                                   tabPanel( "2 xxxxxxxxxxxxxxx",
-                                             
-                                             
-                                        
-                                                 
-                                           #  ),
-                                             
-                                       #      shinycssloaders::withSpinner(plotOutput("plot1",  width=fig.width8, height=fig.height7),5),
-                                             
-                                        #     shinycssloaders::withSpinner(plotOutput("plot2",  width=fig.width8, height=fig.height7),5),
-                                             
-                                             shinycssloaders::withSpinner(verbatimTextOutput("d"),type = 5),
-                                       
-                                             
-                                   ),            
+                                   # tabPanel( "2 xxxxxxxxxxxxxxx",
+                                   #           
+                                   #           
+                                   #      
+                                   #               
+                                   #         #  ),
+                                   #           
+                                   #     #      shinycssloaders::withSpinner(plotOutput("plot1",  width=fig.width8, height=fig.height7),5),
+                                   #           
+                                   #      #     shinycssloaders::withSpinner(plotOutput("plot2",  width=fig.width8, height=fig.height7),5),
+                                   #           
+                                   #           shinycssloaders::withSpinner(verbatimTextOutput("d"),type = 5),
+                                   #     
+                                   #           
+                                   # ),            
                                    
-                                   tabPanel("3 xxxxxxxxxxxxxxxxxxxx", value=3, 
+                                   tabPanel("2 Data listing", value=3, 
                                             shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
-
-                                            
-                                   ),
+                                            ),
                                    
                                    
                                    tabPanel("4 Notes & references", value=3, 
+                                            
+                                            
+                                            shinycssloaders::withSpinner(
+                                                div(plotOutput("diagnostics",  width=fig.width8, height=fig.height7)),
+                                            ),
                                             
                                             h4("xxxxxxxxxxxxxxxxx") ,
                                             
@@ -653,15 +675,20 @@ server <- shinyServer(function(input, output   ) {
          
           model <- which(ssr==min(ssr)) 
           mdata <- res$foo
-         
+          f=res$f
+          
+      
      } else {
          
          res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
          mdata <- res$foo
          model <- as.numeric(input$ana)
+         f=res$f
+         
+         
      }
 
-     return(list(  model=model, foo=mdata))
+     return(list(  model=model, foo=mdata, f=f))
 
  })
  
@@ -683,8 +710,6 @@ server <- shinyServer(function(input, output   ) {
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      
-     
-     
      output$d2 <- renderPrint({
          
          d <- md()$foo
@@ -695,16 +720,9 @@ server <- shinyServer(function(input, output   ) {
          
      }) 
      
+     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      
-     
-     
-     
-     
-     
-     
-     
-    
-    output$d <- renderPrint({
+         output$d <- renderPrint({
         
        d <- dat()$d
        d <- as.data.frame(d)
@@ -714,8 +732,51 @@ server <- shinyServer(function(input, output   ) {
         
     }) 
  
-    
-    
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         
+         output$diagnostics<- renderPlot({         
+             
+             #model <- md()$model
+             #foo <- md()$foo
+             f <- md()$f
+              
+             resid <- r <- resid(f)
+             fitted <- fitted(f)
+             d <- cbind(resid, fitted)
+             d2 <- as.data.frame(d)
+             
+             yl <- ylab('Residuals')
+             
+             xl <- xlab("time")
+             
+             p1 <- ggplot(d2 , aes(x=fitted , y=resid)) + geom_point (   colour="#69b3a2") + yl
+         
+             p2 <- ggplot(d2 , aes(sample=resid )) + stat_qq(colour="#69b3a2") +
+                 geom_abline(intercept=mean(r), slope=sd(r)  ,  colour="black") +
+                 xlab('Residuals')   +
+                 ggtitle( " ")
+             
+             library(gridExtra)
+             library(grid)
+             df <- data.frame(Residuals = r)
+             p3 <- ggplot(df, aes(x = Residuals)) +
+                 geom_histogram(aes(y =..density..),
+                                #breaks = seq(-50, 50, by = 2),
+                                colour = "black",
+                                fill = "#69b3a2") +
+                 stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)  )) 
+             
+             
+             grid.arrange(p1,  p3, p2, ncol=2,
+                 top = textGrob(paste0(" GLS model fit diagnostics"),gp=gpar(fontsize=20,font=3)))
+             #+
+             
+         })
+         
+         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         
+         
+         
 })
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
