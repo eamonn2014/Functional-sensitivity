@@ -9,25 +9,16 @@
         library(shinythemes)  # more funky looking apps
         library(shinyalert)
         library(Hmisc)
-        library(reshape)
         library(rms)
         library(ggplot2)
         library(tidyverse)
-        library(Matrix)
         library(shinycssloaders)
-        library(xtable)
-        
+   
         options(max.print=1000000)    
         
-        fig.width <- 1200
-        fig.height <- 500
-        fig.width1 <- 1380
         fig.width8 <- 1380
-        fig.height1 <- 700
-        fig.width7 <- 700
         fig.height7 <- 770
-        fig.width6 <- 680
-        
+
         ## convenience functions
         p0 <- function(x) {formatC(x, format="f", digits=0)}
         p1 <- function(x) {formatC(x, format="f", digits=1)}
@@ -44,9 +35,9 @@
         
         options(width=200)
         options(scipen=999)
-        w=4  # line type
-        ww=3 # line thickness
-        wz=1 
+       # w=4  # line type
+       # ww=3 # line thickness
+       # wz=1 
 
 loq <- function (x, y, model, spec, print.plot=1) {
     
@@ -366,7 +357,6 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                            selected=c("model1")
                                        ),
                                        
-                                        
                                        ###https://stackoverflow.com/questions/49616376/r-shiny-radiobuttons-how-to-change-the-colors-of-some-of-the-choices
                                        
                                        radioButtons(
@@ -429,8 +419,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                      column(width = 6, offset = 0, style='padding:1px;',
                                                             
                                                      ))),#
-                                             
-                                    
+
                                              h4(paste("Figure 1 Model Fit")),
                                              
                                              width = 30 )     ,
@@ -440,9 +429,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                              shinycssloaders::withSpinner(
                                                 div(plotOutput("diagnostics",  width=fig.width8, height=fig.height7)),
                                             ),
-                                            
-                                      
-                                            
+
                                             h4("Figure 2. Three residual plots to check for absence of trends in central tendency and in variability"),
                                              p(strong("Upper left panel shows residuals versus fitted on the x-axis. 
                                               Bottom left panel is the QQ plot for checking normality of residuals from the LS fit.
@@ -464,8 +451,6 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
 )
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 server <- shinyServer(function(input, output   ) {
-    
-    #############################
     
     shinyalert("Welcome! \nFitting models",
                "Have fun!", 
@@ -501,90 +486,90 @@ server <- shinyServer(function(input, output   ) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- dat <- reactive({
-    
-    sample <- random.sample()
-    
-    a=sample$a
-    b=sample$b
-    sigma=sample$sigma
-    N=sample$N
+     dat <- reactive({
+        
+        sample <- random.sample()
+        
+        a=sample$a
+        b=sample$b
+        sigma=sample$sigma
+        N=sample$N
+         
+        x <-  array(runif(N, 0, 10))  # no negative values
+        
+        noise <-  rnorm(N,0, sigma)
      
-    x <-  array(runif(N, 0, 10))  # no negative values
-    
-    noise <-  rnorm(N,0, sigma)
- 
-    if (input$truth %in% "model1") {
-        y <-  a+ x*b +    noise
-    } else if (input$truth %in% "model2") {
-        y <-  exp(a+ x*b + noise)
-    } else if (input$truth %in% "model3") {
-        y <-  1/(a+ x*b +  noise)
-    } else if (input$truth %in% "model4") {
-        y <-  a + b*(1/x) + noise
-    } else if (input$truth %in% "model5") {
-        y <-  1/(a + b/x +  noise)
-    } else if (input$truth %in% "model6") {
-        y <-  a + log(x)*b +    noise   
-    } else if (input$truth %in% "model7") {
-        y <-  a * x^b +    noise
-    } else if (input$truth %in% "model8") {
-        y <-  a + sqrt(x)*b +    noise
-    } else if (input$truth %in% "model9") {
-        y <-  (a + x*b + noise)^2 
-    } else if (input$truth %in% "model10") {
-        y <-  exp(a+ b/x + noise)
-    } else if (input$truth %in% "model11") {
-        y <-  ( a + (x^2)/b + noise)^.5
-    }
-    
-    d <- cbind(x,y)
-    
-    return(list(  y=y, x=x, d=d))
-    
- })
+        if (input$truth %in% "model1") {
+            y <-  a+ x*b +    noise
+        } else if (input$truth %in% "model2") {
+            y <-  exp(a+ x*b + noise)
+        } else if (input$truth %in% "model3") {
+            y <-  1/(a+ x*b +  noise)
+        } else if (input$truth %in% "model4") {
+            y <-  a + b*(1/x) + noise
+        } else if (input$truth %in% "model5") {
+            y <-  1/(a + b/x +  noise)
+        } else if (input$truth %in% "model6") {
+            y <-  a + log(x)*b +    noise   
+        } else if (input$truth %in% "model7") {
+            y <-  a * x^b +    noise
+        } else if (input$truth %in% "model8") {
+            y <-  a + sqrt(x)*b +    noise
+        } else if (input$truth %in% "model9") {
+            y <-  (a + x*b + noise)^2 
+        } else if (input$truth %in% "model10") {
+            y <-  exp(a+ b/x + noise)
+        } else if (input$truth %in% "model11") {
+            y <-  ( a + (x^2)/b + noise)^.5
+        }
+        
+        d <- cbind(x,y)
+        
+        return(list(  y=y, x=x, d=d))
+        
+     })
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- md <- reactive({
-
-     spec <- as.numeric(input$spec)
-     
-     d <- dat()  # Get the  data
-     y <- d$y
-     x <- d$x
-     
-     ssr <- rep(NA,11)
-     
-     mdata <- list(NA)
-     
-     if (input$ana %in% "best") {
+     md <- reactive({
+    
+         spec <- as.numeric(input$spec)
          
-         for (j in 1:11) {
+         d <- dat()  # Get the  data
+         y <- d$y
+         x <- d$x
+         
+         ssr <- rep(NA,11)
+         
+         mdata <- list(NA)
+         
+         if (input$ana %in% "best") {
              
-             res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
-             ssr[j] <- res$ssr
+             for (j in 1:11) {
+                 
+                 res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
+                 ssr[j] <- res$ssr
+                 
+             }
+             
+              model <- which(ssr==min(ssr)) 
+              mdata <- res$foo
+              res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0)  # run best model
+              f=res2$f   
+              mod<- res2$mod
+              
+         } else {
+             
+             res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
+             mdata <- res$foo
+             model <- as.numeric(input$ana)
+             f=res$f
+             mod<- res$mod
              
          }
-         
-          model <- which(ssr==min(ssr)) 
-          mdata <- res$foo
-          res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0)  # run best model
-          f=res2$f   
-          mod<- res2$mod
-          
-     } else {
-         
-         res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
-         mdata <- res$foo
-         model <- as.numeric(input$ana)
-         f=res$f
-         mod<- res$mod
-         
-     }
-
-     return(list(  model=model, foo=mdata, f=f, mod=mod))
-
- })
+    
+         return(list(  model=model, foo=mdata, f=f, mod=mod))
+    
+     })
  
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      output$plot1 <- renderPlot({         #standard errors
