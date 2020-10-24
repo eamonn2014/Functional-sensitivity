@@ -675,7 +675,8 @@ server <- shinyServer(function(input, output   ) {
          
           model <- which(ssr==min(ssr)) 
           mdata <- res$foo
-          f=res$f
+          res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0)  # run best model
+          f=res2$f   
           
       
      } else {
@@ -768,7 +769,7 @@ server <- shinyServer(function(input, output   ) {
              
              
              grid.arrange(p1,  p3, p2, ncol=2,
-                 top = textGrob(paste0(" GLS model fit diagnostics"),gp=gpar(fontsize=20,font=3)))
+                 top = textGrob(paste0(" LS model fit diagnostics"),gp=gpar(fontsize=20,font=3)))
              #+
              
          })
