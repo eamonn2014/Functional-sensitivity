@@ -471,68 +471,68 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                    ),            
                                    
                                    tabPanel("3 xxxxxxxxxxxxxxxxxxxx", value=3, 
-                                            
-                                            h4("xxxxxxxxxxxxxxxxx
-                                               ") ,
-                                            tags$hr(),
-                                            
-                                            h4("1 xxxxxxxxxxxxxxxxxxxxx'") ,
-                                            
-                                            
-                                            #https://github.com/daattali/advanced-shiny/tree/master/select-input-large
-                                            tags$style(type='text/css', css),
-                                            
-                                            div(id = "large",
-                                                selectInput("Trueeffect", "", width='35%',
-                                                            c("Expected odds ratio" = "ORx",
-                                                              "Anticipated proportion of responders in treated" = "p2x" ))
-                                            ),
-                                            
-                                            h4("2 xxxxxxxxxxxxxxxxxxxxxxx'") ,
-                                            textInput('pp2', 
-                                                      div(h5(tags$span(style="color:blue", ""))), ".35"),
-                                            
-                                            h4("3 xxxxxxxxxxxxxxxxxxxxxxxx") ,
-                                            splitLayout(
-                                                
-                                                textInput('NN', 
-                                                          div(h5(tags$span(style="color:blue", "Total sample size"))), "300"),
-                                                
-                                                textInput('pp1', 
-                                                          div(h5(tags$span(style="color:blue", "Expected proportion of responders in baseline/placebo"))), ".25"),
-                                                
-                                                textInput('allocation', 
-                                                          div(h5(tags$span(style="color:blue", "Randomisation allocation"))), "0.5")
-                                                
-                                            ),
-                                            
-                                            tags$hr(),
-                                            actionButton("sim","Hit to assess power of the design based on above inputs"),
-                                            h4("Power via 499 simulations"),    
-                                            withSpinner(verbatimTextOutput("pow1")),
-                                            h4("Power via Frank Harrell Hmisc function"),    
-                                            withSpinner(verbatimTextOutput("pow2")),
-                                            tags$hr(),
-                                            actionButton("resample2", "Hit to Simulate another sample based on above inputs"),  
-                                            h4("xxxxxxxxxxxxxxxxxxx."),  
-                                            
-                                            
-                                            span(
-                                                style = "color: #000000; font-face: bold;",
-                                                tableOutput("obs")),
-                                            h4(htmlOutput("textWithNumber",) ),
-                             
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            withSpinner(verbatimTextOutput("pow3")),
-                                            # verbatimTextOutput("pow") %>% withSpinner(color="#0dc5c1"))
-                                            
-                                            h4(""),                           
+                                            shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
+                                            # h4("xxxxxxxxxxxxxxxxx
+                                            #    ") ,
+                                            # tags$hr(),
+                                            # 
+                                            # h4("1 xxxxxxxxxxxxxxxxxxxxx'") ,
+                                            # 
+                                            # 
+                                            # #https://github.com/daattali/advanced-shiny/tree/master/select-input-large
+                                            # tags$style(type='text/css', css),
+                                            # 
+                                            # div(id = "large",
+                                            #     selectInput("Trueeffect", "", width='35%',
+                                            #                 c("Expected odds ratio" = "ORx",
+                                            #                   "Anticipated proportion of responders in treated" = "p2x" ))
+                                            # ),
+                                            # 
+                                            # h4("2 xxxxxxxxxxxxxxxxxxxxxxx'") ,
+                                            # textInput('pp2', 
+                                            #           div(h5(tags$span(style="color:blue", ""))), ".35"),
+                                            # 
+                                            # h4("3 xxxxxxxxxxxxxxxxxxxxxxxx") ,
+                                            # splitLayout(
+                                            #     
+                                            #     textInput('NN', 
+                                            #               div(h5(tags$span(style="color:blue", "Total sample size"))), "300"),
+                                            #     
+                                            #     textInput('pp1', 
+                                            #               div(h5(tags$span(style="color:blue", "Expected proportion of responders in baseline/placebo"))), ".25"),
+                                            #     
+                                            #     textInput('allocation', 
+                                            #               div(h5(tags$span(style="color:blue", "Randomisation allocation"))), "0.5")
+                                            #     
+                                            # ),
+                                            # 
+                                            # tags$hr(),
+                                            # actionButton("sim","Hit to assess power of the design based on above inputs"),
+                                            # h4("Power via 499 simulations"),    
+                                            # withSpinner(verbatimTextOutput("pow1")),
+                                            # h4("Power via Frank Harrell Hmisc function"),    
+                                            # withSpinner(verbatimTextOutput("pow2")),
+                                            # tags$hr(),
+                                            # actionButton("resample2", "Hit to Simulate another sample based on above inputs"),  
+                                            # h4("xxxxxxxxxxxxxxxxxxx."),  
+                                            # 
+                                            # 
+                                            # span(
+                                            #     style = "color: #000000; font-face: bold;",
+                                            #     tableOutput("obs")),
+                                            # h4(htmlOutput("textWithNumber",) ),
+                                            # 
+                                            # 
+                                            # 
+                                            # 
+                                            # 
+                                            # 
+                                            # 
+                                            # 
+                                            # withSpinner(verbatimTextOutput("pow3")),
+                                            # # verbatimTextOutput("pow") %>% withSpinner(color="#0dc5c1"))
+                                            # 
+                                            # h4(""),                           
                                             
                                    ),
                                    
@@ -687,42 +687,81 @@ server <- shinyServer(function(input, output   ) {
     
  })
     
-  
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+ 
+ md <- reactive({
+
+     spec <- as.numeric(input$spec)
+     
+     d <- dat()  # Get the  data
+     y <- d$y
+     x <- d$x
+     
+     ssr <- rep(NA,11)
+     
+     mdata <- list(NA)
+     
+     if (input$ana %in% "best") {
+         
+         for (j in 1:11) {
+             
+             res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
+             ssr[j] <- res$ssr
+             
+         }
+         
+          model <- which(ssr==min(ssr)) 
+          mdata <- res$foo
+         
+     } else {
+         
+         res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
+         mdata <- res$foo
+         model <- as.numeric(input$ana)
+     }
+
+     return(list(  model=model, foo=mdata))
+
+ })
+ 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      output$plot1 <- renderPlot({         #standard errors
         
-        spec <- as.numeric(input$spec)
+        model <- md()$model
+        foo <- md()$foo
         
+        spec <- as.numeric(input$spec)
+                
         d <- dat()  # Get the  data
         y <- d$y
         x <- d$x
         
-        
-        ssr <- rep(NA,11)
-        
-        mdata <- list(NA)
-
-        if (input$ana %in% "best") {
-            
-            for (j in 1:11) {
-                
-                res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
-                ssr[j] <- res$ssr
-                
-            }
-            
-            res <- loq(x=x, y=y, model=which(ssr==min(ssr)), spec= spec, print.plot = 1)
-            mdata <- res$foo
-                        
-        } else {
-            
-            res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
-            mdata <- res$foo
-        }
-        
+        loq(x= x, y= y, model=model, spec= spec, print.plot=1) # print plot
+                 
         
     })
- 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     
+     
+     
+     output$d2 <- renderPrint({
+         
+         d <- md()$foo
+         
+         
+         return(print(d))
+         
+     }) 
+     
+     
+     
+     
+     
+     
+     
+     
+     
     
     output$d <- renderPrint({
         
