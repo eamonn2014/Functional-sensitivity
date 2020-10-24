@@ -38,6 +38,7 @@ p2 <- function(x) {formatC(x, format="f", digits=2)}
 p3 <- function(x) {formatC(x, format="f", digits=3)}
 p4 <- function(x) {formatC(x, format="f", digits=4)}
 p5 <- function(x) {formatC(x, format="f", digits=5)}
+p2f <- function(x) {formatC(x, format="f", digits=4)}
 
 logit <- function(p) log(1/(1/p-1))
 expit <- function(x) 1/(1/exp(x) + 1)
@@ -49,29 +50,6 @@ options(scipen=999)
 w=4  # line type
 ww=3 # line thickness
 wz=1 
-
-# not used,  MSE for linear regression
-calc.mse <- function(obs, pred, rsq = FALSE){
-    if(is.vector(obs)) obs <- as.matrix(obs)
-    if(is.vector(pred)) pred <- as.matrix(pred)
-    
-    n <- nrow(obs)
-    rss <- colSums((obs - pred)^2, na.rm = TRUE)
-    if(rsq == FALSE) rss/n else {
-        tss <- diag(var(obs, na.rm = TRUE)) * (n - 1)
-        1 - rss/tss
-    }
-}
-
-RR=.37  # used to limit correlations between variables
-sd1= 3  # for X covariates sd
-
-# links to Rdata objects uploaded to Git, these are pre run simulations see the save function
-# see line 1224 for the save function
-pp<- "https://github.com/eamonn2014/RCT-covariate-adjust-binary-response/raw/master/cov-adj-binary-response/A%205000%20default%20settings%20theta%20log1.5%20-1.00%20-0.67%20-0.43.Rdata" # 5000 default log1.5 -1 -.67 -.43
-pp2<-"https://github.com/eamonn2014/RCT-covariate-adjust-binary-response/raw/master/cov-adj-binary-response/B%205000%20default%20settings%20theta%20log0.5%20-1.68%20-1.39%20%200.71.Rdata"
-pp3<-"https://github.com/eamonn2014/RCT-covariate-adjust-binary-response/raw/master/cov-adj-binary-response/C%205000%20default%20settings%20theta%20log2%20-3.46%20-1.05%20%201.15%20p1=.75.Rdata"
-pp4<-"https://github.com/eamonn2014/RCT-covariate-adjust-binary-response/raw/master/cov-adj-binary-response/D_10Ksims_5covariates_p1_0.12_theta_log1.3_covariates_-1.02%20_0.42_0.43_0.61%20_1.01_3_prog.Rdata"
 
 
 loq <- function (x, y, model, spec, print.plot=1) {
@@ -241,7 +219,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     
 }
 
-
+#loq(x=x, y=y, model=j, spec=100) 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -376,7 +354,8 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                
                                            ),
                                            choiceValues = c( "model1", "model2", "model3",  "model4", "model5", "model6",
-                                                             "model7", "model8", "model9",  "model10", "model11")
+                                                             "model7", "model8", "model9",  "model10", "model11"),
+                                           selected=c("model1")
                                        ),
                                        
                                        
@@ -404,6 +383,8 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                            ),
                                            choiceValues = c( "best","model1", "model2", "model3",  "model4", "model5", "model6",
                                                              "model7", "model8", "model9",  "model10", "model11")
+                                           ,
+                                           selected=c("model1")
                                        )
                                        
                                    ),
@@ -436,9 +417,9 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                           #   h4(htmlOutput("textWithNumber1a") ),
                                              fluidRow(
                                                  column(width = 6, offset = 0, style='padding:1px;',
-                                                     #   shinycssloaders::withSpinner(
-                                                     #       div(plotOutput("reg.plotx",  width=fig.width8, height=fig.height7)),
-                                                   #     ),
+                                                        shinycssloaders::withSpinner(
+                                                            div(plotOutput("reg.plot1",  width=fig.width8, height=fig.height7)),
+                                                       ),
                                                #         div(plotOutput("reg.ploty",  width=fig.width8, height=fig.height7)),
                                                 ) ,
                                                  
@@ -708,15 +689,7 @@ server <- shinyServer(function(input, output   ) {
     random.sample <- reactive({
         
         foo <- input$resample
-        
-        # a <- as.numeric(unlist(strsplit(input$intercept,",")))
-        # 
-        # b <- as.numeric(unlist(strsplit(input$slope,",")))
-        # 
-        # sigma <- as.numeric(unlist(strsplit(input$sigma,",")))
-        # 
-        # N <- as.numeric(unlist(strsplit(input$N,",")))
-        # 
+
         a <- as.numeric(input$a)
         
         b <-as.numeric(input$b)
@@ -736,12 +709,9 @@ server <- shinyServer(function(input, output   ) {
     })
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # tab 1 simulate data (covariates and response)  
-    # create  response with prognostic covariate
-    # create covariates that are not prognostic
-    # create a mix of above 2
-    # alos look at the difference of the covariates across arms
+    # 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
  dat <- reactive({
     
     sample <- random.sample()
@@ -751,7 +721,6 @@ server <- shinyServer(function(input, output   ) {
     sigma=sample$sigma
     N=sample$N
      
-    
     x <-  array(runif(N, 1, 100))  # no negative values
     noise <-  rnorm(N,0, sigma)
  
@@ -778,25 +747,26 @@ server <- shinyServer(function(input, output   ) {
     } else if (input$truth %in% "model11") {
         y <-  ( a + (x^2)/b + noise)^2
     }
-
-    return(list(  y=y))
+    return(list(  y=y, x=x))
     
  })
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
+  
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     output$dato <- renderPrint({
         
       return(dat()$y)
         
+    })
+    
+    output$plot1 <- renderPlot({         #standard errors
+        
+        d <- dat()  # Get the  data
+        y <- d$y
+        x <- d$x
+        
+        loq(x=x, y=y, model=1, spec=100) 
+         
     })
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
