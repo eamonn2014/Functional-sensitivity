@@ -1,56 +1,52 @@
- 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-rm(list=ls()) 
-set.seed(333) # reproducible
-library(directlabels)
-library(shiny) 
-library(shinyjs)  #refresh'
-library(shinyWidgets)
-library(shinythemes)  # more funky looking apps
-library(shinyalert)
-library(Hmisc)
-library(reshape)
-library(rms)
-library(ggplot2)
-library(tidyverse)
-library(Matrix)
-library(shinycssloaders)
-#library(googleVis)
-library(xtable)
-
-options(max.print=1000000)    
-
-fig.width <- 1200
-fig.height <- 500
-fig.width1 <- 1380
-fig.width8 <- 1380
-fig.height1 <- 700
-fig.width7 <- 700
-fig.height7 <- 770
-fig.width6 <- 680
-
-## convenience functions
-p0 <- function(x) {formatC(x, format="f", digits=0)}
-p1 <- function(x) {formatC(x, format="f", digits=1)}
-p2 <- function(x) {formatC(x, format="f", digits=2)}
-p3 <- function(x) {formatC(x, format="f", digits=3)}
-p4 <- function(x) {formatC(x, format="f", digits=4)}
-p5 <- function(x) {formatC(x, format="f", digits=5)}
-p2f <- function(x) {formatC(x, format="f", digits=4)}
-
-logit <- function(p) log(1/(1/p-1))
-expit <- function(x) 1/(1/exp(x) + 1)
-inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
-is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
-
-options(width=200)
-options(scipen=999)
-w=4  # line type
-ww=3 # line thickness
-wz=1 
-
+        rm(list=ls()) 
+        set.seed(333) # reproducible
+        library(directlabels)
+        library(shiny) 
+        library(shinyjs)  #refresh'
+        library(shinyWidgets)
+        library(shinythemes)  # more funky looking apps
+        library(shinyalert)
+        library(Hmisc)
+        library(reshape)
+        library(rms)
+        library(ggplot2)
+        library(tidyverse)
+        library(Matrix)
+        library(shinycssloaders)
+        library(xtable)
+        
+        options(max.print=1000000)    
+        
+        fig.width <- 1200
+        fig.height <- 500
+        fig.width1 <- 1380
+        fig.width8 <- 1380
+        fig.height1 <- 700
+        fig.width7 <- 700
+        fig.height7 <- 770
+        fig.width6 <- 680
+        
+        ## convenience functions
+        p0 <- function(x) {formatC(x, format="f", digits=0)}
+        p1 <- function(x) {formatC(x, format="f", digits=1)}
+        p2 <- function(x) {formatC(x, format="f", digits=2)}
+        p3 <- function(x) {formatC(x, format="f", digits=3)}
+        p4 <- function(x) {formatC(x, format="f", digits=4)}
+        p5 <- function(x) {formatC(x, format="f", digits=5)}
+        p2f <- function(x) {formatC(x, format="f", digits=4)}
+        
+        logit <- function(p) log(1/(1/p-1))
+        expit <- function(x) 1/(1/exp(x) + 1)
+        inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
+        is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
+        
+        options(width=200)
+        options(scipen=999)
+        w=4  # line type
+        ww=3 # line thickness
+        wz=1 
 
 loq <- function (x, y, model, spec, print.plot=1) {
     
@@ -205,9 +201,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     p <- p + ylab('Dependent variable')
     p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
     p <- p + labs(x = "Independent variable", y = "Response") 
-   # p <- p + theme(axis.title.y = element_text(size = rel(1.1), angle = 90))
-   # p <- p + theme(axis.title.x = element_text(size = rel(1.1), angle = 00)) +
-        
+
     p <- p +  theme(panel.background=element_blank(),
               plot.title=element_text(size=16), 
               plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
@@ -223,9 +217,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
               axis.title = element_text(size = 16, angle = 00)
         )   
         
-    
-    
-    p <- p + labs(title = paste("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response of", spec ,", the estimate of x is",
+    p <- p + labs(title = paste("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response (spec) of", spec ,", the estimate of x is",
                                 p2f(txpre),"and 95% CI: (",p2f(txlow),",",
                                 p2f(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
                                    sep=" "),
@@ -233,15 +225,13 @@ loq <- function (x, y, model, spec, print.plot=1) {
                     caption = paste0("We are interested in the independent variable value when y = ",p4(spec),"")
     )     
         
-
     if (print.plot==1) {print(p)}
-    
-    
+
     return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod))
     
 }
 
-#loq(x=x, y=y, model=j, spec=100) 
+ 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -249,9 +239,6 @@ loq <- function (x, y, model, spec, print.plot=1) {
 css <- "
 #large .selectize-input { line-height: 40px; }
 #large .selectize-dropdown { line-height: 30px; }"
-
-
-
 
 ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/packages/shinythemes/versions/1.1.2 , paper another option to try
                  # paper
@@ -261,13 +248,13 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                      gradient = "linear",
                      direction = "bottom"
                  ),
+
+                 h2("Exploring transformations and model fitting"), 
                  
-                 
-                 
-                 h2("xxxxxxxxxxxxxxxxx"), 
-                 
-                 h4("xxxxxxxxxxxxxx
-                "), 
+                 h4("An independent variable is generated using a uniform(0:10) distribution. Using the user inputs a response is derived from a selection 
+                 of data generating mechanisms. The data can then be analysed using a selection of models. The best model fit can be selected ('Best scenario' button), judged 
+                 by the model with the minimum sum of square of the residuals. A plot of the model fit is presented, then on tab 2 model assumptions are evaluated. 
+                    The final tab presents a listing of the data."), 
                  
                  h3("  "), 
                  sidebarLayout(
@@ -304,8 +291,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                        ),
                                        
                                        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
-                                       
-                                       # colours for button background
+                                        # colours for button background
                                        
                                        tags$head(
                                            tags$style(HTML('#upload{background-color:chartreuse}'))
@@ -356,10 +342,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                          
                                        ),
                                        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
-                                       
-                                 
-                                       
-                                       
+                                        
                                        radioButtons(
                                            inputId = "truth",
                                            label =  div(h5(tags$span(style="color:blue","Data generating mechanism :"))),
@@ -383,9 +366,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                            selected=c("model1")
                                        ),
                                        
-                                       
-           
-                                       
+                                        
                                        ###https://stackoverflow.com/questions/49616376/r-shiny-radiobuttons-how-to-change-the-colors-of-some-of-the-choices
                                        
                                        radioButtons(
@@ -409,7 +390,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                            choiceValues = c( "best","1", "2", "3",  "4", "5", "6",
                                                              "7", "8", "9",  "10", "11")
                                            ,
-                                           selected=c("1")
+                                           selected=c("11")
                                        )
                                        
                                    ),
@@ -436,17 +417,12 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                    
                                    tabPanel( "1 Model fitting",
                                              
-                                             
-                                             
-                                         #    div(class="span7", verbatimTextOutput("dato")),
-                                          #   h4(htmlOutput("textWithNumber1a") ),
-                                             fluidRow(
+                                              fluidRow(
                                                  column(width = 6, offset = 0, style='padding:1px;',
                                                         shinycssloaders::withSpinner(
                                                             div(plotOutput("plot1",  width=fig.width8, height=fig.height7)),
                                                        ),
-                                               #         div(plotOutput("reg.ploty",  width=fig.width8, height=fig.height7)),
-                                                ) ,
+                                                 ) ,
                                                  
                                                  
                                                  fluidRow(
@@ -454,120 +430,39 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                             
                                                      ))),#
                                              
-                                             #h4(paste("xxxxxxxxxxxxxxx
-
-                                              #   ")),
-                                             
-                                             
-                                             
-                                             
-                                             
+                                    
                                              h4(paste("Figure 1 Model Fit")),
                                              
-                                           #  div( verbatimTextOutput("zz") )  ,
-                                             # h4(htmlOutput("textWithNumber99",) ),
-                                             # div( verbatimTextOutput("mse.target") )  ,
-                                           #  h4(paste("xxxxxxxxxxxxxxxxx")),
-                                        #     div( verbatimTextOutput("betas") )  ,
                                              width = 30 )     ,
-                                
-                                   
-                                   # here have action buttons clicking will load a pre run simulation that can be examined
-                                   # tabPanel( "2 xxxxxxxxxxxxxxx",
-                                   #           
-                                   #           
-                                   #      
-                                   #               
-                                   #         #  ),
-                                   #           
-                                   #     #      shinycssloaders::withSpinner(plotOutput("plot1",  width=fig.width8, height=fig.height7),5),
-                                   #           
-                                   #      #     shinycssloaders::withSpinner(plotOutput("plot2",  width=fig.width8, height=fig.height7),5),
-                                   #           
-                                   #           shinycssloaders::withSpinner(verbatimTextOutput("d"),type = 5),
-                                   #     
-                                   #           
-                                   # ),            
-                                   
-                                   tabPanel("2 Data listing", value=3, 
-                                            shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
-                                            ),
-                                   
-                                   
-                                   tabPanel("4 Notes & references", value=3, 
+          
+                                   tabPanel("2 Diagnostics", value=3, 
                                             
-                                            
-                                            shinycssloaders::withSpinner(
+                                             shinycssloaders::withSpinner(
                                                 div(plotOutput("diagnostics",  width=fig.width8, height=fig.height7)),
                                             ),
                                             
-                                            h4("xxxxxxxxxxxxxxxxx") ,
+                                      
                                             
-                                            h4("xxxxxxxxxxxxxxx") ,
+                                            h4("Figure 2. Three residual plots to check for absence of trends in central tendency and in variability"),
+                                             p(strong("Upper left panel shows residuals versus fitted on the x-axis. 
+                                              Bottom left panel is the QQ plot for checking normality of residuals from the LS fit.
+                                              Top right panel is the histogram for checking normality of residuals from the LS fit with 
+                                              ~N(mean=0, sd=GLS model sigma) curve and true SD superimposed.
+                                              ")),
+                  
+                                   ),
                                             
-                                            
-                                            
-                                            h4("xxxxxxxxxxxxxxx "),
-                                            h4("
-                                          xxxxxxxxxxxxxxxxxxx
-                                          "),
-                                            h4("
-                                          xxxxxxxxxxxxxxxxxxx "),
-                                            
-                                            h4("
-                                               xxxxxxxxxxxxxxxxxxx
-                                               
-                                               "),
-                                            
-                                            h4("
-                                              xxxxxxxxxxxxxxxxxxx'
-                                               
-                                               "),
-                                            
-                                            column(width = 12, offset = 0, style='padding:1px;',
-                                                   
-                                                   tags$hr(),
-                                                   div(h4("References:")),  
-                                                   tags$a(href = "https://www.bmj.com/content/bmj/340/bmj.c869.full.pdf", tags$span(style="color:blue", "[1] CONSORT 2010 Explanation and Elaboration: updated guidelines for reporting parallel group randomised trials"),),   
-                                                   div(p(" ")),
-                                                   tags$a(href = "https://www.linkedin.com/pulse/stop-obsessing-balance-stephen-senn/", tags$span(style="color:blue", "[2] Stephen Senn, Stop obsessing about balance"),),   
-                                                   div(p(" ")),
-                                                   tags$a(href = "https://discourse.datamethods.org/t/should-we-ignore-covariate-imbalance-and-stop-presenting-a-stratified-table-one-for-randomized-trials/547/32", tags$span(style="color:blue", "[3] Stephen Senn, point 4, Should we ignore covariate imbalance and stop presenting a stratified table one for randomized trials"),),  
-                                                   div(p(" ")),
-                                                   tags$a(href = "https://twitter.com/f2harrell/status/1298640944405807105",  tags$span(style="color:blue", "[4]  Frank Harrell, twitter, 'unadjusted analysis makes the most severe assumptions of all (that risk factors do not exist)'."),),   
-                                                   div(p(" ")),
-                                                   tags$a(href = "https://statistics.fas.harvard.edu/files/statistics/files/21_stephen_senn.pdf", tags$span(style="color:blue", "[5] Randomisation isn’t perfect but doing better is harder than you think "),),   
-                                                   div(p(" ")),
-                                                   tags$a(href = "https://onlinelibrary.wiley.com/doi/epdf/10.1002/sim.8570", tags$span(style="color:blue", "[6] Graphical calibration curves and the integrated calibration index (ICI) for survival models, Statistics in Medicine. 2020;1–29 "),),  
-                                                   div(p(" ")),
-                                                   tags$a(href = "https://www.sciencedirect.com/science/article/abs/pii/S0002870300900012?via%3Dihub", tags$span(style="color:blue", "[7] Steyerberg, E. W., Bossuyt, P. M. M., & Lee, K. L. (2000). Clinical trials in acute myocardial infarction: Should we adjust for baseline characteristics? American Heart Journal, 139(5), 745–751. doi:10.1016/s0002-8703(00)90001-2"),),   
-                                                   div(p(" ")),
-                                                   tags$a(href = "http://clinicalpredictionmodels.org/", tags$span(style="color:blue", "[8] Steyerberg, E. W., Clinical Prediction Models, 2019 p459"),),   
-                                                   div(p(" ")),
-                                                   tags$a(href = "https://twitter.com/f2harrell/status/1299755896319475712", tags$span(style="color:blue", "[9] Frank Harrell, twitter, Adjusted analysis"),),   
-                                                   div(p(" ")),
-                                                   tags$a(href = "https://discourse.datamethods.org/t/guidelines-for-covariate-adjustment-in-rcts/2814/2", tags$span(style="color:blue", "[10 Frank Harrell, Guidelines for covariate adjustment in rcts"),),  
-                                                   div(p(" ")),
-                                                   tags$a(href = "https://www.fharrell.com/post/covadj/", tags$span(style="color:blue", "[11] E.Steyerberg explains some of the advantages of conditioning on covariates"),),  
-                                                   div(p(" ")),
-                                                   tags$a(href = "https://hbiostat.org/doc/bbr.pdf", tags$span(style="color:blue", "[12] Biostatistics for Biomedical Research Frank E Harrell Jr. James C Slaughter Updated August 5, 2020"),),  
-                                                   div(p(" ")),
-                                                   
-                                                   tags$hr()
-                                            ) 
-                                            
-                                   )
-                                   
+                                            tabPanel("3 Data listing", value=3, 
+                                                     shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
+                                            )
                                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW   
                                )
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                     )
+                         )
                  ) 
                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end tab panels 
 )
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 server <- shinyServer(function(input, output   ) {
     
     #############################
@@ -606,7 +501,6 @@ server <- shinyServer(function(input, output   ) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
  dat <- reactive({
     
     sample <- random.sample()
@@ -616,7 +510,8 @@ server <- shinyServer(function(input, output   ) {
     sigma=sample$sigma
     N=sample$N
      
-    x <-  array(runif(N, 0, 100))  # no negative values
+    x <-  array(runif(N, 0, 10))  # no negative values
+    
     noise <-  rnorm(N,0, sigma)
  
     if (input$truth %in% "model1") {
@@ -650,8 +545,6 @@ server <- shinyServer(function(input, output   ) {
  })
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
- 
  md <- reactive({
 
      spec <- as.numeric(input$spec)
@@ -679,7 +572,6 @@ server <- shinyServer(function(input, output   ) {
           f=res2$f   
           mod<- res2$mod
           
-      
      } else {
          
          res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
@@ -687,7 +579,6 @@ server <- shinyServer(function(input, output   ) {
          model <- as.numeric(input$ana)
          f=res$f
          mod<- res$mod
-         
          
      }
 
@@ -712,7 +603,6 @@ server <- shinyServer(function(input, output   ) {
         
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     
      output$d2 <- renderPrint({
          
          d <- md()$foo
@@ -722,9 +612,7 @@ server <- shinyServer(function(input, output   ) {
          return(print(d))
          
      }) 
-     
      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     
          output$d <- renderPrint({
         
        d <- dat()$d
@@ -734,9 +622,7 @@ server <- shinyServer(function(input, output   ) {
        return(print(d))
         
     }) 
- 
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-         
          output$diagnostics<- renderPlot({         
              
              #model <- md()$model
@@ -767,28 +653,18 @@ server <- shinyServer(function(input, output   ) {
                                 #breaks = seq(-50, 50, by = 2),
                                 colour = "black",
                                 fill = "#69b3a2") +
-                 xlab('Residuals with superimposed true sigma')   +
+                 xlab('Residuals with superimposed sigma')   +
                  stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(input$sigma)   )) +# sigma(f)
              stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)    ), col='red') # 
              
              grid.arrange(p1,  p3, p2, ncol=2,
-                 top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black)",as.numeric(input$sigma) ,", estimated sigma (red)", p4(sigma(f)),""),gp=gpar(fontsize=20,font=3)))
+                 top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(input$sigma) ,", estimated sigma (red) ", p4(sigma(f)),""),gp=gpar(fontsize=20,font=3)))
              #+
              
          })
-         
          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-         
-         
-         
+
 })
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# loading in user data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-
-
+ 
 # Run the application 
 shinyApp(ui = ui, server = server)
