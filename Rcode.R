@@ -222,17 +222,21 @@
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  
+    # inputs that can be varied
     N=100
     a=10 
     b=1 
     sigma=2 
     spec=0
-    model="model1"
+    model="model1"    
     ana="best"        
     
-    x <-  array(runif(N, 0, 10))  # no negative values                 }     x <-  array(runif(N, 0, 10))  # no negative values
+    x <-  array(runif(N, 0, 10))  # no negative values            
     
-    noise <-  rnorm(N,0, sigma)
+    noise <-  rnorm(N,0, sigma)   # residual error
+    
+    # create response according to data generation mechanism
     
     if (model %in% "model1") {
       y <-  a+ x*b +    noise
@@ -278,13 +282,14 @@
         
       }
       
-      model <- which(ssr==min(ssr)) 
-      mdata <- res$foo
+      model <- which(ssr==min(ssr))     # capture which model has lowest residual sum of squares
+      mdata <- res$foo                  # capture data
       res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0)  # run best model
-      f=res2$f   
-      mod<- res2$mod
+      f=res2$f                          # linear model captured here
+      mod<- res2$mod                    # linear model text description
       
-    } else {
+      
+    } else {  # if we don't select the best model this code is run and selected model is run and same info as captured
       
       res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
       mdata <- res$foo
@@ -295,17 +300,20 @@
     }
     
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # run model again based on above
 
    res <-  loq(x= x, y= y, model=model, spec= spec, print.plot=1) # print plot
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+  # capture data
+   
     names(res$foo) <- c("x","y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2")
     foo <- plyr::arrange(res$foo,x)
     foo
     
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
+  # capture model, object f and investigate residuals
+    
     f <- res$f
    
     resid <- r <- resid(f)
