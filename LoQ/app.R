@@ -184,7 +184,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     
     # put all pertinent data together, original data and predicted with 95%CI
     
-    foo <- data.frame(cbind(x=x1,obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r^.5, rr2=r))
+    foo <- data.frame(cbind(x=x1, obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r^.5, rr2=r))
     foo <- foo[order(foo$obsy),]
     
     # plot and present the estimated read back
@@ -194,7 +194,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
         geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
         geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  
     scale_x_continuous(limits = c(xmin1, xmax1))
-    scale_y_continuous(limits = c(xmin1, xmax1))
+    scale_y_continuous(limits = c(ymin1, ymax1))  # this was x?
     
     p <- p1  + geom_hline(yintercept=spec, colour="#990000", linetype="dashed")
     
@@ -237,7 +237,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     if (print.plot==1) {print(p)}
     
     
-    return(list(ssr=ssr,r=r, foo=foo, f=f))
+    return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod))
     
 }
 
@@ -640,7 +640,7 @@ server <- shinyServer(function(input, output   ) {
     } else if (input$truth %in% "model10") {
         y <-  exp(a+ b/x + noise)
     } else if (input$truth %in% "model11") {
-        y <-  ( a + (x^2)/b + noise)^2
+        y <-  ( a + (x^2)/b + noise)^.5
     }
     
     d <- cbind(x,y)
@@ -677,6 +677,7 @@ server <- shinyServer(function(input, output   ) {
           mdata <- res$foo
           res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0)  # run best model
           f=res2$f   
+          mod<- res2$mod
           
       
      } else {
@@ -685,11 +686,12 @@ server <- shinyServer(function(input, output   ) {
          mdata <- res$foo
          model <- as.numeric(input$ana)
          f=res$f
+         mod<- res$mod
          
          
      }
 
-     return(list(  model=model, foo=mdata, f=f))
+     return(list(  model=model, foo=mdata, f=f, mod=mod))
 
  })
  
@@ -740,7 +742,7 @@ server <- shinyServer(function(input, output   ) {
              #model <- md()$model
              #foo <- md()$foo
              f <- md()$f
-              
+             mod <- md()$mod
              resid <- r <- resid(f)
              fitted <- fitted(f)
              d <- cbind(resid, fitted)
@@ -765,11 +767,12 @@ server <- shinyServer(function(input, output   ) {
                                 #breaks = seq(-50, 50, by = 2),
                                 colour = "black",
                                 fill = "#69b3a2") +
-                 stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)  )) 
-             
+                 xlab('Residuals with superimposed true sigma')   +
+                 stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(input$sigma)   )) +# sigma(f)
+             stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)    ), col='red') # 
              
              grid.arrange(p1,  p3, p2, ncol=2,
-                 top = textGrob(paste0(" LS model fit diagnostics"),gp=gpar(fontsize=20,font=3)))
+                 top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black)",as.numeric(input$sigma) ,", estimated sigma (red)", p4(sigma(f)),""),gp=gpar(fontsize=20,font=3)))
              #+
              
          })
