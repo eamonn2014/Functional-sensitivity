@@ -700,16 +700,9 @@ server <- shinyServer(function(input, output   ) {
         
         ssr <- rep(NA,11)
         
-        # for (j in 1:11) {
-        #     
-        #     res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
-        #     ssr[j] <- res
-        #     
-        # }
-        # 
-        
+        mdata <- list(NA)
+
         if (input$ana %in% "best") {
-            
             
             for (j in 1:11) {
                 
@@ -718,12 +711,13 @@ server <- shinyServer(function(input, output   ) {
                 
             }
             
-            loq(x=x, y=y, model=which(ssr==min(ssr)), spec= spec, print.plot = 1)
-            
+            res <- loq(x=x, y=y, model=which(ssr==min(ssr)), spec= spec, print.plot = 1)
+            mdata <- res$foo
+                        
         } else {
             
-            loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
-         
+            res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
+            mdata <- res$foo
         }
         
         
