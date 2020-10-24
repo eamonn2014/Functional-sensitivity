@@ -214,7 +214,12 @@ loq <- function (x, y, model, spec, print.plot=1) {
                                    sep=" "),
                   #  subtitle = paste("Model for the curve #",model," ",mod,""),
                     caption = paste0("We are interested in the independent variable value when y = ",p4(spec),"")
-    )     
+    )     +
+ 
+    theme_minimal() +
+      theme(text = element_text(family = "Cinzel", size = 10),
+            title = element_text(family = "Cinzel", size = 14)) -> targaryen
+ 
         
     if (print.plot==1) {print(p)}
 

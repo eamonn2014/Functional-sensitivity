@@ -6,6 +6,7 @@
   library(rms)
   library(ggplot2)
   library(tidyverse)
+  library(tvthemes)
   
   options(max.print=1000000)    
   
@@ -203,7 +204,15 @@
                                 sep=" "),
                   #  subtitle = paste("Model for the curve #",model," ",mod,""),
                   caption = paste0("We are interested in the independent variable value when y = ",p4(spec),"")
-    )     
+    ) +
+      # theme_simpsons(title.font = "Akbar",
+      #                text.font = "Akbar",
+      #                axis.text.size = 8)    
+      theme_minimal() +
+      theme(text = element_text(family = "Cinzel", size = 10),
+            title = element_text(family = "Cinzel", size = 14)) -> targaryen
+    
+    
     
     if (print.plot==1) {print(p)}
     
