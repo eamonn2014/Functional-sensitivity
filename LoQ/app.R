@@ -13,6 +13,7 @@
         library(ggplot2)
         library(tidyverse)
         library(shinycssloaders)
+        library(tvthemes)  # nice ggplot addition
    
         options(max.print=1000000)    
         
