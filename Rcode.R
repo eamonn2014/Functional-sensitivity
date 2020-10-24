@@ -9,15 +9,6 @@
   
   options(max.print=1000000)    
   
-  fig.width <- 1200
-  fig.height <- 500
-  fig.width1 <- 1380
-  fig.width8 <- 1380
-  fig.height1 <- 700
-  fig.width7 <- 700
-  fig.height7 <- 770
-  fig.width6 <- 680
-  
   ## convenience functions
   p0 <- function(x) {formatC(x, format="f", digits=0)}
   p1 <- function(x) {formatC(x, format="f", digits=1)}
