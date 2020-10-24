@@ -184,7 +184,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     
     # put all pertinent data together, original data and predicted with 95%CI
     
-    foo <- data.frame(cbind(x=x1,obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3]))
+    foo <- data.frame(cbind(x=x1,obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r^.5, rr2=r))
     foo <- foo[order(foo$obsy),]
     
     # plot and present the estimated read back
@@ -472,67 +472,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                    
                                    tabPanel("3 xxxxxxxxxxxxxxxxxxxx", value=3, 
                                             shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
-                                            # h4("xxxxxxxxxxxxxxxxx
-                                            #    ") ,
-                                            # tags$hr(),
-                                            # 
-                                            # h4("1 xxxxxxxxxxxxxxxxxxxxx'") ,
-                                            # 
-                                            # 
-                                            # #https://github.com/daattali/advanced-shiny/tree/master/select-input-large
-                                            # tags$style(type='text/css', css),
-                                            # 
-                                            # div(id = "large",
-                                            #     selectInput("Trueeffect", "", width='35%',
-                                            #                 c("Expected odds ratio" = "ORx",
-                                            #                   "Anticipated proportion of responders in treated" = "p2x" ))
-                                            # ),
-                                            # 
-                                            # h4("2 xxxxxxxxxxxxxxxxxxxxxxx'") ,
-                                            # textInput('pp2', 
-                                            #           div(h5(tags$span(style="color:blue", ""))), ".35"),
-                                            # 
-                                            # h4("3 xxxxxxxxxxxxxxxxxxxxxxxx") ,
-                                            # splitLayout(
-                                            #     
-                                            #     textInput('NN', 
-                                            #               div(h5(tags$span(style="color:blue", "Total sample size"))), "300"),
-                                            #     
-                                            #     textInput('pp1', 
-                                            #               div(h5(tags$span(style="color:blue", "Expected proportion of responders in baseline/placebo"))), ".25"),
-                                            #     
-                                            #     textInput('allocation', 
-                                            #               div(h5(tags$span(style="color:blue", "Randomisation allocation"))), "0.5")
-                                            #     
-                                            # ),
-                                            # 
-                                            # tags$hr(),
-                                            # actionButton("sim","Hit to assess power of the design based on above inputs"),
-                                            # h4("Power via 499 simulations"),    
-                                            # withSpinner(verbatimTextOutput("pow1")),
-                                            # h4("Power via Frank Harrell Hmisc function"),    
-                                            # withSpinner(verbatimTextOutput("pow2")),
-                                            # tags$hr(),
-                                            # actionButton("resample2", "Hit to Simulate another sample based on above inputs"),  
-                                            # h4("xxxxxxxxxxxxxxxxxxx."),  
-                                            # 
-                                            # 
-                                            # span(
-                                            #     style = "color: #000000; font-face: bold;",
-                                            #     tableOutput("obs")),
-                                            # h4(htmlOutput("textWithNumber",) ),
-                                            # 
-                                            # 
-                                            # 
-                                            # 
-                                            # 
-                                            # 
-                                            # 
-                                            # 
-                                            # withSpinner(verbatimTextOutput("pow3")),
-                                            # # verbatimTextOutput("pow") %>% withSpinner(color="#0dc5c1"))
-                                            # 
-                                            # h4(""),                           
+
                                             
                                    ),
                                    
@@ -749,7 +689,8 @@ server <- shinyServer(function(input, output   ) {
          
          d <- md()$foo
          
-         
+       d <- plyr::arrange(d,x)
+         names(d) <- c("x","y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2")
          return(print(d))
          
      }) 
