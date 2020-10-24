@@ -191,8 +191,8 @@ loq <- function (x, y, model, spec, print.plot=1) {
     
     p1 <- ggplot(foo, aes(x=x,y=pred)) + 
         geom_line( ) +
-        geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,fill="blue") +
-        geom_point(data=foo, aes(x=x ,y=obsy))  
+        geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
+        geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  
     scale_x_continuous(limits = c(xmin1, xmax1))
     scale_y_continuous(limits = c(xmin1, xmax1))
     
@@ -208,6 +208,9 @@ loq <- function (x, y, model, spec, print.plot=1) {
                            # ", R2 transformed x, y ",p2(v1),", R2 x, trans. back pred. y",p2(v2),
                            sep=" ")) + theme(plot.title = element_text(lineheight=1, face="bold", color="black", size=11))
     
+     
+        
+    p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
     p <- p + labs(x = "Independent variable", y = "Response")
     p <- p + theme(axis.title.y = element_text(size = rel(1.1), angle = 90))
     p <- p + theme(axis.title.x = element_text(size = rel(1.1), angle = 00))
@@ -215,7 +218,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     if (print.plot==1) {print(p)}
     
     
-    return(ssr)
+    return(list(ssr=ssr,r=r, foo=foo))
     
 }
 
@@ -327,7 +330,10 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                      div(h5(tags$span(style="color:blue", "slope"))), "1"),
                                            
                                            textInput('sigma', 
-                                                     div(h5(tags$span(style="color:blue", "sigma"))), "2")
+                                                     div(h5(tags$span(style="color:blue", "sigma"))), "2"),
+                                           
+                                           textInput('spec', 
+                                                     div(h5(tags$span(style="color:blue", "spec"))), "0")
                                          
                                        ),
                                        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
@@ -413,12 +419,12 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                              
                                              
                                              
-                                             div(class="span7", verbatimTextOutput("dato")),
+                                         #    div(class="span7", verbatimTextOutput("dato")),
                                           #   h4(htmlOutput("textWithNumber1a") ),
                                              fluidRow(
                                                  column(width = 6, offset = 0, style='padding:1px;',
                                                         shinycssloaders::withSpinner(
-                                                            div(plotOutput("reg.plot1",  width=fig.width8, height=fig.height7)),
+                                                            div(plotOutput("plot1",  width=fig.width8, height=fig.height7)),
                                                        ),
                                                #         div(plotOutput("reg.ploty",  width=fig.width8, height=fig.height7)),
                                                 ) ,
@@ -451,91 +457,16 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                    tabPanel( "2 xxxxxxxxxxxxxxx",
                                              
                                              
-                                             
-                                             fluidRow(
+                                        
                                                  
-                                                 column(1,
-                                                        actionBttn(
-                                                            inputId = "upload",
-                                                            label = "",
-                                                            color = "royal",
-                                                            style = "float",
-                                                            icon = icon("sliders"),
-                                                            block = TRUE,
-                                                            no_outline=TRUE
-                                                        ),
-                                                        
-                                                 ),
-                                                 
-                                                 h4("Hit to load, default settings, the covariate coefficients used were -1 -0.67, -0.43"),
-                                             ),
+                                           #  ),
                                              
+                                       #      shinycssloaders::withSpinner(plotOutput("plot1",  width=fig.width8, height=fig.height7),5),
                                              
-                                             fluidRow(
-                                                 
-                                                 column(1,
-                                                        actionBttn(
-                                                            inputId = "upload2",
-                                                            label = "",
-                                                            color = "royal",
-                                                            style = "float",
-                                                            icon = icon("sliders"),
-                                                            block = TRUE,
-                                                            no_outline=FALSE
-                                                        ),
-                                                        
-                                                 ),
-                                                 
-                                                 h4("Hit to load, default settings except that treatment effect is log(0.5). The covariate coefficients used were -1.68 -1.39 0.71."),
-                                             ),
+                                        #     shinycssloaders::withSpinner(plotOutput("plot2",  width=fig.width8, height=fig.height7),5),
                                              
-                                             fluidRow(
-                                                 
-                                                 column(1,
-                                                        actionBttn(
-                                                            inputId = "upload3",
-                                                            label = "",
-                                                            color = "royal",
-                                                            style = "float",
-                                                            icon = icon("sliders"),
-                                                            block = TRUE
-                                                        ), 
-                                                        
-                                                 ),
-                                                 
-                                                 h4("Hit to load, default settings except that treatment effect is log(2), intercept probability 0.7. The covariate coefficients used were -3.46 -1.05 1.15"),
-                                             ),
-                                             
-                                             
-                                             
-                                             fluidRow(
-                                                 
-                                                 column(1,
-                                                        
-                                                        
-                                                        actionBttn(
-                                                            inputId = "upload4",
-                                                            label = "",  
-                                                            color = "royal",
-                                                            style = "float",
-                                                            icon = icon("sliders"),
-                                                            block = TRUE
-                                                        ),
-                                                        
-                                                        
-                                                        
-                                                        
-                                                 ),
-                                                 h4("Hit to load, 10K simulations, 5 covariates (3 prognostic), treatment effect is log(1.3), intercept prob. 0.12. The covariate coefficients used were -1.02  0.42  0.43  0.61  1.01"),
-                                                 
-                                             ),
-                                             
-                                             shinycssloaders::withSpinner(plotOutput("plot1",  width=fig.width8, height=fig.height7),5),
-                                             
-                                             shinycssloaders::withSpinner(plotOutput("plot2",  width=fig.width8, height=fig.height7),5),
-                                             
-                                             shinycssloaders::withSpinner(verbatimTextOutput("content1"),type = 5),
-                                             
+                                             shinycssloaders::withSpinner(verbatimTextOutput("d"),type = 5),
+                                       
                                              
                                    ),            
                                    
@@ -698,12 +629,14 @@ server <- shinyServer(function(input, output   ) {
  
         N <- as.numeric(input$N)
         
+        spec <- as.numeric(input$spec)
         
         return(list(  
             a=a,
             b=b,
             sigma=sigma,
-            N=N
+            N=N,
+            spec=spec
         ))
         
     })
@@ -721,7 +654,7 @@ server <- shinyServer(function(input, output   ) {
     sigma=sample$sigma
     N=sample$N
      
-    x <-  array(runif(N, 1, 100))  # no negative values
+    x <-  array(runif(N, 0, 100))  # no negative values
     noise <-  rnorm(N,0, sigma)
  
     if (input$truth %in% "model1") {
@@ -747,19 +680,18 @@ server <- shinyServer(function(input, output   ) {
     } else if (input$truth %in% "model11") {
         y <-  ( a + (x^2)/b + noise)^2
     }
-    return(list(  y=y, x=x))
+    
+    d <- cbind(x,y)
+    
+    return(list(  y=y, x=x, d=d))
     
  })
     
   
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    output$dato <- renderPrint({
+     output$plot1 <- renderPlot({         #standard errors
         
-      return(dat()$y)
-        
-    })
-    
-    output$plot1 <- renderPlot({         #standard errors
+        spec <- as.numeric(input$spec)
         
         d <- dat()  # Get the  data
         y <- d$y
@@ -768,93 +700,46 @@ server <- shinyServer(function(input, output   ) {
         
         ssr <- rep(NA,11)
         
-        for (j in 1:11) {
-            
-            res <- loq(x=x, y=y, model=j, spec=100, print.plot=0) # don't print
-            ssr[j] <- res
-            
-        }
-        
+        # for (j in 1:11) {
+        #     
+        #     res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
+        #     ssr[j] <- res
+        #     
+        # }
+        # 
         
         if (input$ana %in% "best") {
             
-            loq(x=x, y=y, model=which(ssr==min(ssr)), spec=100, print.plot = 1)
+            
+            for (j in 1:11) {
+                
+                res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
+                ssr[j] <- res$ssr
+                
+            }
+            
+            loq(x=x, y=y, model=which(ssr==min(ssr)), spec= spec, print.plot = 1)
             
         } else {
             
-        loq(x=x, y=y, model=as.numeric(input$ana), spec=100) 
+            loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
          
         }
         
         
     })
+ 
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # simulation code 2 do the same as the first simulation code, but this time correlated covariates are created
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    simul2 <- reactive({
+    output$d <- renderPrint({
         
-       # sample <- random.sample()
-     
+       d <- dat()$d
+       d <- as.data.frame(d)
+       d <- plyr::arrange(d,x)
        
-        
-        return(list(  
-          
-        )) 
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    })
-    
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # do the same as the first simulation code, but this time imbalanced covariates are created
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    
-    
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # SIMUALTION PLOT
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # collect simulatio standard error estimates from simulation and plot!
-    
-    output$reg.plotyy <- output$reg.ploty <- renderPlot({         #standard errors
-        
-        # Get the  data
-        
-        
-    })
-    
-    
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # not used for binary logistic
-    output$textWithNumber99 <- renderText({ 
-        
-        HTML(
-            "xxxxxxxxxxxxxxxxx"
-        )
-        
-    })  
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # table for simulation summary, quite easy to make a mistake here! too much hard coding really, need to code better
-   
-    
-    output$pow1 <- renderPrint({
-        
-       # return(twobytwo()$pow)
+       return(print(d))
         
     }) 
-    
-    
-    output$pow2 <- renderPrint({
-        
-      #  return(twobytwo()$FH)
-        
-    }) 
-    
-    output$pow3 <- renderPrint({
-        
-     #   return(mdata()$fit1)
-        
-    })
+ 
     
     
 })
