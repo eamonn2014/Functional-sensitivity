@@ -130,7 +130,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
       
       
       rsd2 <-  anova(f)["ERROR","MS"]^.5
-   
+      dfs <- anova(f)["ERROR","d.f."]
       
       
       # predict again for plot, so we have predictions for the actual data
@@ -199,7 +199,8 @@ loq <- function (x, y, model, spec, print.plot=1) {
     
     # grab the residual standard deviation
     
-    rsd2 <- as.data.frame(anova(f))[2,3]^.5  
+    rsd2 <- as.data.frame(anova(f))[2,3]^.5 
+    dfs <- anova(f)["Residuals","Df"]
       # read back on transformed scale
     
     mse <- rsd2^2
@@ -296,7 +297,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
         
     if (print.plot==1) {print(p)}
 
-    return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod))
+    return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod, rsd2=rsd2, dfs=dfs))
     
 }
 
@@ -519,7 +520,13 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                             
                                             tabPanel("3 Data listing", value=3, 
                                                      shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
-                                            )
+                                            ),
+                                   tabPanel("3 Summary of models", value=3, 
+                                            shinycssloaders::withSpinner(verbatimTextOutput("ssr"),type = 5),
+                                            h4(paste("Table 2 Summary of model fits")),
+                                            shinycssloaders::withSpinner(verbatimTextOutput("ssr2"),type = 5),
+                                            h4(paste("Table 3 Models")),
+                                   )
                                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW   
                                )
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -627,7 +634,7 @@ server <- shinyServer(function(input, output   ) {
                  
                  res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
                  ssr[j] <- res$ssr
-                 
+                
              }
              
               model <- which(ssr==min(ssr)) 
@@ -646,9 +653,46 @@ server <- shinyServer(function(input, output   ) {
              
          }
     
-         return(list(  model=model, foo=mdata, f=f, mod=mod))
+         return(list(  model=model, foo=mdata, f=f, mod=mod ))
     
      })
+     
+     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     # collect for listing here
+     md2 <- reactive({
+       
+       spec <- as.numeric(input$spec)
+       
+       d <- dat()  # Get the data
+       y <- d$y
+       x <- d$x
+     #  M <- d$f
+
+       #mdata <- list(NA)
+       
+       A <- array(NA, dim=c(12,5))
+       M <- list(NA)
+       
+         for (j in 1:12) {
+           
+           res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
+           M[j] <- (res$f)  
+           A[j,1] <- j          # model no
+           A[j,2] <- res$mod    # model
+           A[j,3] <- res$dfs    # d.f.
+           A[j,4] <- res$ssr    # sum of squared residuals
+           A[j,5] <- res$rsd2   # sigma
+           
+         
+         }
+       
+          return(list(  ssr=A, M=M))
+       
+     })
+     
+     
+     
+     
  
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      output$plot1 <- renderPlot({         #standard errors
@@ -677,7 +721,7 @@ server <- shinyServer(function(input, output   ) {
          
      }) 
      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-         output$d <- renderPrint({
+     output$d <- renderPrint({
         
        d <- dat()$d
        d <- as.data.frame(d)
@@ -686,6 +730,24 @@ server <- shinyServer(function(input, output   ) {
        return(print(d))
         
     }) 
+         
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         output$ssr <- renderPrint({
+           
+           d <- md2()$ssr
+           d <- as.data.frame(d)
+           names(d) <- c("model #","Model description", "d.f.", "Sum of square of residuals","Sigma" )
+           return(print(d, row.names = FALSE))
+    
+      })  
+         output$ssr2 <- renderPrint({
+           
+           d <- md2()$M
+         
+           return((d))
+           
+         })  
+         
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
          output$diagnostics<- renderPlot({         
              
