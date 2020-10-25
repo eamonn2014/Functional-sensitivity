@@ -86,19 +86,62 @@ loq <- function (x, y, model, spec, print.plot=1) {
     txbar <- mean(x)
     txstd <- sd(x)
     
-    # run regression on the transformed data grab slope intercept
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    if (! model %in% 12) {         ###############NEW
-      f <- lm(y~x) 
-    } else {
-      f <- ols(y~rcs(x,4))   
-    }
+    if (model %in% 12) {       
+      
+      dat <- data.frame(cbind(y,x))
+      ddist <<- datadist(dat)
+      options(datadist='ddist')#
+      
+      f <- ols(y~rcs(x,4), dat)   
+      
+      # obtain the predictions 
+      dat2 <- expand.grid(x=seq(1,10,.001))
+      dat2 <- cbind(dat2, predict(f, dat2, se.fit=TRUE))
+      dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
+      dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
+      
+      #find nearest values to spec using brute force approach
+      it <- which.min(abs(dat2$linear.predictors - spec))
+      txpre<-dat2[it,]$x 
+      
+      it <- which.min(abs(dat2$lower - spec))
+      txlow<-dat2[it,]$x 
+      
+      it <- which.min(abs(dat2$upper - spec))
+      txup<-dat2[it,]$x 
+      
+      limits <- sort(c(txlow,txup))
+      txlow <- limits[1]
+      txup <-  limits[2]
+      
+      rsd2 <-  anova(f)["ERROR","MS"]^.5
+      
+      # need original length
+      r <- (y1-predict(f ))^2 
+      ssr <- sum(r, na.rm=T) 
+      
+      # predict again for plot, so we have predictions for the actual data
+      xx <- predict(f, dat, se.fit=TRUE)
+      xx$lower <- xx$linear.predictors - qt(0.975,n-4) * xx$se.fit     # n-4 as we are using rcs 4 df are used up
+      xx$upper <- xx$linear.predictors + qt(0.975,n-4) * xx$se.fit
+      xx <- as.data.frame(xx)
+      foo <- as.data.frame(cbind(x=x1,   obsy=y1, pred= xx$linear.predictors, p2a=xx$lower, p3=xx$upper, r=r^.5, rr2=r))
+      foo <- foo[order(foo$obsy),]
+      xx<- NULL
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       } else {
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      
+    f <- lm(y~x)  
+    # run regression on the transformed data grab slope intercept
     intercept <- coef(f)[1][[1]]
     slope <- coef(f)[2][[1]]
     
     # R2 on the transformed x and y,  an idea but not used
-    
-    v1 <- unlist(cor.test(x,y)$estimate^2)[1][[1]]   
+    # v1 <- unlist(cor.test(x,y)$estimate^2)[1][[1]]   
     
     # obtain the predictions 
     
@@ -117,8 +160,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     r <- (y1-p[,1])^2 
     
     # R2 on the original x and transformed back predicted y, an idea but not used
-    
-    v2 <- unlist(cor.test(x1,p[,1])$estimate^2)[1][[1]]
+    # v2 <- unlist(cor.test(x1,p[,1])$estimate^2)[1][[1]]
     
     # residual sum of squares, this will be used to judge best model
     
@@ -134,13 +176,8 @@ loq <- function (x, y, model, spec, print.plot=1) {
     
     # grab the residual standard deviation
     
-    if (!model %in% 12) {
-      rsd2 <- as.data.frame(anova(f))[2,3]^.5  
-    } else {
-      rsd2 <-  anova(f)["ERROR","MS"]^.5
-    }
-    
-    # read back on transformed scale
+    rsd2 <- as.data.frame(anova(f))[2,3]^.5  
+      # read back on transformed scale
     
     mse <- rsd2^2
     t <- qt(0.975, n-2)
@@ -159,12 +196,19 @@ loq <- function (x, y, model, spec, print.plot=1) {
     if (model %in% c(11)   )  {txpre <- txpre^.5; txup <- txup^.5; txlow <- txlow^.5}   
     
     # ensure order of limits is correct
+    # put all pertinent data together, original data and predicted with 95%CI
     
     limits <- sort(c(txlow,txup))
     txlow <- limits[1]
     txup <-  limits[2]
     
-    # help with plotting
+    foo <- data.frame(cbind(x=x1, obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r^.5, rr2=r))
+    foo <- foo[order(foo$obsy),]
+    
+    
+    }
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ # help with plotting
     
     ymin <- min(y)
     ymax <- max(y)
@@ -178,12 +222,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     xmin1 <-  xmin-xstep
     xmax1 <-  xmax+xstep
     
-    # put all pertinent data together, original data and predicted with 95%CI
-    
-    foo <- data.frame(cbind(x=x1, obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r^.5, rr2=r))
-    foo <- foo[order(foo$obsy),]
-    
-    # plot and present the estimated read back
+ # plot and present the estimated read back
     
     p1 <- ggplot(foo, aes(x=x,y=pred)) + 
         geom_line( ) +
@@ -628,8 +667,12 @@ server <- shinyServer(function(input, output   ) {
              #foo <- md()$foo
              f <- md()$f
              mod <- md()$mod
+             model <- md()$model
+             
+             
              resid <- r <- resid(f)
-             fitted <- fitted(f)
+             fitted <-    fitted(f)
+             
              d <- cbind(resid, fitted)
              d2 <- as.data.frame(d)
              
@@ -655,15 +698,21 @@ server <- shinyServer(function(input, output   ) {
                  xlab('Residuals with superimposed sigma')   #+
                
                
-               if (! model %in% 12) {          
-                 p3 <- p3 + stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)    ), col='red')  
-                 std <-  sigma(f) 
-               } else {
+               if (model %in% 12) {         
                  
-                 p3 <-  p3 + stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) + 
+                 p3 <-  p3 + 
+                   stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma)        )) + 
                    stat_function(fun = dnorm, args = list(mean = 0, sd =  f$stats["Sigma"][[1]]    ), col='red') 
                  std <-  f$stats["Sigma"][[1]]
+                 
+              
+                 
+               } else {
+                 
+                 p3 <- p3 + 
+                   stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) + 
+                   stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)            ), col='red')  
+                 std <-  sigma(f) 
                }
              
              grid.arrange(p1,  p3, p2, ncol=2,
