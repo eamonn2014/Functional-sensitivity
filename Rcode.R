@@ -28,6 +28,62 @@ options(width=200)
 options(scipen=999)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create data
+
+  # inputs  
+  N=100
+  a=10 
+  b=1 
+  sigma=2 
+  spec=15
+  model="model4"    
+  ana="best"        
+  #ana = 12
+  x <-  array(runif(N, 0, 10))  # no negative values            
+
+  noise <-  rnorm(N,0, sigma)   # residual error
+
+  # create response according to data generation mechanism
+  
+  if (model %in% "model1") {
+    y <-  a+ x*b +    noise
+  } else if (model %in% "model2") {
+    y <-  exp(a+ x*b + noise)
+  } else if (model %in% "model3") {
+    y <-  1/(a+ x*b +  noise)
+  } else if (model %in% "model4") {
+    y <-  a + b*(1/x) + noise
+  } else if (model %in% "model5") {
+    y <-  1/(a + b/x +  noise)
+  } else if (model %in% "model6") {
+    y <-  a + log(x)*b +    noise   
+  } else if (model %in% "model7") {
+    y <-  a * x^b +    noise
+  } else if (model %in% "model8") {
+    y <-  a + sqrt(x)*b +    noise
+  } else if (model %in% "model9") {
+    y <-  (a + x*b + noise)^2 
+  } else if (model %in% "model10") {
+    y <-  exp(a+ b/x + noise)
+  } else if (model %in% "model11") {
+    y <-  ( a + (x^2)/b + noise)^.5
+  }
+  
+  d <- as.data.frame(cbind(x,y))
+  
+  
+  y <- d$y
+  x <- d$x
+  
+  ssr <- rep(NA,12)  ###############NEW
+  
+  mdata <- list(NA)
+
+  model=12    # analyse with this model
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# function
 
 loq <- function (x, y, model, spec, print.plot=1) {
   
@@ -44,7 +100,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
   if (model %in% 9 ) {mod="Square Root-Y Y=(a+bX)^2"} 
   if (model %in% 10) {mod="S-curve Y=exp(a+b/X)"} 
   if (model %in% 11) {mod="Square X and Y Y^2=a+X^2/b"} 
-  if (model %in% 12) {mod="restricted cubic spline n knots"} 
+  if (model %in% 12) {mod="restricted cubic spline 4 knots"} 
   # transformation of data for 11 models
   
   ty1 <- y;       tx1 <- x
@@ -77,19 +133,54 @@ loq <- function (x, y, model, spec, print.plot=1) {
   
   # run regression on the transformed data grab slope intercept
   
-  if (! model %in% 12) {         ###############NEW
-    f <- lm(y~x) 
+  if (model %in% 12) {       
+   
+    dat <- data.frame(cbind(y,x))
+    ddist <<- datadist(dat)
+    options(datadist='ddist')#
+    
+    f <- ols(y~rcs(x,4), dat)   
+    
+    # obtain the predictions 
+    dat2 <- expand.grid(x=seq(1,10,.001))
+    dat2 <- cbind(dat2, predict(f, dat2, se.fit=TRUE))
+    dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
+    dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
+
+    #find nearest values to spec using brute force approach
+    it <- which.min(abs(dat2$linear.predictors - spec))
+    txpre<-dat2[it,]$x 
+
+    it <- which.min(abs(dat2$lower - spec))
+    txlow<-dat2[it,]$x 
+ 
+    it <- which.min(abs(dat2$upper - spec))
+    txup<-dat2[it,]$x 
+
+    limits <- sort(c(txlow,txup))
+    txlow <- limits[1]
+    txup <-  limits[2]
+    
+    rsd2 <-  anova(f)["ERROR","MS"]^.5
+    
+    # need original length
+    r <- (y1-predict(f ))^2 
+    ssr <- sum(r, na.rm=T) 
+    
+    # predict again for plot, so we have predictions for the actual data
+    xx <- predict(f, dat, se.fit=TRUE)
+    xx$lower <- xx$linear.predictors - qt(0.975,n-4) * xx$se.fit     # n-4 as we are using rcs 4 df are used up
+    xx$upper <- xx$linear.predictors + qt(0.975,n-4) * xx$se.fit
+    xx <- as.data.frame(xx)
+    foo <- as.data.frame(cbind(x=x1,   obsy=y1, pred= xx$linear.predictors, p2a=xx$lower, p3=xx$upper, r=r^.5, rr2=r))
+    xx<- NULL
+    
   } else {
-    f <- ols(y~rcs(x,4))   
-  }
-  
+    
+  f <- lm(y~x)  
   
   intercept <- coef(f)[1][[1]]
   slope <- coef(f)[2][[1]]
-  
-  # R2 on the transformed x and y,  an idea but not used
-  
-  v1 <- unlist(cor.test(x,y)$estimate^2)[1][[1]]   
   
   # obtain the predictions 
   
@@ -107,10 +198,6 @@ loq <- function (x, y, model, spec, print.plot=1) {
   
   r <- (y1-p[,1])^2 
   
-  # R2 on the original x and transformed back predicted y, an idea but not used
-  
-  v2 <- unlist(cor.test(x1,p[,1])$estimate^2)[1][[1]]
-  
   # residual sum of squares, this will be used to judge best model
   
   ssr <- sum(r, na.rm=T) 
@@ -125,11 +212,11 @@ loq <- function (x, y, model, spec, print.plot=1) {
   
   # grab the residual standard deviation
   
-  if (!model %in% 12) {
+#  if (!model %in% 12) {
   rsd2 <- as.data.frame(anova(f))[2,3]^.5  
-  } else {
-  rsd2 <-  anova(f)["ERROR","MS"]^.5
-  }
+#  } else {
+#  rsd2 <-  anova(f)["ERROR","MS"]^.5
+#  }
   
   
   
@@ -150,6 +237,12 @@ loq <- function (x, y, model, spec, print.plot=1) {
   if (model %in% c(6,7)  )  {txpre <- exp(txpre); txup <- exp(txup); txlow <- exp(txlow)}  
   if (model %in% c(8)    )  {txpre <- txpre^2;  txup <- txup^2;  txlow <- txlow^2} 
   if (model %in% c(11)   )  {txpre <- txpre^.5; txup <- txup^.5; txlow <- txlow^.5}   
+  
+  
+  foo <- data.frame(cbind(x=x1, obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r^.5, rr2=r))
+  foo <- foo[order(foo$obsy),]
+  
+  }
   
   # ensure order of limits is correct
   
@@ -173,8 +266,8 @@ loq <- function (x, y, model, spec, print.plot=1) {
   
   # put all pertinent data together, original data and predicted with 95%CI
   
-  foo <- data.frame(cbind(x=x1, obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r^.5, rr2=r))
-  foo <- foo[order(foo$obsy),]
+  # foo <- data.frame(cbind(x=x1, obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r^.5, rr2=r))
+  # foo <- foo[order(foo$obsy),]
   
   # plot and present the estimated read back
   
@@ -233,57 +326,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
 }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-# inputs that can be varied
-N=100
-a=10 
-b=1 
-sigma=2 
-spec=15
-model="model1"    
-ana="best"        
-ana = 3
-x <-  array(runif(N, 0, 10))  # no negative values            
-
-noise <-  rnorm(N,0, sigma)   # residual error
-
-# create response according to data generation mechanism
-
-if (model %in% "model1") {
-  y <-  a+ x*b +    noise
-} else if (model %in% "model2") {
-  y <-  exp(a+ x*b + noise)
-} else if (model %in% "model3") {
-  y <-  1/(a+ x*b +  noise)
-} else if (model %in% "model4") {
-  y <-  a + b*(1/x) + noise
-} else if (model %in% "model5") {
-  y <-  1/(a + b/x +  noise)
-} else if (model %in% "model6") {
-  y <-  a + log(x)*b +    noise   
-} else if (model %in% "model7") {
-  y <-  a * x^b +    noise
-} else if (model %in% "model8") {
-  y <-  a + sqrt(x)*b +    noise
-} else if (model %in% "model9") {
-  y <-  (a + x*b + noise)^2 
-} else if (model %in% "model10") {
-  y <-  exp(a+ b/x + noise)
-} else if (model %in% "model11") {
-  y <-  ( a + (x^2)/b + noise)^.5
-}
-
-d <- as.data.frame(cbind(x,y))
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-y <- d$y
-x <- d$x
-
-ssr <- rep(NA,12)  ###############NEW
-
-mdata <- list(NA)
 
 if (ana %in% "best") {
   
