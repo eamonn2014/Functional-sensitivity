@@ -228,7 +228,7 @@ N=100
 a=10 
 b=1 
 sigma=2 
-spec=0
+spec=15
 model="model1"    
 ana="best"        
 
