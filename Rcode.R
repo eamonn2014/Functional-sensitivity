@@ -125,7 +125,13 @@ loq <- function (x, y, model, spec, print.plot=1) {
   
   # grab the residual standard deviation
   
-  rsd2<-as.data.frame(anova(f))[2,3]^.5  
+  if (!model %in% 12) {
+  rsd2 <- as.data.frame(anova(f))[2,3]^.5  
+  } else {
+  rsd2 <-  anova(f)["ERROR","MS"]^.5
+  }
+  
+  
   
   # read back on transformed scale
   

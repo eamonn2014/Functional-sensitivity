@@ -134,7 +134,11 @@ loq <- function (x, y, model, spec, print.plot=1) {
     
     # grab the residual standard deviation
     
-    rsd2<-as.data.frame(anova(f))[2,3]^.5  
+    if (!model %in% 12) {
+      rsd2 <- as.data.frame(anova(f))[2,3]^.5  
+    } else {
+      rsd2 <-  anova(f)["ERROR","MS"]^.5
+    }
     
     # read back on transformed scale
     
@@ -218,7 +222,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
                                 p2(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
                                    sep=" "),
                   #  subtitle = paste("Model for the curve #",model," ",mod,""),
-                    caption = paste0("We are interested in the independent variable value when y = ",p4(spec),"")
+                    caption = paste0("We are interested in the independent variable value when y = ",p4(spec),"\nNote read back for restricted cubic spline model is not correct at present.")
     )     +
  
     theme_minimal() +
