@@ -1,5 +1,5 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+ # Sehirus cinctus
         rm(list=ls()) 
         set.seed(333) # reproducible
         library(directlabels)
@@ -123,9 +123,9 @@ loq <- function (x, y, model, spec, print.plot=1) {
       txup <-  limits[2]
       
       # rcs will report the limit as the nearest value to spec if x value is beyond range, so lets report NA 
-      txpre <- ifelse((txpre >= upperV )|(txpre <= lowerV ), NA, txpre)
-      txlow <- ifelse((txlow >= upperV )|(txlow <= lowerV ), NA, txlow)
-      txup <-  ifelse((txup >= upperV ) |(txup  <= lowerV ), NA, txup)
+      txpre <- ifelse((txpre >= upperV )|(txpre <= lowerV ), 999, txpre)
+      txlow <- ifelse((txlow >= upperV )|(txlow <= lowerV ), 999, txlow)
+      txup <-  ifelse((txup >= upperV ) |(txup  <= lowerV ), 999, txup)
       
       
       rsd2 <-  anova(f)["ERROR","MS"]^.5
@@ -268,9 +268,11 @@ loq <- function (x, y, model, spec, print.plot=1) {
               axis.title = element_text(size = 16, angle = 00)
         )   
         
-    p <- p + labs(title = paste("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response (spec) of", spec ,", the estimate of x is",
-                                 p2f(as.numeric(txpre)),"and 95% CI: (", p2f(as.numeric(txlow)),",",
-                                p2f(as.numeric (txup)),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
+    p <- p + labs(title = paste("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response (spec) of", 
+                                spec ,", the estimate of x is",
+                                p2f(txpre),"and 95% CI: (", 
+                                p2f(txlow),",",
+                                p2f(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
                                    sep=" "),
                   #  subtitle = paste("Model for the curve #",model," ",mod,""),
                     caption = paste0("We are interested in the independent variable value when y = ",p4f(spec),"")
@@ -553,6 +555,7 @@ server <- shinyServer(function(input, output   ) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      dat <- reactive({
         
+       # generate data , we don
         sample <- random.sample()
         
         a=sample$a
