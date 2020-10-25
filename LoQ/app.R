@@ -261,7 +261,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
                                 p2(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
                                    sep=" "),
                   #  subtitle = paste("Model for the curve #",model," ",mod,""),
-                    caption = paste0("We are interested in the independent variable value when y = ",p4(spec),"\nNote read back for restricted cubic spline model is not correct at present.")
+                    caption = paste0("We are interested in the independent variable value when y = ",p4(spec),"")
     )     +
  
     theme_minimal() +
@@ -382,7 +382,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                      div(h5(tags$span(style="color:blue", "sigma"))), "2"),
                                            
                                            textInput('spec', 
-                                                     div(h5(tags$span(style="color:blue", "spec"))), "0")
+                                                     div(h5(tags$span(style="color:blue", "spec"))), "15")
                                          
                                        ),
                                        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
@@ -663,8 +663,7 @@ server <- shinyServer(function(input, output   ) {
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
          output$diagnostics<- renderPlot({         
              
-             #model <- md()$model
-             #foo <- md()$foo
+        
              f <- md()$f
              mod <- md()$mod
              model <- md()$model
