@@ -125,23 +125,32 @@ loq <- function (x, y, model, spec, print.plot=1) {
       # rcs will report the limit as the nearest value to spec if x value is beyond range, so lets report NA 
       txpre <- ifelse((txpre >= upperV )|(txpre <= lowerV ), 999, txpre)
       txlow <- ifelse((txlow >= upperV )|(txlow <= lowerV ), 999, txlow)
-      txup <-  ifelse((txup >= upperV ) |(txup  <= lowerV ), 999, txup)
+      txup <-  ifelse((txup >=  upperV )|(txup  <= lowerV ), 999, txup)
       
       
       rsd2 <-  anova(f)["ERROR","MS"]^.5
+   
       
-      # need original length
-      r <- (y1-predict(f ))^2 
-      ssr <- sum(r, na.rm=T) 
       
       # predict again for plot, so we have predictions for the actual data
       xx <- predict(f, dat, se.fit=TRUE)
       xx$lower <- xx$linear.predictors - qt(0.975,n-4) * xx$se.fit     # n-4 as we are using rcs 4 df are used up
       xx$upper <- xx$linear.predictors + qt(0.975,n-4) * xx$se.fit
       xx <- as.data.frame(xx)
-      foo <- as.data.frame(cbind(x=x1,   obsy=y1, pred= xx$linear.predictors, p2a=xx$lower, p3=xx$upper, r=r^.5, rr2=r))
+     
+      
+      # need original length
+      
+      r <-   (y1-xx$linear.predictors) 
+      r2 <-  (y1-xx$linear.predictors)^2
+      ssr <- sum(r2, na.rm=T) 
+      
+      
+      foo <- as.data.frame(cbind(x=x1,   obsy=y1, pred= xx$linear.predictors, p2a=xx$lower, p3=xx$upper, r=r, rr2=r2))
       foo <- foo[order(foo$obsy),]
       xx<- NULL
+      
+      
       
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
        } else {
@@ -168,15 +177,16 @@ loq <- function (x, y, model, spec, print.plot=1) {
     
     # calculate residual squared 
     # residuals original y and transformed back predicted values 
-    
-    r <- (y1-p[,1])^2 
+    r <- (y1-p[,1]) 
+    r2 <-  (y1-p[,1])^2
+    ssr <- sum(r2, na.rm=T) 
     
     # R2 on the original x and transformed back predicted y, an idea but not used
     # v2 <- unlist(cor.test(x1,p[,1])$estimate^2)[1][[1]]
     
     # residual sum of squares, this will be used to judge best model
     
-    ssr <- sum(r, na.rm=T) 
+    #ssr <- sum(r, na.rm=T) 
     
     # transform the response that we will read back
     
@@ -214,7 +224,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     txlow <- limits[1]
     txup <-  limits[2]
     
-    foo <- data.frame(cbind(x=x1, obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r^.5, rr2=r))
+    foo <- data.frame(cbind(x=x1, obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r, rr2=r2))
     foo <- foo[order(foo$obsy),]
     
     
@@ -249,7 +259,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     p <- p + scale_color_manual(values=c("Red","blue"))
     p <- p + theme_bw()
     p <- p + xlab('Independent variable') 
-    p <- p + ylab('Dependent variable')
+   p <- p + ylab('Dependent variable')
    # p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
     p <- p + labs(x = "Independent variable", y = "Response") 
 
@@ -392,8 +402,8 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                            textInput('b', 
                                                      div(h5(tags$span(style="color:blue", "slope"))), "1"),
                                            
-                                           textInput('sigma', 
-                                                     div(h5(tags$span(style="color:blue", "sigma"))), "2"),
+                                           textInput('sigma1', 
+                                                     div(h5(tags$span(style="color:blue", "sigma1"))), "2"),
                                            
                                            textInput('spec', 
                                                      div(h5(tags$span(style="color:blue", "spec"))), "0")
@@ -534,7 +544,7 @@ server <- shinyServer(function(input, output   ) {
         
         b <-as.numeric(input$b)
         
-        sigma <- as.numeric(input$sigma)
+        sigma1 <- as.numeric(input$sigma1)
  
         N <- as.numeric(input$N)
         
@@ -543,7 +553,7 @@ server <- shinyServer(function(input, output   ) {
         return(list(  
             a=a,
             b=b,
-            sigma=sigma,
+            sigma1=sigma1,
             N=N,
             spec=spec
         ))
@@ -560,12 +570,12 @@ server <- shinyServer(function(input, output   ) {
         
         a=sample$a
         b=sample$b
-        sigma=sample$sigma
+        sigma1=sample$sigma1
         N=sample$N
          
         x <-  array(runif(N, lowerV, upperV))  # no negative values
         
-        noise <-  rnorm(N,0, sigma)
+        noise <-  rnorm(N,0, sigma1)
      
         if (input$truth %in% "model1") {
             y <-  a+ x*b +    noise
@@ -683,22 +693,22 @@ server <- shinyServer(function(input, output   ) {
              mod <- md()$mod
              model <- md()$model
              
+             sigma1 <- as.numeric(input$sigma1)
+             residx <-  resid(f)
+             fittedx <-    fitted(f)
              
-             resid <- r <- resid(f)
-             fitted <-    fitted(f)
-             
-             d <- cbind(resid, fitted)
+             d <- cbind(residx, fittedx)
              d2 <- as.data.frame(d)
              
              yl <- ylab('Residuals')
              
-             xl <- xlab("time")
+             xl <- xlab("fitted")
              
-             p1 <- ggplot(d2 , aes(x=fitted , y=resid)) + geom_point (   colour="#69b3a2") + yl
+             p1 <- ggplot(d2 , aes(x=fittedx , y=residx)) + geom_point (   colour="#69b3a2") + yl + xl
          
-             p2 <- ggplot(d2 , aes(sample=resid )) + stat_qq(colour="#69b3a2") +
-                 geom_abline(intercept=mean(r), slope=sd(r)  ,  colour="black") +
-                 xlab('Residuals')   +
+             p2 <- ggplot(d2 , aes(sample=residx )) + stat_qq(colour="#69b3a2") +
+                 geom_abline(intercept=mean(residx), slope=sd(residx)  ,  colour="black") +
+                 xlab('Normal theoretical quantiles')   + yl
                  ggtitle( " ")
              
              library(gridExtra)
@@ -713,24 +723,24 @@ server <- shinyServer(function(input, output   ) {
                
                
                if (model %in% 12) {         
-                 
-                 p3 <-  p3 + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma)        )) + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd =  f$stats["Sigma"][[1]]    ), col='red') 
                  std <-  f$stats["Sigma"][[1]]
+                 p3 <-  p3 + 
+                   stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
+                   stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
+                 
                  
               
                  
                } else {
-                 
-                 p3 <- p3 + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)            ), col='red')  
                  std <-  sigma(f) 
+                 p3 <- p3 + 
+                   stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma1)   )) + 
+                   stat_function(fun = dnorm, args = list(mean = 0, sd = std <-  sigma(f)   ), col='red')  
+                 
                }
              
              grid.arrange(p1,  p3, p2, ncol=2,
-                          top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                          top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
              
                
              #          stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(input$sigma)   )) +# sigma(f)
