@@ -394,7 +394,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                      div(h5(tags$span(style="color:blue", "sigma"))), "2"),
                                            
                                            textInput('spec', 
-                                                     div(h5(tags$span(style="color:blue", "spec"))), "15")
+                                                     div(h5(tags$span(style="color:blue", "spec"))), "0")
                                          
                                        ),
                                        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
