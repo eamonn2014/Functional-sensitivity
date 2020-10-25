@@ -1,5 +1,6 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- # Sehirus cinctus
+# White-margined Burrower Bug nymph - Sehirus cinctus
+
         rm(list=ls()) 
         set.seed(333) # reproducible
         library(directlabels)
@@ -286,11 +287,11 @@ loq <- function (x, y, model, spec, print.plot=1) {
                                    sep=" "),
                   #  subtitle = paste("Model for the curve #",model," ",mod,""),
                     caption = paste0("We are interested in the independent variable value when y = ",p4f(spec),"")
-    )     +
+    )  #   +
  
-    theme_minimal() +
-      theme(text = element_text(family = "Cinzel", size = 16),
-            title = element_text(family = "Cinzel", size = 16)) -> targaryen
+  #  theme_minimal() +
+  #    theme(text = element_text(family = "Cinzel", size = 16),
+     #       title = element_text(family = "Cinzel", size = 16)) -> targaryen
  
         
     if (print.plot==1) {print(p)}
@@ -713,7 +714,7 @@ server <- shinyServer(function(input, output   ) {
              
              library(gridExtra)
              library(grid)
-             df <- data.frame(Residuals = r)
+             df <- data.frame(Residuals = residx)
              p3 <- ggplot(df, aes(x = Residuals)) +
                  geom_histogram(aes(y =..density..),
                                 #breaks = seq(-50, 50, by = 2),
@@ -735,7 +736,7 @@ server <- shinyServer(function(input, output   ) {
                  std <-  sigma(f) 
                  p3 <- p3 + 
                    stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma1)   )) + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd = std <-  sigma(f)   ), col='red')  
+                   stat_function(fun = dnorm, args = list(mean = 0, sd = std  ), col='red')  
                  
                }
              
