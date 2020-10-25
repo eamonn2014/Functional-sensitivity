@@ -210,8 +210,8 @@ loq <- function (x, y, model, spec, print.plot=1) {
         )   
         
     p <- p + labs(title = paste("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response (spec) of", spec ,", the estimate of x is",
-                                p2f(txpre),"and 95% CI: (",p2f(txlow),",",
-                                p2f(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
+                                p2(txpre),"and 95% CI: (",p2(txlow),",",
+                                p2(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
                                    sep=" "),
                   #  subtitle = paste("Model for the curve #",model," ",mod,""),
                     caption = paste0("We are interested in the independent variable value when y = ",p4(spec),"")
@@ -458,7 +458,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 server <- shinyServer(function(input, output   ) {
     
-    shinyalert("Welcome! \nFitting models",
+    shinyalert("Welcome! \nPlay with data transformations and fitting models",
                "Have fun!", 
                type = "info")
     
