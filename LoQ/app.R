@@ -55,7 +55,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     if (model %in% 9 ) {mod="Square Root-Y Y=(a+bX)^2"} 
     if (model %in% 10) {mod="S-curve Y=exp(a+b/X)"} 
     if (model %in% 11) {mod="Square X and Y Y^2=a+X^2/b"} 
-    
+    if (model %in% 12) {mod="Restricted cubic spline 4 knots"} 
     # transformation of data for 11 models
     
     ty1 <- y;       tx1 <- x
@@ -69,7 +69,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     ty9 <- sqrt(y); tx9 <- x
     ty10 <- log(y); tx10 <- 1/x
     ty11 <- y^2;    tx11 <- x^2
-    
+    ty12 <- y;      tx12 <- x ###############NEW
     # save the original data
     
     x1 <- x
@@ -88,7 +88,11 @@ loq <- function (x, y, model, spec, print.plot=1) {
     
     # run regression on the transformed data grab slope intercept
     
-    f <- lm(y~x) 
+    if (! model %in% 12) {         ###############NEW
+      f <- lm(y~x) 
+    } else {
+      f <- ols(y~rcs(x,4))   
+    }
     intercept <- coef(f)[1][[1]]
     slope <- coef(f)[2][[1]]
     
@@ -191,7 +195,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     p <- p + theme_bw()
     p <- p + xlab('Independent variable') 
     p <- p + ylab('Dependent variable')
-    p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
+   # p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
     p <- p + labs(x = "Independent variable", y = "Response") 
 
     p <- p +  theme(panel.background=element_blank(),
@@ -218,8 +222,8 @@ loq <- function (x, y, model, spec, print.plot=1) {
     )     +
  
     theme_minimal() +
-      theme(text = element_text(family = "Cinzel", size = 10),
-            title = element_text(family = "Cinzel", size = 14)) -> targaryen
+      theme(text = element_text(family = "Cinzel", size = 16),
+            title = element_text(family = "Cinzel", size = 16)) -> targaryen
  
         
     if (print.plot==1) {print(p)}
@@ -335,7 +339,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                      div(h5(tags$span(style="color:blue", "sigma"))), "2"),
                                            
                                            textInput('spec', 
-                                                     div(h5(tags$span(style="color:blue", "spec"))), "15")
+                                                     div(h5(tags$span(style="color:blue", "spec"))), "0")
                                          
                                        ),
                                        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
@@ -380,11 +384,11 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                tags$span(style = "color:blue", "Square Root-X Y=a+b(sqrt(X))"),
                                                tags$span(style = "color:blue", "Square Root-Y Y=(a+bX)^2"),
                                                tags$span(style = "color:blue", "S-curve Y=exp(a+b/X)"),
-                                               tags$span(style = "color:blue", "Square X and Y Y^2=a+X^2/b")
-                                               
+                                               tags$span(style = "color:blue", "Square X and Y Y^2=a+X^2/b"),
+                                               tags$span(style = "color:blue", "Restricted cubic spline 4 knots")
                                            ),
                                            choiceValues = c( "best","1", "2", "3",  "4", "5", "6",
-                                                             "7", "8", "9",  "10", "11")
+                                                             "7", "8", "9",  "10", "11", "12")
                                            ,
                                            selected=c("11")
                                        )
@@ -544,13 +548,13 @@ server <- shinyServer(function(input, output   ) {
          y <- d$y
          x <- d$x
          
-         ssr <- rep(NA,11)
+         ssr <- rep(NA,12)
          
          mdata <- list(NA)
          
          if (input$ana %in% "best") {
              
-             for (j in 1:11) {
+             for (j in 1:12) {
                  
                  res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
                  ssr[j] <- res$ssr
@@ -644,13 +648,30 @@ server <- shinyServer(function(input, output   ) {
                                 #breaks = seq(-50, 50, by = 2),
                                 colour = "black",
                                 fill = "#69b3a2") +
-                 xlab('Residuals with superimposed sigma')   +
-                 stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(input$sigma)   )) +# sigma(f)
-             stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)    ), col='red') # 
+                 xlab('Residuals with superimposed sigma')   #+
+               
+               
+               if (! model %in% 12) {          
+                 p3 <- p3 + stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) + 
+                   stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)    ), col='red')  
+                 std <-  sigma(f) 
+               } else {
+                 
+                 p3 <-  p3 + stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) + 
+                   stat_function(fun = dnorm, args = list(mean = 0, sd =  f$stats["Sigma"][[1]]    ), col='red') 
+                 std <-  f$stats["Sigma"][[1]]
+               }
              
              grid.arrange(p1,  p3, p2, ncol=2,
-                 top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(input$sigma) ,", estimated sigma (red) ", p4(sigma(f)),""),gp=gpar(fontsize=20,font=3)))
-             #+
+                          top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma)  ,", estimated sigma (red) ", p4(std),""),gp=gpar(fontsize=20,font=3)))
+             
+               
+             #          stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(input$sigma)   )) +# sigma(f)
+             # stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)    ), col='red') # 
+             # 
+             # grid.arrange(p1,  p3, p2, ncol=2,
+             #     top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(input$sigma) ,", estimated sigma (red) ", p4(sigma(f)),""),gp=gpar(fontsize=20,font=3)))
+             # 
              
          })
          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

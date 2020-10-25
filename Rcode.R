@@ -44,7 +44,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
   if (model %in% 9 ) {mod="Square Root-Y Y=(a+bX)^2"} 
   if (model %in% 10) {mod="S-curve Y=exp(a+b/X)"} 
   if (model %in% 11) {mod="Square X and Y Y^2=a+X^2/b"} 
-  
+  if (model %in% 12) {mod="restricted cubic spline n knots"} 
   # transformation of data for 11 models
   
   ty1 <- y;       tx1 <- x
@@ -58,7 +58,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
   ty9 <- sqrt(y); tx9 <- x
   ty10 <- log(y); tx10 <- 1/x
   ty11 <- y^2;    tx11 <- x^2
-  
+  ty12 <- y;      tx12 <- x ###############NEW
   # save the original data
   
   x1 <- x
@@ -77,7 +77,13 @@ loq <- function (x, y, model, spec, print.plot=1) {
   
   # run regression on the transformed data grab slope intercept
   
-  f <- lm(y~x) 
+  if (! model %in% 12) {         ###############NEW
+    f <- lm(y~x) 
+  } else {
+    f <- ols(y~rcs(x,4))   
+  }
+  
+  
   intercept <- coef(f)[1][[1]]
   slope <- coef(f)[2][[1]]
   
@@ -231,7 +237,7 @@ sigma=2
 spec=15
 model="model1"    
 ana="best"        
-
+ana = 3
 x <-  array(runif(N, 0, 10))  # no negative values            
 
 noise <-  rnorm(N,0, sigma)   # residual error
@@ -269,13 +275,13 @@ d <- as.data.frame(cbind(x,y))
 y <- d$y
 x <- d$x
 
-ssr <- rep(NA,11)
+ssr <- rep(NA,12)  ###############NEW
 
 mdata <- list(NA)
 
 if (ana %in% "best") {
   
-  for (j in 1:11) {
+  for (j in 1:12) {    ###############NEW
     
     res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
     ssr[j] <- res$ssr
@@ -340,11 +346,21 @@ p3 <- ggplot(df, aes(x = Residuals)) +
                  #breaks = seq(-50, 50, by = 2),
                  colour = "black",
                  fill = "#69b3a2") +
-  xlab('Residuals with superimposed sigma')   +
-  stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) +# sigma(f)
-  stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)    ), col='red') # 
+  xlab('Residuals with superimposed sigma')   
+
+###############NEW
+if (! model %in% 12) {          
+  p3 <- p3 + stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) + 
+    stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)    ), col='red')  
+  std <-  sigma(f) 
+} else {
+  
+  p3 <-  p3 + stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) + 
+    stat_function(fun = dnorm, args = list(mean = 0, sd =  f$stats["Sigma"][[1]]    ), col='red') 
+  std <-  f$stats["Sigma"][[1]]
+}
 
 grid.arrange(p1,  p3, p2, ncol=2,
-             top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma) ,", estimated sigma (red) ", p4(sigma(f)),""),gp=gpar(fontsize=20,font=3)))
+             top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma)  ,", estimated sigma (red) ", p4(std),""),gp=gpar(fontsize=20,font=3)))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
