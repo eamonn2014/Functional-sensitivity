@@ -21,13 +21,13 @@
         fig.height7 <- 770
 
         ## convenience functions
-        p0 <- function(x) {formatC(x, format="f", digits=0)}
-        p1 <- function(x) {formatC(x, format="f", digits=1)}
-        p2 <- function(x) {formatC(x, format="f", digits=2)}
-        p3 <- function(x) {formatC(x, format="f", digits=3)}
-        p4 <- function(x) {formatC(x, format="f", digits=4)}
-        p5 <- function(x) {formatC(x, format="f", digits=5)}
-        p2f <- function(x) {formatC(x, format="f", digits=4)}
+        p0f <- function(x) {formatC(x, format="f", digits=0)}
+        p1f <- function(x) {formatC(x, format="f", digits=1)}
+        p2f <- function(x) {formatC(x, format="f", digits=2)}
+        p3f <- function(x) {formatC(x, format="f", digits=3)}
+        p4f <- function(x) {formatC(x, format="f", digits=4)}
+        p5f <- function(x) {formatC(x, format="f", digits=5)}
+       # p2f <- function(x) {formatC(x, format="f", digits=4)}
         
         logit <- function(p) log(1/(1/p-1))
         expit <- function(x) 1/(1/exp(x) + 1)
@@ -39,6 +39,12 @@
        # w=4  # line type
        # ww=3 # line thickness
        # wz=1 
+        
+        # range of independent variable
+        lowerV=0
+        upperV=10
+        
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 
 loq <- function (x, y, model, spec, print.plot=1) {
     
@@ -97,7 +103,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
       f <- ols(y~rcs(x,4), dat)   
       
       # obtain the predictions 
-      dat2 <- expand.grid(x=seq(1,10,.001))
+      dat2 <- expand.grid(x=seq(lowerV,upperV,.001))
       dat2 <- cbind(dat2, predict(f, dat2, se.fit=TRUE))
       dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
       dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
@@ -105,7 +111,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
       #find nearest values to spec using brute force approach
       it <- which.min(abs(dat2$linear.predictors - spec))
       txpre<-dat2[it,]$x 
-      
+     
       it <- which.min(abs(dat2$lower - spec))
       txlow<-dat2[it,]$x 
       
@@ -115,6 +121,12 @@ loq <- function (x, y, model, spec, print.plot=1) {
       limits <- sort(c(txlow,txup))
       txlow <- limits[1]
       txup <-  limits[2]
+      
+      # rcs will report the limit as the nearest value to spec if x value is beyond range, so lets report NA 
+      txpre <- ifelse((txpre >= upperV )|(txpre <= lowerV ), NA, txpre)
+      txlow <- ifelse((txlow >= upperV )|(txlow <= lowerV ), NA, txlow)
+      txup <-  ifelse((txup >= upperV ) |(txup  <= lowerV ), NA, txup)
+      
       
       rsd2 <-  anova(f)["ERROR","MS"]^.5
       
@@ -257,11 +269,11 @@ loq <- function (x, y, model, spec, print.plot=1) {
         )   
         
     p <- p + labs(title = paste("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response (spec) of", spec ,", the estimate of x is",
-                                p2(txpre),"and 95% CI: (",p2(txlow),",",
-                                p2(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
+                                 p2f(as.numeric(txpre)),"and 95% CI: (", p2f(as.numeric(txlow)),",",
+                                p2f(as.numeric (txup)),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
                                    sep=" "),
                   #  subtitle = paste("Model for the curve #",model," ",mod,""),
-                    caption = paste0("We are interested in the independent variable value when y = ",p4(spec),"")
+                    caption = paste0("We are interested in the independent variable value when y = ",p4f(spec),"")
     )     +
  
     theme_minimal() +
@@ -548,7 +560,7 @@ server <- shinyServer(function(input, output   ) {
         sigma=sample$sigma
         N=sample$N
          
-        x <-  array(runif(N, 0, 10))  # no negative values
+        x <-  array(runif(N, lowerV, upperV))  # no negative values
         
         noise <-  rnorm(N,0, sigma)
      
@@ -715,7 +727,7 @@ server <- shinyServer(function(input, output   ) {
                }
              
              grid.arrange(p1,  p3, p2, ncol=2,
-                          top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma)  ,", estimated sigma (red) ", p4(std),""),gp=gpar(fontsize=20,font=3)))
+                          top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
              
                
              #          stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(input$sigma)   )) +# sigma(f)
