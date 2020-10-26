@@ -539,8 +539,9 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         h4(paste("Table 3 Models on transformed data")),
                                ),
                                tabPanel("5 To do", value=3, 
-                                        h4(paste("Fix read back when fitted and or limits cross y of interest (spec) multiple times.")),
+                                        h4(paste("Fix read back when fitted and or limits cross multiple times the  y of interest (spec).")),
                                         h4(paste("Fix instances when errors are returned.")),
+                                        h4(paste("R code needs to be updated, made some advance in Shiny not reflected in R code.")),
                                )
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW   
                              )
