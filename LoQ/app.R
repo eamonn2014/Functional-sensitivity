@@ -110,7 +110,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
     dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
     
-    if (is.na(spec)) {spec=median(dat2$linear.predictors)}
+    if (is.na(spec)) {spec=median(dat2$linear.predictors, is.finite=TRUE)}
     
    # spec=median(dat2$linear.predictors)
     
@@ -196,7 +196,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     #ssr <- sum(r, na.rm=T) 
     
     # transform the response that we will read back
-    if (is.na(spec)) {spec=median(p)}
+    if (is.na(spec)) {spec=median(p, is.finite=TRUE)}
     tyspec <- spec 
     if (model %in% c(2,7,10)) {tyspec <- log(tyspec)} 
     if (model %in% c(3,5)  )  {tyspec <- 1/tyspec} 
