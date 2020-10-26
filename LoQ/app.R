@@ -790,30 +790,40 @@ server <- shinyServer(function(input, output   ) {
                                 fill = "#69b3a2") +
                  xlab('Residuals with superimposed sigma')   #+
                
+             
+             
+             chk1 <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
+             chk2 <-  as.numeric(gsub("[^0-9.-]", "", input$ana ))
+             
              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
              
-               if (  model %in% c(12)            ) {  
+             if (model %in% c(12) ) {
+               
+               std <-  f$stats["Sigma"][[1]]
+               p3 <-  p3 + 
+                 stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
+                 stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
+               
+               grid.arrange(p1,  p3, p2, ncol=2,
+                            top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+               
+             
+             }
+             
+              else  if (  chk1==chk2            ) {  
                  
-                 std <-  f$stats["Sigma"][[1]]
-                 p3 <-  p3 + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
-                 
-                 grid.arrange(p1,  p3, p2, ncol=2,
-                              top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-                 
-                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-                 
-               } else if (  model %in% c(1)            ){
-                 std <-  sigma(f) 
-                 p3 <- p3 + 
-                    stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma1)   )) + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd = std  ), col='red')  
-                 
-                 grid.arrange(p1,  p3, p2, ncol=2,
-                              top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-                 
-              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+        
+                   
+                   std <-  sigma(f) 
+                   p3 <-  p3 + 
+                     stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
+                     stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
+                   
+                   grid.arrange(p1,  p3, p2, ncol=2,
+                                top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                   
+    
+             
                } else {
                  std <-  sigma(f) 
                  p3 <- p3 + 
