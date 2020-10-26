@@ -71,7 +71,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     ty4 <- y;       tx4 <- 1/x
     ty5 <- 1/y;     tx5 <- 1/x
     ty6 <- y;       tx6 <- log(x)
-    ty7 <- log(y);  tx7 <- log(x)
+    ty7 <- log(y);  tx7 <- log(x)   
     ty8 <- y;       tx8 <- sqrt(x)
     ty9 <- sqrt(y); tx9 <- x
     ty10 <- log(y); tx10 <- 1/x
@@ -544,7 +544,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
 server <- shinyServer(function(input, output   ) {
     
     shinyalert("Welcome! \nPlay with data transformations and fitting models",
-               "Have fun!", 
+               "Explore!", 
                type = "info")
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
