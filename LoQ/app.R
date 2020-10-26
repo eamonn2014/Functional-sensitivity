@@ -62,7 +62,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
   if (model %in% 9 ) {mod="Square Root-Y Y=(a+bX)^2"} 
   if (model %in% 10) {mod="S-curve Y=exp(a+b/X)"} 
   if (model %in% 11) {mod="Square X and Y Y^2=a+X^2/b"} 
-  if (model %in% 12) {mod="Restricted cubic spline 4 knots"} 
+  if (model %in% 12) {mod="Restricted cubic spline (rcs) 4 knots"} 
   # transformation of data for 11 models
   
   ty1 <- y;       tx1 <- x
@@ -93,6 +93,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
   txbar <- mean(x)
   txstd <- sd(x)
   
+ 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   if (model %in% 12) {       
@@ -108,6 +109,10 @@ loq <- function (x, y, model, spec, print.plot=1) {
     dat2 <- cbind(dat2, predict(f, dat2, se.fit=TRUE))
     dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
     dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
+    
+    if (is.na(spec)) {spec=median(dat2$linear.predictors)}
+    
+   # spec=median(dat2$linear.predictors)
     
     #find nearest values to spec using brute force approach
     it <- which.min(abs(dat2$linear.predictors - spec))
@@ -191,7 +196,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     #ssr <- sum(r, na.rm=T) 
     
     # transform the response that we will read back
-    
+    if (is.na(spec)) {spec=median(p)}
     tyspec <- spec 
     if (model %in% c(2,7,10)) {tyspec <- log(tyspec)} 
     if (model %in% c(3,5)  )  {tyspec <- 1/tyspec} 
@@ -258,8 +263,8 @@ loq <- function (x, y, model, spec, print.plot=1) {
   scale_x_continuous(limits = c(xmin1, xmax1))
   scale_y_continuous(limits = c(ymin1, ymax1))  # this was x?
   
+
   p <- p1  + geom_hline(yintercept=spec, colour="#990000", linetype="dashed")
-  
   p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
   p <- p + scale_color_manual(values=c("Red","blue"))
   p <- p + theme_bw()
@@ -284,13 +289,13 @@ loq <- function (x, y, model, spec, print.plot=1) {
   )   
   
   p <- p + labs(title = paste("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response (spec) of", 
-                              spec ,", the estimate of x is",
+                              p2f(spec) ,", the estimate of x is",
                               p2f(txpre),"and 95% CI: (", 
                               p2f(txlow),",",
                               p2f(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(df2),  # changed from rsd2
                               sep=" "),
                 #  subtitle = paste("Model for the curve #",model," ",mod,""),
-                caption = paste0("We are interested in the independent variable value when y = ",p4f(spec),"")
+                caption = paste0("If spec is missing, median of prediction is used. We wish to know the independent variable value when y = ",p4f(spec)," ")
   )  #   +
   
   #  theme_minimal() +
@@ -327,7 +332,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                  h4("An independent variable is generated using a U(0:10) distribution. With the user inputs a response is derived from a choice 
                  of data generating mechanisms. The data can be analysed using a selection of models. The best model fit can be selected ('Best scenario' button), judged 
                  by the model with the minimum sum of square of the residuals. A plot of the model fit is presented, on tab 2 model assumptions are evaluated. 
-                Tab 3 lists data. Tab 4 presents a summary. Clear spec box for better overall plot."), 
+                Tab 3 lists data. Tab 4 presents a summary."), 
                  
                  h3("  "), 
                  sidebarLayout(
@@ -411,7 +416,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                div(h5(tags$span(style="color:blue", "sigma1"))), "2"),
                                      
                                      textInput('spec', 
-                                               div(h5(tags$span(style="color:blue", "spec"))), "0")
+                                               div(h5(tags$span(style="color:blue", "spec"))), "")
                                      
                                    ),
                                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
