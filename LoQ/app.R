@@ -146,8 +146,9 @@ loq <- function (x, y, model, spec, print.plot=1) {
       r2 <-  (y1-xx$linear.predictors)^2
       ssr <- sum(r2, na.rm=T) 
       
+      df2 <- (ssr/dfs)^.5
       
-      foo <- as.data.frame(cbind(x=x1,   obsy=y1, pred= xx$linear.predictors, p2a=xx$lower, p3=xx$upper, r=r, rr2=r2))
+      foo <- as.data.frame(cbind(x=x1,   obsy=y1, x2=x,y2=y,pred= xx$linear.predictors, p2a=xx$lower, p3=xx$upper, r=r, rr2=r2, rsd2=rsd2, dfs=dfs,ssr=ssr, df2=df2))
       foo <- foo[order(foo$obsy),]
       xx<- NULL
       
@@ -226,7 +227,9 @@ loq <- function (x, y, model, spec, print.plot=1) {
     txlow <- limits[1]
     txup <-  limits[2]
     
-    foo <- data.frame(cbind(x=x1, obsy=y1, pred= p[,1], p2a=p[,2], p3=p[,3], r=r, rr2=r2))
+    df2 <- (ssr/dfs)^.5
+    
+    foo <- data.frame(cbind(x=x1, obsy=y1, x2=x,y2=y,pred= p[,1], p2a=p[,2], p3=p[,3], r=r, rr2=r2, rsd2=rsd2, dfs=dfs,ssr=ssr,df2=df2))
     foo <- foo[order(foo$obsy),]
     
     
@@ -284,7 +287,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
                                 spec ,", the estimate of x is",
                                 p2f(txpre),"and 95% CI: (", 
                                 p2f(txlow),",",
-                                p2f(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(rsd2),
+                                p2f(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(df2),  # changed from rsd2
                                    sep=" "),
                   #  subtitle = paste("Model for the curve #",model," ",mod,""),
                     caption = paste0("We are interested in the independent variable value when y = ",p4f(spec),"")
@@ -505,7 +508,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
           
                                    tabPanel("2 Diagnostics", value=3, 
                                             
-                                             shinycssloaders::withSpinner(
+                                            shinycssloaders::withSpinner(
                                                 div(plotOutput("diagnostics",  width=fig.width8, height=fig.height7)),
                                             ),
 
@@ -513,19 +516,22 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                              p(strong("Upper left panel shows residuals versus fitted on the x-axis. 
                                               Bottom left panel is the QQ plot for checking normality of residuals from the LS fit.
                                               Top right panel is the histogram for checking normality of residuals from the LS fit with 
-                                              ~N(mean=0, sd=GLS model sigma) curve and true SD superimposed.
+                                              ~N(mean=0, sd=LS model sigma) curve and true SD superimposed.
                                               ")),
                   
                                    ),
                                             
-                                            tabPanel("3 Data listing", value=3, 
-                                                     shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
+                                   tabPanel("3 Data listing", value=3, 
+                                            shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
                                             ),
+                                   
                                    tabPanel("3 Summary of models", value=3, 
+                                            
                                             shinycssloaders::withSpinner(verbatimTextOutput("ssr"),type = 5),
                                             h4(paste("Table 2 Summary of model fits")),
+                                            
                                             shinycssloaders::withSpinner(verbatimTextOutput("ssr2"),type = 5),
-                                            h4(paste("Table 3 Models")),
+                                            h4(paste("Table 3 Models on transformed data")),
                                    )
                                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW   
                                )
@@ -716,7 +722,7 @@ server <- shinyServer(function(input, output   ) {
          d <- md()$foo
          
        d <- plyr::arrange(d,x)
-         names(d) <- c("x","y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2")
+         names(d) <- c("x","y","transformed x","transformed y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2","sigma","df","sum of sq residuals (ssr)","ssr/df")
          return(print(d))
          
      }) 
@@ -784,34 +790,42 @@ server <- shinyServer(function(input, output   ) {
                                 fill = "#69b3a2") +
                  xlab('Residuals with superimposed sigma')   #+
                
-               
-               if (model %in% 12) {         
+             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+             
+               if (  model %in% c(12)            ) {  
+                 
                  std <-  f$stats["Sigma"][[1]]
                  p3 <-  p3 + 
                    stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
                    stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
                  
+                 grid.arrange(p1,  p3, p2, ncol=2,
+                              top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
                  
-              
+                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
                  
+               } else if (  model %in% c(1)            ){
+                 std <-  sigma(f) 
+                 p3 <- p3 + 
+                    stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma1)   )) + 
+                   stat_function(fun = dnorm, args = list(mean = 0, sd = std  ), col='red')  
+                 
+                 grid.arrange(p1,  p3, p2, ncol=2,
+                              top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                 
+              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
                } else {
                  std <-  sigma(f) 
                  p3 <- p3 + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma1)   )) + 
-                   stat_function(fun = dnorm, args = list(mean = 0, sd = std  ), col='red')  
+                    stat_function(fun = dnorm, args = list(mean = 0, sd = std  ), col='red')  
+                 
+                 grid.arrange(p1,  p3, p2, ncol=2,
+                             top = textGrob(paste0(" LS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
                  
                }
+              
+             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
              
-             grid.arrange(p1,  p3, p2, ncol=2,
-                          top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-             
-               
-             #          stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(input$sigma)   )) +# sigma(f)
-             # stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)    ), col='red') # 
-             # 
-             # grid.arrange(p1,  p3, p2, ncol=2,
-             #     top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(input$sigma) ,", estimated sigma (red) ", p4(sigma(f)),""),gp=gpar(fontsize=20,font=3)))
-             # 
              
          })
          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
