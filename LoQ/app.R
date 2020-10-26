@@ -769,6 +769,11 @@ server <- shinyServer(function(input, output   ) {
              d <- cbind(residx, fittedx)
              d2 <- as.data.frame(d)
              
+             
+             # https://stackoverflow.com/questions/14200027/how-to-adjust-binwidth-in-ggplot2
+             breaks <- pretty(range(residx), n = nclass.FD(x), min.n = 1)
+             bwidth <- breaks[2]-breaks[1]
+
              yl <- ylab('Residuals')
              
              xl <- xlab("fitted")
@@ -783,9 +788,10 @@ server <- shinyServer(function(input, output   ) {
              library(gridExtra)
              library(grid)
              df <- data.frame(Residuals = residx)
-             p3 <- ggplot(df, aes(x = Residuals)) +
-                 geom_histogram(aes(y =..density..),
+             p3 <- ggplot(df, aes(x = Residuals)) + #stat_bin(bins = 30) +
+                 geom_histogram(aes(y =..density..), 
                                 #breaks = seq(-50, 50, by = 2),
+                                binwidth=bwidth,
                                 colour = "black",
                                 fill = "#69b3a2") +
                  xlab('Residuals with superimposed sigma')   #+
