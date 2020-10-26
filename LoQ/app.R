@@ -467,7 +467,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                      choiceValues = c( "best","1", "2", "3",  "4", "5", "6",
                                                        "7", "8", "9",  "10", "11", "12")
                                      ,
-                                     selected=c("11")
+                                     selected=c("1")
                                    )
                                    
                                  ),
@@ -537,6 +537,10 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr2"),type = 5),
                                         h4(paste("Table 3 Models on transformed data")),
+                               ),
+                               tabPanel("5 To do", value=3, 
+                                        h4(paste("Fix read back when fitted and or limits cross y of interest (spec) multiple times.")),
+                                        h4(paste("Fix instances when errors are returned.")),
                                )
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW   
                              )
