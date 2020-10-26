@@ -567,14 +567,13 @@ server <- shinyServer(function(input, output   ) {
     
     N <- as.numeric(input$N)
     
-    spec <- as.numeric(input$spec)
+  #  spec <- (as.numeric(input$spec)) # don't want cahnging spec to update data
     
     return(list(  
       a=a,
       b=b,
       sigma1=sigma1,
-      N=N,
-      spec=spec
+      N=N
     ))
     
   })
@@ -630,7 +629,6 @@ server <- shinyServer(function(input, output   ) {
   md <- reactive({
     
     spec <- as.numeric(input$spec)
-    
     d <- dat()  # Get the  data
     y <- d$y
     x <- d$x
@@ -673,14 +671,11 @@ server <- shinyServer(function(input, output   ) {
   md2 <- reactive({
     
     spec <- as.numeric(input$spec)
-    
+
     d <- dat()  # Get the data
     y <- d$y
     x <- d$x
-    #  M <- d$f
-    
-    #mdata <- list(NA)
-    
+
     A <- array(NA, dim=c(12,5))
     M <- list(NA)
     
@@ -712,7 +707,7 @@ server <- shinyServer(function(input, output   ) {
     foo <- md()$foo
     
     spec <- as.numeric(input$spec)
-    
+
     d <- dat()  # Get the  data
     y <- d$y
     x <- d$x
