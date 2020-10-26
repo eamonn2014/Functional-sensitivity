@@ -407,16 +407,16 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                      textInput('N', 
                                                div(h5(tags$span(style="color:blue", "N"))), "100"),
                                      textInput('a', 
-                                               div(h5(tags$span(style="color:blue", "intercept"))), "10"),
+                                               div(h5(tags$span(style="color:blue", "Intercept"))), "10"),
                                      
                                      textInput('b', 
-                                               div(h5(tags$span(style="color:blue", "slope"))), "1"),
+                                               div(h5(tags$span(style="color:blue", "Slope"))), "1"),
                                      
                                      textInput('sigma1', 
-                                               div(h5(tags$span(style="color:blue", "sigma1"))), "2"),
+                                               div(h5(tags$span(style="color:blue", "Residual err."))), "2"),
                                      
                                      textInput('spec', 
-                                               div(h5(tags$span(style="color:blue", "spec"))), "")
+                                               div(h5(tags$span(style="color:blue", "Spec."))), "")
                                      
                                    ),
                                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
