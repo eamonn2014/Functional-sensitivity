@@ -771,7 +771,8 @@ server <- shinyServer(function(input, output   ) {
              
              
              # https://stackoverflow.com/questions/14200027/how-to-adjust-binwidth-in-ggplot2
-             breaks <- pretty(range(residx), n = nclass.FD(x), min.n = 1)
+             hist(residx,breaks="FD")
+             breaks <- pretty(range(residx), n = nclass.FD(residx), min.n = 1)
              bwidth <- breaks[2]-breaks[1]
 
              yl <- ylab('Residuals')
