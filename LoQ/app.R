@@ -248,20 +248,20 @@ loq <- function (x, y, model, spec, print.plot=1) {
   ymin1 <-  ymin-ystep
   ymax1 <-  ymax+ystep
   
-  xmin <- min(x)
-  xmax <- max(x)
-  xstep <- (xmax-xmin)/8
-  xmin1 <-  xmin-xstep
-  xmax1 <-  xmax+xstep
+  # xmin <- min(x)
+  # xmax <- max(x)
+  # xstep <- (xmax-xmin)/8
+  # xmin1 <-  xmin-xstep
+  # xmax1 <-  xmax+xstep
   
   # plot and present the estimated read back
   
   p1 <- ggplot(foo, aes(x=x,y=pred)) + 
     geom_line( ) +
     geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
-    geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  
-  scale_x_continuous(limits = c(xmin1, xmax1))
-  scale_y_continuous(limits = c(ymin1, ymax1))  # this was x?
+    geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  +
+  scale_x_continuous(limits = c(lowerV, upperV), breaks=lowerV: upperV)  
+  scale_y_continuous(limits = c(ymin1, ymax1))   
   
 
   p <- p1  + geom_hline(yintercept=spec, colour="#990000", linetype="dashed")
