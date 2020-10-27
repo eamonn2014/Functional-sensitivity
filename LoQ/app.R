@@ -1,5 +1,20 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # White-margined Burrower Bug nymph - Sehirus cinctus
+#
+# 1 X ~ uniform(0,10), y is then generated according to the 'Data generating mechanism'
+# 
+# 2 Third and fourth column is the transformation according to 'analysis model' from which  predictions are made with 95%CI.
+# 
+# 3 The predictions and 95%CIs are then back transformed. 
+# 
+# 4 The plot is the original X and back transformed predictions.
+# 
+# 5 The residual is the original y minus the prediction. We square each residual.
+# 
+# 6 Is the sigma from the transformed data (model).This will agree with 7 if the data generating mechanism and analysis method coincide. 
+# 
+# 7 The df for error (transformation will not affect). We then square root sum of the square divide by the df to get the residual for the back transformed model fit.
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 rm(list=ls()) 
 set.seed(333) # reproducible
@@ -683,7 +698,7 @@ server <- shinyServer(function(input, output   ) {
     y <- d$y
     x <- d$x
 
-    A <- array(NA, dim=c(12,5))
+    A <- array(NA, dim=c(12,6))
     M <- list(NA)
     
     for (j in 1:12) {
@@ -692,13 +707,17 @@ server <- shinyServer(function(input, output   ) {
       M[j] <- (res$f)  
       A[j,1] <- j          # model no
       A[j,2] <- res$mod    # model
-      A[j,3] <- res$dfs    # d.f.
-      A[j,4] <- res$ssr    # sum of squared residuals
-      A[j,5] <- res$rsd2   # sigma
+      A[j,3] <- p0f(res$dfs)    # d.f.
+      A[j,4] <- p4f(res$ssr)    # sum of squared residuals
+      A[j,5] <- p4f(res$rsd2)   # sigma
+      A[j,6] <- p4f(sqrt(res$ssr/res$dfs))
       
       
     }
     
+    A <- data.frame( A[,c(1,2)],  apply(A[,c(3,4,5,6)],2, as.numeric))
+     
+    A <- plyr::arrange(A,A[,4])
     return(list(  ssr=A, M=M))
     
   })
@@ -749,7 +768,7 @@ server <- shinyServer(function(input, output   ) {
     
     d <- md2()$ssr
     d <- as.data.frame(d)
-    names(d) <- c("model #","Model description", "d.f.", "Sum of square of residuals","Sigma" )
+    names(d) <- c("model #","Model description", "d.f.", "Sum of square of residuals","Sigma" ,"back transf. sigma")
     return(print(d, row.names = FALSE))
     
   })  
