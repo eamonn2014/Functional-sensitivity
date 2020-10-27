@@ -543,6 +543,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         h4(paste("Fix instances when errors are returned.")),
                                         h4(paste("R code needs to be updated, made some advance in Shiny not reflected in R code.")),
                                         h4(paste("Explain what is going on. ")),
+                                        h4(paste("Convert main plot to plotly. ")),
                                )
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW   
                              )
