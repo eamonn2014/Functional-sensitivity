@@ -1,52 +1,47 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-rm(list=ls()) 
-set.seed(333) # reproducible
-
-library(rms)
-library(ggplot2)
-library(tidyverse)
-library(tvthemes)
-
-options(max.print=1000000)    
-
-## convenience functions
-pf0 <- function(x) {formatC(x, format="f", digits=0)}
-p1f <- function(x) {formatC(x, format="f", digits=1)}
-p2f <- function(x) {formatC(x, format="f", digits=2)}
-p3f <- function(x) {formatC(x, format="f", digits=3)}
-p4f <- function(x) {formatC(x, format="f", digits=4)}
-p5f <- function(x) {formatC(x, format="f", digits=5)}
-p4f <- function(x) {formatC(x, format="f", digits=4)}
-
-logit <- function(p) log(1/(1/p-1))
-expit <- function(x) 1/(1/exp(x) + 1)
-inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
-is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
-
-options(width=200)
-options(scipen=999)
+  rm(list=ls()) 
+  set.seed(333) # reproducible
+  
+  library(rms)
+  library(ggplot2)
+  library(tidyverse)
+  library(tvthemes)
+  
+  options(max.print=1000000)    
+  
+  ## convenience functions
+  pf0 <- function(x) {formatC(x, format="f", digits=0)}
+  p1f <- function(x) {formatC(x, format="f", digits=1)}
+  p2f <- function(x) {formatC(x, format="f", digits=2)}
+  p3f <- function(x) {formatC(x, format="f", digits=3)}
+  p4f <- function(x) {formatC(x, format="f", digits=4)}
+  p5f <- function(x) {formatC(x, format="f", digits=5)}
+  p4f <- function(x) {formatC(x, format="f", digits=4)}
+  
+  logit <- function(p) log(1/(1/p-1))
+  expit <- function(x) 1/(1/exp(x) + 1)
+  inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
+  is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
+  
+  options(width=200)
+  options(scipen=999)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Create data
-# range of independent variable
-lowerV=0
-upperV=10
-
-  # inputs  
+# Create data # range of independent variable
+  lowerV=0
+  upperV=10
   N=100
   a=10 
   b=.1 
   sigma=.1
   spec=15
   Xspec=5
-  model="model2"    
-  ana="best"        
- 
-  x <-  array(runif(N, lowerV, upprV))  # no negative values            
+  model="model11"    
 
-  noise <-  rnorm(N,0, sigma)   # residual error
+  x <-  array(runif(N, lowerV, upperV))  # no negative values            
+  noise <-  rnorm(N,0, sigma)           # residual error
 
   # create response according to data generation mechanism
   
@@ -75,15 +70,10 @@ upperV=10
   }
   
   d <- as.data.frame(cbind(x,y))
-  
-  
   y <- d$y
   x <- d$x
   
-   
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+ 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   # function that does all the work!
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -355,7 +345,6 @@ upperV=10
   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  
   ssr <- rep(NA,12)
   
   mdata <- list(NA)
@@ -381,9 +370,8 @@ upperV=10
     
     
     ## select any model
-    m=2
-    res <- loq(x=x, y=y, model=2, spec= NA,  Xspec=NA, print.plot=1) 
-    
+    res <- loq(x=x, y=y, model=12, spec= NA,  Xspec=NA, print.plot=1) 
+    head(res$foo)
     
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
