@@ -48,8 +48,7 @@
 
 loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   
-  # Define models
-  
+  # Define analysis models
   if (model %in% 1 ) {mod="Linear Y=a+bX"}  
   if (model %in% 2 ) {mod="Exponential Y=exp(a+bX)"} 
   if (model %in% 3 ) {mod="Reciprocal-Y Y=1/(a+bX)"} 
@@ -601,11 +600,10 @@ server <- shinyServer(function(input, output   ) {
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # 
+  # GENERATE THE DATA
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   dat <- reactive({
     
-    # generate data , we don
     sample <- random.sample()
     
     a=sample$a
