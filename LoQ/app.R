@@ -250,10 +250,15 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     #ssr <- sum(r, na.rm=T) 
     
     # transform the response that we will read back
-    if (is.na(spec)) {spec=mean(y, is.finite=TRUE)}
-  
+    if (is.na(spec)) {spec=mean(y, is.finite=TRUE)}    ##correct
+    else { 
+      if (model %in% c(2,7,10)) {spec <- log(spec)}
+      if (model %in% c(3,5)  )  {spec <- 1/spec}
+      if (model %in% c(9)    )  {spec <- sqrt(spec)}
+      if (model %in% c(11)   )  {spec <- spec ^2}
+      }
     
-    tyspec <- spec 
+    tyspec <- spec     #tyspec creates estimates and is correct
     # if (model %in% c(2,7,10)) {tyspec <- log(tyspec)} 
     # if (model %in% c(3,5)  )  {tyspec <- 1/tyspec} 
     # if (model %in% c(9)    )  {tyspec <- sqrt(tyspec)} 
