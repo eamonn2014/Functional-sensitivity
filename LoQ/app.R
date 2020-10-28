@@ -76,14 +76,14 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   ty10 <- log(y); tx10 <- 1/x
   ty11 <- y^2;    tx11 <- x^2
   ty12 <- y;      tx12 <- x 
-  
-  
+
+  # transform spec for prediction, not only where x is trandsformed, above
   if (model %in% 4 ) {Xspec <- 1/Xspec}
   if (model %in% 5 ) {Xspec <- 1/Xspec}
   if (model %in% 6 ) {Xspec <- log(Xspec)}
-  if (model %in% 7 ) { Xspec <- log(Xspec)   }
-  if (model %in% 8 ) { Xspec <- sqrt(Xspec)}
-  if (model %in% 10) { Xspec <- 1/Xspec}
+  if (model %in% 7 ) {Xspec <- log(Xspec)}
+  if (model %in% 8 ) {Xspec <- sqrt(Xspec)}
+  if (model %in% 10) {Xspec <- 1/Xspec}
   if (model %in% 11) {Xspec <- Xspec^2}
       
   # save the original data
@@ -100,7 +100,6 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   txstd <- sd(x)
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~RCS MODEL
-  
   if (model %in% 12) {       
     
     dat <- data.frame(cbind(y,x))
@@ -196,7 +195,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     r2 <-  (y1-p[,1])^2
     ssr <- sum(r2, na.rm=T) 
   
-    # transform the response that we will read back
+    # transform the specification that we will read back from, note only those in which y is transformed
     if (is.na(spec)) {spec=mean(y, is.finite=TRUE)}    
     else { 
       if (model %in% c(2,7,10)) {spec <- log(spec)}
@@ -206,7 +205,6 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
       }
     
     tyspec <- spec     
- 
      if (model %in% c(2,7,10)) {spec <- exp(spec)} 
      if (model %in% c(3,5)  )  {spec <- 1/spec} 
      if (model %in% c(9)    )  {spec <- (spec)^2} 
