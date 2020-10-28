@@ -57,6 +57,8 @@
   upperV=10
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+# function that does all the work!
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   
@@ -74,8 +76,8 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   if (model %in% 10) {mod="S-curve Y=exp(a+b/X)"} 
   if (model %in% 11) {mod="Square X and Y Y^2=a+X^2/b"} 
   if (model %in% 12) {mod="Restricted cubic spline (rcs) 4 knots"} 
-  # transformation of data for 11 models
   
+  # transformation of data for 12 models
   ty1 <- y;       tx1 <- x
   ty2 <- log(y);  tx2 <- x
   ty3 <- 1/y;     tx3 <- x
@@ -99,21 +101,17 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   if (model %in% 11) {Xspec <- Xspec^2}
       
   # save the original data
-  
   x1 <- x
   y1 <- y
   
   # transform using the selected model (1 - 11)
-  
   x <- eval(parse(text=(paste("tx", model, sep="")) )) 
   y <- eval(parse(text=(paste("ty", model, sep="")) )) 
   
   # summary statistics of the independent variable
-  
   n <- length(x)
   txbar <- mean(x)
   txstd <- sd(x)
-  
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~RCS MODEL
   
@@ -153,15 +151,12 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     txlow <- ifelse((txlow >= upperV )|(txlow <= lowerV ), 999, txlow)
     txup <-  ifelse((txup >=  upperV )|(txup  <= lowerV ), 999, txup)
     
-    
     rsd2 <-  anova(f)["ERROR","MS"]^.5
     dfs <- anova(f)["ERROR","d.f."]
     
     XXX  <- predict(f, Xspec, se.fit=TRUE) 
     XXX$L <- XXX$linear.predictors - qt(0.975,n-4) * XXX$se.fit     # n-4 as we are using rcs 4 df are used up
     XXX$U <- XXX$linear.predictors + qt(0.975,n-4) * XXX$se.fit
-    #pspec <- as.data.frame(XXX)
-   # pspec <- unlist(pspec[c(1,3,4)])
     pspec <- as.vector(unlist(XXX))
     
     # predict again for plot, so we have predictions for the actual data
@@ -170,9 +165,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     xx$upper <- xx$linear.predictors + qt(0.975,n-4) * xx$se.fit
     xx <- as.data.frame(xx)
     
-    
-    # need original length
-    
+    # sum of squares of resuduals
     r <-   (y1-xx$linear.predictors) 
     r2 <-  (y1-xx$linear.predictors)^2
     ssr <- sum(r2, na.rm=T) 
@@ -193,11 +186,9 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     slope <- coef(f)[2][[1]]
  
     # obtain the predictions 
-    
     p <- predict.lm(f, interval="confidence")
     
     # transform the predicted values & 95%CI back to original scale 
-    
     if (model %in% c(2,7,10)) {p <- exp(p)} 
     if (model %in% c(3,5)  )  {p <- 1/p} 
     if (model %in% c(9)    )  {p <- p^2} 
@@ -214,7 +205,6 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     
     if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
 
-    # calculate residual squared 
     # residuals original y and transformed back predicted values, residual sum of squares, this will be used to judge best model
     r <- (y1-p[,1]) 
     r2 <-  (y1-p[,1])^2
@@ -263,8 +253,6 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     if (model %in% c(11)   )  {Xspec <- Xspec^.5 }
        
     # ensure order of limits is correct
-    # put all pertinent data together, original data and predicted with 95%CI
-    
     limits <- sort(c(txlow,txup))
     txlow <- limits[1]
     txup <-  limits[2]
@@ -341,7 +329,6 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
 }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 css <- "
 #large .selectize-input { line-height: 40px; }
 #large .selectize-dropdown { line-height: 30px; }"
@@ -868,7 +855,6 @@ server <- shinyServer(function(input, output   ) {
     chk2 <-  as.numeric(gsub("[^0-9.-]", "", input$ana ))
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-    
     if (model %in% c(12) ) {
       
       std <-  f$stats["Sigma"][[1]]
