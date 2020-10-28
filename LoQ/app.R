@@ -62,7 +62,7 @@ upperV=10
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 
-loq <- function (x, y, model, spec, print.plot=1) {
+loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   
   # Define models
   
@@ -125,8 +125,8 @@ loq <- function (x, y, model, spec, print.plot=1) {
     dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
     dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
     
-    if (is.na(spec)) {spec=median(dat2$linear.predictors, is.finite=TRUE)}
-    
+    if (is.na(spec))  {spec=mean(dat2$linear.predictors, is.finite=TRUE)}
+    if (is.na(Xspec)) {Xspec=mean(dat$x, is.finite=TRUE)}
     # spec=median(dat2$linear.predictors)
     
     #find nearest values to spec using brute force approach
@@ -152,6 +152,12 @@ loq <- function (x, y, model, spec, print.plot=1) {
     rsd2 <-  anova(f)["ERROR","MS"]^.5
     dfs <- anova(f)["ERROR","d.f."]
     
+    XXX  <- predict(f, Xspec, se.fit=TRUE) 
+    XXX$L <- XXX$linear.predictors - qt(0.975,n-4) * XXX$se.fit     # n-4 as we are using rcs 4 df are used up
+    XXX$U <- XXX$linear.predictors + qt(0.975,n-4) * XXX$se.fit
+    #pspec <- as.data.frame(XXX)
+   # pspec <- unlist(pspec[c(1,3,4)])
+    pspec <- as.vector(unlist(pspec))
     
     # predict again for plot, so we have predictions for the actual data
     xx <- predict(f, dat, se.fit=TRUE)
@@ -197,6 +203,14 @@ loq <- function (x, y, model, spec, print.plot=1) {
     if (model %in% c(9)    )  {p <- p^2} 
     if (model %in% c(11)   )  {p <- p^.5} 
     
+    if (is.na(Xspec)) {Xspec=mean(x, is.finite=TRUE)}
+    pspec <- predict.lm(f, newdata=data.frame(x=Xspec), interval="confidence")
+    
+    if (model %in% c(2,7,10)) {pspec <- exp(pspec)}
+    if (model %in% c(3,5)  )  {pspec <- 1/pspec}
+    if (model %in% c(9)    )  {pspec <- (pspec)^2}
+    if (model %in% c(11)   )  {pspec <- pspec^.5}
+    # 
     # calculate residual squared 
     # residuals original y and transformed back predicted values 
     r <- (y1-p[,1]) 
@@ -211,12 +225,22 @@ loq <- function (x, y, model, spec, print.plot=1) {
     #ssr <- sum(r, na.rm=T) 
     
     # transform the response that we will read back
-    if (is.na(spec)) {spec=median(p, is.finite=TRUE)}
+    if (is.na(spec)) {spec=mean(p, is.finite=TRUE)}
+  
+    
     tyspec <- spec 
     if (model %in% c(2,7,10)) {tyspec <- log(tyspec)} 
     if (model %in% c(3,5)  )  {tyspec <- 1/tyspec} 
     if (model %in% c(9)    )  {tyspec <- sqrt(tyspec)} 
     if (model %in% c(11)   )  {tyspec <- tyspec ^2}  
+    
+    # Xspec
+    # if (model %in% c(2,7,10)) {pspec <- log(pspec)} 
+    # if (model %in% c(3,5)  )  {pspec <- 1/pspec} 
+    # if (model %in% c(9)    )  {pspec <- sqrt(pspec)} 
+    # if (model %in% c(11)   )  {pspec <- pspec^2}  
+    
+    
     
     # grab the residual standard deviation
     
@@ -239,6 +263,16 @@ loq <- function (x, y, model, spec, print.plot=1) {
     if (model %in% c(6,7)  )  {txpre <- exp(txpre); txup <- exp(txup); txlow <- exp(txlow)}  
     if (model %in% c(8)    )  {txpre <- txpre^2;  txup <- txup^2;  txlow <- txlow^2} 
     if (model %in% c(11)   )  {txpre <- txpre^.5; txup <- txup^.5; txlow <- txlow^.5}   
+    
+     # 
+     # if (model %in% c(4,5,10)) {pspec <- 1/pspec}
+     # if (model %in% c(6,7)  )  {pspec <- exp(pspec)  }
+     # if (model %in% c(8)    )  {pspec <- pspec^2}
+     # if (model %in% c(11)   )  {pspec <- pspec^.5 }
+     # 
+     # 
+    
+    
     
     # ensure order of limits is correct
     # put all pertinent data together, original data and predicted with 95%CI
@@ -280,6 +314,8 @@ loq <- function (x, y, model, spec, print.plot=1) {
   
   
   p <- p1  + geom_hline(yintercept=spec, colour="#990000", linetype="dashed")
+  p <- p   + geom_vline(xintercept=Xspec, colour="#990000", linetype="dashed")
+  
   p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
   p <- p + scale_color_manual(values=c("Red","blue"))
   p <- p + theme_bw()
@@ -303,14 +339,22 @@ loq <- function (x, y, model, spec, print.plot=1) {
                   axis.title = element_text(size = 16, angle = 00)
   )   
   
-  p <- p + labs(title = paste("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response (spec) of", 
-                              p2f(spec) ,", the estimate of x is",
-                              p2f(txpre),"and 95% CI: (", 
+  p <- p + labs(title = paste0("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response of ", 
+                              p2f(spec) ,", the estimate of x is ",
+                              p2f(txpre)," and 95% CI: (", 
                               p2f(txlow),",",
-                              p2f(txup),")","\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(df2),  # changed from rsd2
+                              p2f(txup),")",
+                              "\nExploration of model fitting at input of ", 
+                              p2f(Xspec) ,", the estimate of y is ",
+                              p4f(pspec[1])," and 95% CI: (", 
+                              p4f(pspec[2]),",",
+                              p4f(pspec[3]),")",
+                              
+                              
+                              "\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(df2),  # changed from rsd2
                               sep=" "),
                 #  subtitle = paste("Model for the curve #",model," ",mod,""),
-                caption = paste0("If spec is missing, median of prediction is used. We wish to know the independent variable value when y = ",p4f(spec)," ")
+                caption = paste0("If spec is missing, mean is used")
   )  #   +
   
   #  theme_minimal() +
@@ -426,18 +470,18 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                div(h5(tags$span(style="color:blue", "Intercept"))), "10"),
                                      
                                      textInput('b', 
-                                               div(h5(tags$span(style="color:blue", "Slope"))), "1")
+                                               div(h5(tags$span(style="color:blue", "Slope"))), ".1")
                                    ),
                                      
                                    splitLayout(
                                      textInput('sigma1', 
-                                               div(h5(tags$span(style="color:blue", "Residual err."))), "2"),
+                                               div(h5(tags$span(style="color:blue", "Residual err."))), ".1"),
                                      
                                      textInput('spec', 
-                                               div(h5(tags$span(style="color:blue", "Y spec"))), ""),
+                                               div(h5(tags$span(style="color:blue", "Enter Y spec"))), ""),
                                      
                                      textInput('Xspec', 
-                                               div(h5(tags$span(style="color:blue", "X spec"))), "")
+                                               div(h5(tags$span(style="color:blue", "Enter X spec"))), "")
                                      
                                    ),
                                    
@@ -660,6 +704,7 @@ server <- shinyServer(function(input, output   ) {
   md <- reactive({
     
     spec <- as.numeric(input$spec)
+    Xspec <- as.numeric(input$Xspec)
     d <- dat()  # Get the  data
     y <- d$y
     x <- d$x
@@ -672,20 +717,20 @@ server <- shinyServer(function(input, output   ) {
       
       for (j in 1:12) {
         
-        res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
+        res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0, Xspec=Xspec) # don't print
         ssr[j] <- res$ssr
         
       }
       
       model <- which(ssr==min(ssr)) 
       mdata <- res$foo
-      res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0)  # run best model
+      res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0,  Xspec=Xspec)  # run best model
       f=res2$f   
       mod<- res2$mod
       
     } else {
       
-      res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec) 
+      res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec,  Xspec=Xspec) 
       mdata <- res$foo
       model <- as.numeric(input$ana)
       f=res$f
@@ -702,7 +747,7 @@ server <- shinyServer(function(input, output   ) {
   md2 <- reactive({
     
     spec <- as.numeric(input$spec)
-    
+    Xspec <- as.numeric(input$Xspec)
     d <- dat()  # Get the data
     y <- d$y
     x <- d$x
@@ -713,7 +758,7 @@ server <- shinyServer(function(input, output   ) {
     
     for (j in 1:12) {
       
-      res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
+      res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0,  Xspec=Xspec) # don't print
       
       k <- j*2
       m <- k-1
@@ -750,12 +795,12 @@ server <- shinyServer(function(input, output   ) {
     foo <- md()$foo
     
     spec <- as.numeric(input$spec)
-    
+    Xspec <- as.numeric(input$Xspec)
     d <- dat()  # Get the  data
     y <- d$y
     x <- d$x
     
-    loq(x= x, y= y, model=model, spec= spec, print.plot=1) # print plot
+    loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
     
     
   })
