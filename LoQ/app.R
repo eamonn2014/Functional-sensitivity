@@ -204,6 +204,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     if (model %in% c(11)   )  {p <- p^.5} 
     
     if (is.na(Xspec)) {Xspec=mean(x, is.finite=TRUE)}
+    
     pspec <- predict.lm(f, newdata=data.frame(x=Xspec), interval="confidence")
     
     if (model %in% c(2,7,10)) {pspec <- exp(pspec)}
@@ -264,11 +265,11 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     if (model %in% c(8)    )  {txpre <- txpre^2;  txup <- txup^2;  txlow <- txlow^2} 
     if (model %in% c(11)   )  {txpre <- txpre^.5; txup <- txup^.5; txlow <- txlow^.5}   
     
-     # 
-     # if (model %in% c(4,5,10)) {pspec <- 1/pspec}
-     # if (model %in% c(6,7)  )  {pspec <- exp(pspec)  }
-     # if (model %in% c(8)    )  {pspec <- pspec^2}
-     # if (model %in% c(11)   )  {pspec <- pspec^.5 }
+     # if i dont do this X vercial spec line on plot for these models will not be located correctly
+     if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
+     if (model %in% c(6,7)  )  {Xspec <- exp(pspec)  }
+     if (model %in% c(8)    )  {Xspec <- Xspec^2}
+     if (model %in% c(11)   )  {Xspec <- Xspec^.5 }
      # 
      # 
     
@@ -314,7 +315,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   
   
   p <- p1  + geom_hline(yintercept=spec, colour="#990000", linetype="dashed")
-  p <- p   + geom_vline(xintercept=Xspec, colour="#990000", linetype="dashed")
+  p <- p   + geom_vline(xintercept=Xspec, colour="#008000", linetype="dashed")
   
   p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
   p <- p + scale_color_manual(values=c("Red","blue"))
@@ -339,22 +340,23 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
                   axis.title = element_text(size = 16, angle = 00)
   )   
   
-  p <- p + labs(title = paste0("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at response of ", 
-                              p2f(spec) ,", the estimate of x is ",
-                              p2f(txpre)," and 95% CI: (", 
-                              p2f(txlow),",",
-                              p2f(txup),")",
-                              "\nExploration of model fitting at input of ", 
+  p <- p + labs(title = paste0("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at input of ", 
                               p2f(Xspec) ,", the estimate of y is ",
                               p4f(pspec[1])," and 95% CI: (", 
-                              p4f(pspec[2]),",",
+                              p4f(pspec[2]),", ",
                               p4f(pspec[3]),")",
+                               "\nExploration of model fitting at response of ", 
+                              p2f(spec) ,", the estimate of x is ",
+                              p2f(txpre)," and 95% CI: (", 
+                              p2f(txlow),", ",
+                              p2f(txup),")",
+                           
                               
                               
-                              "\nResidual sum of squares", p2f(ssr),", Residual standard deviation",p2f(df2),  # changed from rsd2
+                              "\nResidual sum of squares ", p2f(ssr),", Residual standard deviation ",p2f(df2),  # changed from rsd2
                               sep=" "),
                 #  subtitle = paste("Model for the curve #",model," ",mod,""),
-                caption = paste0("If spec is missing, mean is used")
+                caption = paste0("If spec is missing, mean of the data is used")
   )  #   +
   
   #  theme_minimal() +
