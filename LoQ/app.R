@@ -254,10 +254,10 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   
     
     tyspec <- spec 
-    if (model %in% c(2,7,10)) {tyspec <- log(tyspec)} 
-    if (model %in% c(3,5)  )  {tyspec <- 1/tyspec} 
-    if (model %in% c(9)    )  {tyspec <- sqrt(tyspec)} 
-    if (model %in% c(11)   )  {tyspec <- tyspec ^2}  
+    # if (model %in% c(2,7,10)) {tyspec <- log(tyspec)} 
+    # if (model %in% c(3,5)  )  {tyspec <- 1/tyspec} 
+    # if (model %in% c(9)    )  {tyspec <- sqrt(tyspec)} 
+    # if (model %in% c(11)   )  {tyspec <- tyspec ^2}  
     
     # Xspec
     if (model %in% c(2,7,10)) {spec <- exp(spec)} 
