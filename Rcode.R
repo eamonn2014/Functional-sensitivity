@@ -174,6 +174,8 @@
       XXX$L <- XXX$linear.predictors - qt(0.975,n-4) * XXX$se.fit     # n-4 as we are using rcs 4 df are used up
       XXX$U <- XXX$linear.predictors + qt(0.975,n-4) * XXX$se.fit
       pspec <- as.vector(unlist(XXX))
+      pspec<- pspec[c(1,3,4)]
+      if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
       
       # predict again for plot, so we have predictions for the actual data
       xx <- predict(f, dat, se.fit=TRUE)
@@ -402,91 +404,4 @@
   
   
   
-  
-  
-  
-  
- 
-  
-  for (j in 1:12) {    ###############NEW
-    
-    res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
-    ssr[j] <- res$ssr
-    
-  }
-  
-  model <- which(ssr==min(ssr))     # capture which model has lowest residual sum of squares
-  mdata <- res$foo                  # capture data
-  res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0)  # run best model
-  f=res2$f                          # linear model captured here
-  mod<- res2$mod                    # linear model text description
-  
-  
- ###### of choosing
-  
-  res <- loq(x=x, y=y, model=2, spec= spec) 
-  mdata <- res$foo
-  model <- as.numeric(ana)
-  f=res$f
-  mod<- res$mod
- 
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# run model again based on above
-
-res <-  loq(x= x, y= y, model=model, spec= spec, print.plot=1) # print plot
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# capture data
-
-names(res$foo) <- c("x","y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2")
-foo <- plyr::arrange(res$foo,x)
-foo
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# capture model, object f and investigate residuals
-
-f <- res$f
-
-resid <- r <- resid(f)
-fitted <- fitted(f)
-d <- cbind(resid, fitted)
-d2 <- as.data.frame(d)
-
-yl <- ylab('Residuals')
-
-xl <- xlab("time")
-
-p1 <- ggplot(d2 , aes(x=fitted , y=resid)) + geom_point (   colour="#69b3a2") + yl
-
-p2 <- ggplot(d2 , aes(sample=resid )) + stat_qq(colour="#69b3a2") +
-  geom_abline(intercept=mean(r), slope=sd(r)  ,  colour="black") +
-  xlab('Residuals')   +
-  ggtitle( " ")
-
-library(gridExtra)
-library(grid)
-df <- data.frame(Residuals = r)
-p3 <- ggplot(df, aes(x = Residuals)) +
-  geom_histogram(aes(y =..density..),
-                 #breaks = seq(-50, 50, by = 2),
-                 colour = "black",
-                 fill = "#69b3a2") +
-  xlab('Residuals with superimposed sigma')   
-
-###############NEW
-if (! model %in% 12) {          
-  p3 <- p3 + stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) + 
-    stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(f)    ), col='red')  
-  std <-  sigma(f) 
-} else {
-  
-  p3 <-  p3 + stat_function(fun = dnorm, args = list(mean = 0, sd = as.numeric(sigma)   )) + 
-    stat_function(fun = dnorm, args = list(mean = 0, sd =  f$stats["Sigma"][[1]]    ), col='red') 
-  std <-  f$stats["Sigma"][[1]]
-}
-
-grid.arrange(p1,  p3, p2, ncol=2,
-             top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma)  ,", estimated sigma (red) ", p4(std),""),gp=gpar(fontsize=20,font=3)))
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   

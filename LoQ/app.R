@@ -142,6 +142,8 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     XXX$L <- XXX$linear.predictors - qt(0.975,n-4) * XXX$se.fit     # n-4 as we are using rcs 4 df are used up
     XXX$U <- XXX$linear.predictors + qt(0.975,n-4) * XXX$se.fit
     pspec <- as.vector(unlist(XXX))
+    pspec<- pspec[c(1,3,4)]
+    if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
     
     # predict again for plot, so we have predictions for the actual data
     xx <- predict(f, dat, se.fit=TRUE)
