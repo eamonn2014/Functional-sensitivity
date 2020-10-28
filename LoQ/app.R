@@ -92,7 +92,28 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   ty10 <- log(y); tx10 <- 1/x
   ty11 <- y^2;    tx11 <- x^2
   ty12 <- y;      tx12 <- x ###############NEW
-  # save the original data
+  
+  
+  
+  if (model %in% 4 ) {Xspec <- 1/Xspec}
+  if (model %in% 5 ) {Xspec <- 1/Xspec}
+  if (model %in% 6 ) {Xspec <- log(Xspec)}
+  if (model %in% 7 ) { Xspec <- log(Xspec)   }
+  if (model %in% 8 ) { Xspec <- sqrt(Xspec)}
+  if (model %in% 10) { Xspec <- 1/Xspec}
+  if (model %in% 11) {Xspec <- Xspec^2}
+      
+  
+  # if (model %in% 4 ) {spec <- 1/spec}
+  # if (model %in% 5 ) {spec <- 1/spec}
+  # if (model %in% 6 ) {spec <- exp(spec)}
+  # if (model %in% 7 ) {spec <- exp(spec)   }
+  # if (model %in% 8 ) {spec <- (spec)^2}
+  # if (model %in% 10) {spec <- 1/spec}
+  # if (model %in% 11) {spec <- spec^.5}
+  # 
+  #     
+    # save the original data
   
   x1 <- x
   y1 <- y
@@ -229,7 +250,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     #ssr <- sum(r, na.rm=T) 
     
     # transform the response that we will read back
-    if (is.na(spec)) {spec=mean(p, is.finite=TRUE)}
+    if (is.na(spec)) {spec=mean(y, is.finite=TRUE)}
   
     
     tyspec <- spec 
@@ -239,10 +260,10 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     if (model %in% c(11)   )  {tyspec <- tyspec ^2}  
     
     # Xspec
-    # if (model %in% c(2,7,10)) {pspec <- log(pspec)} 
-    # if (model %in% c(3,5)  )  {pspec <- 1/pspec} 
-    # if (model %in% c(9)    )  {pspec <- sqrt(pspec)} 
-    # if (model %in% c(11)   )  {pspec <- pspec^2}  
+    if (model %in% c(2,7,10)) {spec <- exp(spec)} 
+     if (model %in% c(3,5)  )  {spec <- 1/spec} 
+     if (model %in% c(9)    )  {spec <- (spec)^2} 
+     if (model %in% c(11)   )  {spec <- spec^.5}  
     
     
     
@@ -269,13 +290,16 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     if (model %in% c(11)   )  {txpre <- txpre^.5; txup <- txup^.5; txlow <- txlow^.5}   
     
      # if i dont do this X vercial spec line on plot for these models will not be located correctly
-     if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
-     if (model %in% c(6,7)  )  {Xspec <- exp(Xspec)  }
-     if (model %in% c(8)    )  {Xspec <- Xspec^2}
-     if (model %in% c(11)   )  {Xspec <- Xspec^.5 }
-     # 
-     # 
+    if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
+   if (model %in% c(6,7)  )  {Xspec <- exp(Xspec)  }
+  if (model %in% c(8)    )  {Xspec <- Xspec^2}
+  if (model %in% c(11)   )  {Xspec <- Xspec^.5 }
     
+    
+ 
+     # 
+     #    if (model %in% c(2,7,10)) {pspec <- exp(pspec)}
+   
     
     
     # ensure order of limits is correct
