@@ -157,7 +157,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     XXX$U <- XXX$linear.predictors + qt(0.975,n-4) * XXX$se.fit
     #pspec <- as.data.frame(XXX)
    # pspec <- unlist(pspec[c(1,3,4)])
-    pspec <- as.vector(unlist(pspec))
+    pspec <- as.vector(unlist(XXX))
     
     # predict again for plot, so we have predictions for the actual data
     xx <- predict(f, dat, se.fit=TRUE)
