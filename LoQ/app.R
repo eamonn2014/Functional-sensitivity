@@ -91,8 +91,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   ty9 <- sqrt(y); tx9 <- x
   ty10 <- log(y); tx10 <- 1/x
   ty11 <- y^2;    tx11 <- x^2
-  ty12 <- y;      tx12 <- x ###############NEW
-  
+  ty12 <- y;      tx12 <- x 
   
   
   if (model %in% 4 ) {Xspec <- 1/Xspec}
@@ -103,17 +102,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   if (model %in% 10) { Xspec <- 1/Xspec}
   if (model %in% 11) {Xspec <- Xspec^2}
       
-  
-  # if (model %in% 4 ) {spec <- 1/spec}
-  # if (model %in% 5 ) {spec <- 1/spec}
-  # if (model %in% 6 ) {spec <- exp(spec)}
-  # if (model %in% 7 ) {spec <- exp(spec)   }
-  # if (model %in% 8 ) {spec <- (spec)^2}
-  # if (model %in% 10) {spec <- 1/spec}
-  # if (model %in% 11) {spec <- spec^.5}
-  # 
-  #     
-    # save the original data
+  # save the original data
   
   x1 <- x
   y1 <- y
@@ -130,7 +119,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   txstd <- sd(x)
   
   
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~RCS MODEL
   
   if (model %in% 12) {       
     
@@ -199,10 +188,8 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     foo <- foo[order(foo$obsy),]
     xx<- NULL
     
-    
-    
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  } else {
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# ALL OTHER MODELS
+     } else {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     f <- lm(y~x)  
@@ -238,17 +225,14 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     # 
     # calculate residual squared 
     # residuals original y and transformed back predicted values 
+    # residual sum of squares, this will be used to judge best model
     r <- (y1-p[,1]) 
     r2 <-  (y1-p[,1])^2
     ssr <- sum(r2, na.rm=T) 
     
     # R2 on the original x and transformed back predicted y, an idea but not used
     # v2 <- unlist(cor.test(x1,p[,1])$estimate^2)[1][[1]]
-    
-    # residual sum of squares, this will be used to judge best model
-    
-    #ssr <- sum(r, na.rm=T) 
-    
+
     # transform the response that we will read back
     if (is.na(spec)) {spec=mean(y, is.finite=TRUE)}    ##correct
     else { 
@@ -258,20 +242,13 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
       if (model %in% c(11)   )  {spec <- spec ^2}
       }
     
-    tyspec <- spec     #tyspec creates estimates and is correct
-    # if (model %in% c(2,7,10)) {tyspec <- log(tyspec)} 
-    # if (model %in% c(3,5)  )  {tyspec <- 1/tyspec} 
-    # if (model %in% c(9)    )  {tyspec <- sqrt(tyspec)} 
-    # if (model %in% c(11)   )  {tyspec <- tyspec ^2}  
-    
-    # Xspec
-    if (model %in% c(2,7,10)) {spec <- exp(spec)} 
+    tyspec <- spec     
+ 
+     if (model %in% c(2,7,10)) {spec <- exp(spec)} 
      if (model %in% c(3,5)  )  {spec <- 1/spec} 
      if (model %in% c(9)    )  {spec <- (spec)^2} 
      if (model %in% c(11)   )  {spec <- spec^.5}  
-    
-    
-    
+
     # grab the residual standard deviation
     
     rsd2 <- as.data.frame(anova(f))[2,3]^.5 
@@ -294,19 +271,12 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     if (model %in% c(8)    )  {txpre <- txpre^2;  txup <- txup^2;  txlow <- txlow^2} 
     if (model %in% c(11)   )  {txpre <- txpre^.5; txup <- txup^.5; txlow <- txlow^.5}   
     
-     # if i dont do this X vercial spec line on plot for these models will not be located correctly
+     # if i don't do this X vertical spec line on plot for these models will not be located correctly
     if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
-   if (model %in% c(6,7)  )  {Xspec <- exp(Xspec)  }
-  if (model %in% c(8)    )  {Xspec <- Xspec^2}
-  if (model %in% c(11)   )  {Xspec <- Xspec^.5 }
-    
-    
- 
-     # 
-     #    if (model %in% c(2,7,10)) {pspec <- exp(pspec)}
-   
-    
-    
+    if (model %in% c(6,7)  )  {Xspec <- exp(Xspec)  }
+    if (model %in% c(8)    )  {Xspec <- Xspec^2}
+    if (model %in% c(11)   )  {Xspec <- Xspec^.5 }
+       
     # ensure order of limits is correct
     # put all pertinent data together, original data and predicted with 95%CI
     
@@ -329,13 +299,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   ystep <- (ymax-ymin)/8
   ymin1 <-  ymin-ystep
   ymax1 <-  ymax+ystep
-  
-  # xmin <- min(x)
-  # xmax <- max(x)
-  # xstep <- (xmax-xmin)/8
-  # xmin1 <-  xmin-xstep
-  # xmax1 <-  xmax+xstep
-  
+ 
   # plot and present the estimated read back
   
   p1 <- ggplot(foo, aes(x=x,y=pred)) + 
@@ -345,15 +309,12 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     scale_x_continuous(limits = c(lowerV, upperV), breaks=lowerV: upperV)  
   scale_y_continuous(limits = c(ymin1, ymax1))   
   
-  
-  p <- p1  + geom_hline(yintercept=spec, colour="#990000", linetype="dashed")
+  p <- p1  + geom_hline(yintercept=spec,  colour="#990000", linetype="dashed")
   p <- p   + geom_vline(xintercept=Xspec, colour="#008000", linetype="dashed")
   
   p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
   p <- p + scale_color_manual(values=c("Red","blue"))
   p <- p + theme_bw()
-  p <- p + xlab('Independent variable') 
-  p <- p + ylab('Dependent variable')
   # p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
   p <- p + labs(x = "Independent variable", y = "Response") 
   
@@ -366,40 +327,36 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
                   axis.text.y  = element_text(size=12),
                   axis.line.x = element_line(color="black"),
                   axis.line.y = element_line(color="black"),
-                  plot.caption=element_text(hjust = 0, size = 11),
+                  plot.caption=element_text(hjust = 0, size = 12),
                   axis.title.y = element_text(size = rel(1.1), angle = 90),
                   axis.title.x = element_text(size = rel(1.1), angle = 00),
                   axis.title = element_text(size = 16, angle = 00)
   )   
   
-  p <- p + labs(title = paste0("Figure of the fitted model '",mod,"' with 95% confidence and raw data. \nExploration of model fitting at input of ", 
-                              p2f(Xspec) ,", the estimate of y is ",
-                              p4f(pspec[1])," and 95% CI: (", 
+  p <- p + labs(title = paste0("Fitted model '",mod,"' with 95% confidence and raw data. Residual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
+                              p2f(Xspec) ,", the estimate of Y is ",
+                              p4f(pspec[1])," with 95%CI: (", 
                               p4f(pspec[2]),", ",
                               p4f(pspec[3]),")",
-                               "\nExploration of model fitting at response of ", 
-                              p2f(spec) ,", the estimate of x is ",
-                              p2f(txpre)," and 95% CI: (", 
+                               "\nRead back at response of ", 
+                              p2f(spec) ,", the estimate of X is ",
+                              p2f(txpre)," with 95%CI: (", 
                               p2f(txlow),", ",
-                              p2f(txup),")",
-                           
-                              
-                              
-                              "\nResidual sum of squares ", p2f(ssr),", Residual standard deviation ",p2f(df2),  # changed from rsd2
+                              p2f(txup),")",  
                               sep=" "),
                 #  subtitle = paste("Model for the curve #",model," ",mod,""),
                 caption = paste0("If spec is missing, mean of the data is used")
   )  #   +
   
+  # tried this package for plots themes but got errors
   #  theme_minimal() +
   #    theme(text = element_text(family = "Cinzel", size = 16),
   #       title = element_text(family = "Cinzel", size = 16)) -> targaryen
   
-  
   if (print.plot==1) {print(p)}
   
-  return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod, rsd2=rsd2, dfs=dfs))
-  
+  return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod, rsd2=rsd2, dfs=dfs  ))
+ 
 }
 
 
@@ -422,10 +379,9 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                  
                  h2("Exploring transformations and model fitting"), 
                  
-                 h4("An independent variable is generated using a U(0:10) distribution. With the user inputs a response is derived from a choice 
-                 of data generating mechanisms. The data can be analysed using a selection of models. The best model fit can be selected ('Best scenario' button), judged 
-                 by the model with the minimum sum of square of the residuals. A plot of the model fit is presented, on tab 2 model assumptions are evaluated. 
-                Tab 3 lists data. Tab 4 presents a summary."), 
+                 h4("An independent variable is generated using a Uniform(0:10) distribution. The response is derived from inputs and from a choice 
+                 of data generating mechanisms. The data can be analysed using a selection of models. The best model fit can be selected ('Best scenario'), judged 
+                 by the model with minimum sum of square of the residuals. A plot of the model fit is presented, predictions and read back are possible. On tab 2 model assumptions are evaluated."), 
                  
                  h3("  "), 
                  sidebarLayout(
@@ -608,7 +564,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                     
                                              ))),#
                                          
-                                         h4(paste("Figure 1 Model Fit")),
+                                         h4(paste("Figure 1 Model fit showing raw data and prediction with 95% confidence")),
                                          
                                          width = 30 )     ,
                                
@@ -620,15 +576,18 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                         h4("Figure 2. Three residual plots to check for absence of trends in central tendency and in variability"),
                                         p(strong("Upper left panel shows residuals versus fitted on the x-axis. 
-                                              Bottom left panel is the QQ plot for checking normality of residuals from the LS fit.
-                                              Top right panel is the histogram for checking normality of residuals from the LS fit with 
+                                              Bottom left panel is the QQ plot for checking normality of residuals from the OLS fit.
+                                              Top right panel is the histogram for checking normality of residuals from the OLS fit with 
                                               ~N(mean=0, sd=LS model sigma) curve and true SD superimposed.
                                               ")),
                                         
                                ),
-                               
-                               tabPanel("3 Data listing", value=3, 
-                                        shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
+                       
+                               tabPanel("3 Summary statistics", value=3, 
+                                        h4(paste("X")),
+                                        shinycssloaders::withSpinner(verbatimTextOutput("X"),type = 5),
+                                        h4(paste("Y")),
+                                        shinycssloaders::withSpinner(verbatimTextOutput("Y"),type = 5),
                                ),
                                
                                tabPanel("4 Summary of models", value=3, 
@@ -639,7 +598,14 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr2"),type = 5),
                                         h4(paste("Table 3 Models on transformed data")),
                                ),
-                               tabPanel("5 Wiki", value=3, 
+                             
+                               
+                               tabPanel("5 Data listing", value=3, 
+                                        shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
+                               ),
+                               
+                               
+                               tabPanel("6 Wiki", value=3, 
                                         h4(paste("Fix read back when fitted and or limits cross multiple times the  y of interest (spec).")),
                                         h4(paste("Fix instances when errors are returned.")),
                                         h4(paste("R code needs to be updated, made some advance in Shiny not reflected in R code.")),
@@ -675,8 +641,6 @@ server <- shinyServer(function(input, output   ) {
     sigma1 <- as.numeric(input$sigma1)
     
     N <- as.numeric(input$N)
-    
-    #  spec <- (as.numeric(input$spec)) # don't want cahnging spec to update data
     
     return(list(  
       a=a,
@@ -818,7 +782,20 @@ server <- shinyServer(function(input, output   ) {
     
   })
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  output$X <- renderPrint({
+    
+    d <- md()$foo
+    return(summary(d$x))
+    
+  }) 
   
+  output$Y <- renderPrint({
+    
+    d <- md()$foo
+    return(summary(d$obsy))
+    
+  }) 
   
   
   
@@ -835,8 +812,7 @@ server <- shinyServer(function(input, output   ) {
     x <- d$x
     
     loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
-    
-    
+
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$d2 <- renderPrint({
@@ -858,7 +834,6 @@ server <- shinyServer(function(input, output   ) {
     return(print(d))
     
   }) 
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$ssr <- renderPrint({
     
@@ -869,7 +844,6 @@ server <- shinyServer(function(input, output   ) {
     
   })  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
   output$ssr2 <- renderPrint({
     
     d <- md2()$M
@@ -877,10 +851,8 @@ server <- shinyServer(function(input, output   ) {
     return(print(d))
     
   })  
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$diagnostics<- renderPlot({         
-    
     
     f <- md()$f
     mod <- md()$mod
@@ -892,7 +864,6 @@ server <- shinyServer(function(input, output   ) {
     
     d <- cbind(residx, fittedx)
     d2 <- as.data.frame(d)
-    
     
     # https://stackoverflow.com/questions/14200027/how-to-adjust-binwidth-in-ggplot2
     hist(residx,breaks="FD")
@@ -921,8 +892,6 @@ server <- shinyServer(function(input, output   ) {
                      fill = "#69b3a2") +
       xlab('Residuals with superimposed sigma')   #+
     
-    
-    
     chk1 <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
     chk2 <-  as.numeric(gsub("[^0-9.-]", "", input$ana ))
     
@@ -937,13 +906,9 @@ server <- shinyServer(function(input, output   ) {
       
       grid.arrange(p1,  p3, p2, ncol=2,
                    top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-      
-      
-    }
+      }
     
-    else  if (  chk1==chk2            ) {  
-      
-      
+    else  if (chk1==chk2) {  
       
       std <-  sigma(f) 
       p3 <-  p3 + 
@@ -952,10 +917,9 @@ server <- shinyServer(function(input, output   ) {
       
       grid.arrange(p1,  p3, p2, ncol=2,
                    top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-      
-      
-      
+
     } else {
+      
       std <-  sigma(f) 
       p3 <- p3 + 
         stat_function(fun = dnorm, args = list(mean = 0, sd = std  ), col='red')  
@@ -964,10 +928,8 @@ server <- shinyServer(function(input, output   ) {
                    top = textGrob(paste0(" LS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
       
     }
-    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-    
-    
+
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
