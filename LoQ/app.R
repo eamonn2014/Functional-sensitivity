@@ -267,7 +267,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     
      # if i dont do this X vercial spec line on plot for these models will not be located correctly
      if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
-     if (model %in% c(6,7)  )  {Xspec <- exp(pspec)  }
+     if (model %in% c(6,7)  )  {Xspec <- exp(Xspec)  }
      if (model %in% c(8)    )  {Xspec <- Xspec^2}
      if (model %in% c(11)   )  {Xspec <- Xspec^.5 }
      # 
