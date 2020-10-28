@@ -108,7 +108,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
   txbar <- mean(x)
   txstd <- sd(x)
   
- 
+  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   if (model %in% 12) {       
@@ -127,7 +127,7 @@ loq <- function (x, y, model, spec, print.plot=1) {
     
     if (is.na(spec)) {spec=median(dat2$linear.predictors, is.finite=TRUE)}
     
-   # spec=median(dat2$linear.predictors)
+    # spec=median(dat2$linear.predictors)
     
     #find nearest values to spec using brute force approach
     it <- which.min(abs(dat2$linear.predictors - spec))
@@ -275,10 +275,10 @@ loq <- function (x, y, model, spec, print.plot=1) {
     geom_line( ) +
     geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
     geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  +
-  scale_x_continuous(limits = c(lowerV, upperV), breaks=lowerV: upperV)  
+    scale_x_continuous(limits = c(lowerV, upperV), breaks=lowerV: upperV)  
   scale_y_continuous(limits = c(ymin1, ymax1))   
   
-
+  
   p <- p1  + geom_hline(yintercept=spec, colour="#990000", linetype="dashed")
   p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
   p <- p + scale_color_manual(values=c("Red","blue"))
@@ -548,7 +548,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                tabPanel("4 Summary of models", value=3, 
                                         
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr"),type = 5),
-                                        h4(paste("Table 2 Summary of model fits")),
+                                        h4(paste("Table 2 Summary of model fits, note model sigma when data generating mechanism and analysis model coincide")),
                                         
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr2"),type = 5),
                                         h4(paste("Table 3 Models on transformed data")),
@@ -559,6 +559,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         h4(paste("R code needs to be updated, made some advance in Shiny not reflected in R code.")),
                                         h4(paste("Explain what is going on. ")),
                                         h4(paste("Convert main plot to plotly. ")),
+                                        h4(paste("Add mse? ")),
                                )
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW   
                              )
@@ -589,7 +590,7 @@ server <- shinyServer(function(input, output   ) {
     
     N <- as.numeric(input$N)
     
-  #  spec <- (as.numeric(input$spec)) # don't want cahnging spec to update data
+    #  spec <- (as.numeric(input$spec)) # don't want cahnging spec to update data
     
     return(list(  
       a=a,
@@ -693,20 +694,28 @@ server <- shinyServer(function(input, output   ) {
   md2 <- reactive({
     
     spec <- as.numeric(input$spec)
-
+    
     d <- dat()  # Get the data
     y <- d$y
     x <- d$x
-
+    
     A <- array(NA, dim=c(12,6))
-    M <- list(NA)
+    M <- list(NA, dim=c(24,1))
+    M <- array(NA, dim=c(24,1))
     
     for (j in 1:12) {
       
       res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0) # don't print
-      M[j] <- (res$f)  
+      
+      k <- j*2
+      m <- k-1
+      
+      M[k] <- res$f 
+      M[m] <- res$mod
+      
       A[j,1] <- j          # model no
       A[j,2] <- res$mod    # model
+      
       A[j,3] <- p0f(res$dfs)    # d.f.
       A[j,4] <- p4f(res$ssr)    # sum of squared residuals
       A[j,5] <- p4f(res$rsd2)   # sigma
@@ -716,7 +725,7 @@ server <- shinyServer(function(input, output   ) {
     }
     
     A <- data.frame( A[,c(1,2)],  apply(A[,c(3,4,5,6)],2, as.numeric))
-     
+    
     A <- plyr::arrange(A,A[,4])
     return(list(  ssr=A, M=M))
     
@@ -733,7 +742,7 @@ server <- shinyServer(function(input, output   ) {
     foo <- md()$foo
     
     spec <- as.numeric(input$spec)
-
+    
     d <- dat()  # Get the  data
     y <- d$y
     x <- d$x
@@ -768,15 +777,17 @@ server <- shinyServer(function(input, output   ) {
     
     d <- md2()$ssr
     d <- as.data.frame(d)
-    names(d) <- c("model #","Model description", "d.f.", "Sum of square of residuals","Sigma" ,"back transf. sigma")
+    names(d) <- c("model #","Model description", "d.f.", "Sum of square of residuals","Model Sigma" ,"Back transf. sigma")
     return(print(d, row.names = FALSE))
     
   })  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
   output$ssr2 <- renderPrint({
     
     d <- md2()$M
     
-    return((d))
+    return(print(d))
     
   })  
   
