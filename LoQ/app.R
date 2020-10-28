@@ -555,7 +555,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                
                                tabPanel("6 Wiki", value=3, 
                                         h4(paste("Fix read back when fitted and or limits cross multiple times the  y of interest (spec).")),
-                                        h4(paste("Fix instances when errors are returned.")),
+                                        h4(paste("Fix errors...predict data model 11 analysed with rcs slope 16.14 95%CI(0.03, 16.09)?")),
                                         h4(paste("R code needs to be updated, made some advance in Shiny not reflected in R code.")),
                                         h4(paste("Explain what is going on. ")),
                                         h4(paste("Convert main plot to plotly. ")),
