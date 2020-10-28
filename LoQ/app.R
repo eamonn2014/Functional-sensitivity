@@ -352,15 +352,16 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                  h3("  "), 
                  sidebarLayout(
                    
-                   sidebarPanel( width=3 ,
+                   sidebarPanel( width=3,
                                  
                                  tags$style(type="text/css", ".span8 .well { background-color: #00FFFF; }"),
                                  
-                                 actionButton(inputId='ab1', label="R Shiny ",   icon = icon("th"),   
+                                 actionButton(inputId='ab1', label="R Shiny ",   icon = icon("th"),  width =105 ,
                                               onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/LoQ/app.R', '_blank')"), 
-                                 actionButton(inputId='ab1', label="R code",   icon = icon("th"),   
+                                 actionButton(inputId='ab1', label="R code",   icon = icon("th"),    width =105 ,
                                               onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R', '_blank')"),  
-                                 actionButton("resample", "Simulate a new sample"),
+                                 actionButton("resample", "Simulate a new sample", width =180 ),
+                                 
                                  br(),  
                                  tags$style(".well {background-color:#b6aebd ;}"), 
                                  
@@ -425,15 +426,22 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                div(h5(tags$span(style="color:blue", "Intercept"))), "10"),
                                      
                                      textInput('b', 
-                                               div(h5(tags$span(style="color:blue", "Slope"))), "1"),
+                                               div(h5(tags$span(style="color:blue", "Slope"))), "1")
+                                   ),
                                      
+                                   splitLayout(
                                      textInput('sigma1', 
                                                div(h5(tags$span(style="color:blue", "Residual err."))), "2"),
                                      
                                      textInput('spec', 
-                                               div(h5(tags$span(style="color:blue", "Spec."))), "")
+                                               div(h5(tags$span(style="color:blue", "Y spec"))), ""),
+                                     
+                                     textInput('Xspec', 
+                                               div(h5(tags$span(style="color:blue", "X spec"))), "")
                                      
                                    ),
+                                   
+                                    
                                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
                                    
                                    radioButtons(
@@ -553,7 +561,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr2"),type = 5),
                                         h4(paste("Table 3 Models on transformed data")),
                                ),
-                               tabPanel("5 To do", value=3, 
+                               tabPanel("5 Wiki", value=3, 
                                         h4(paste("Fix read back when fitted and or limits cross multiple times the  y of interest (spec).")),
                                         h4(paste("Fix instances when errors are returned.")),
                                         h4(paste("R code needs to be updated, made some advance in Shiny not reflected in R code.")),
