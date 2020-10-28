@@ -16,49 +16,45 @@
 # 7 The df for error (transformation will not affect). We then square root sum of the square divide by the df to get the residual for the back transformed model fit.
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-rm(list=ls()) 
-set.seed(333) # reproducible
-library(directlabels)
-library(shiny) 
-library(shinyjs)  #refresh'
-library(shinyWidgets)
-library(shinythemes)  # more funky looking apps
-library(shinyalert)
-library(Hmisc)
-library(rms)
-library(ggplot2)
-library(tidyverse)
-library(shinycssloaders)
-library(tvthemes)  # nice ggplot addition
+  rm(list=ls()) 
+  set.seed(333) # reproducible
+  library(directlabels)
+  library(shiny) 
+  library(shinyjs)  #refresh'
+  library(shinyWidgets)
+  library(shinythemes)  # more funky looking apps
+  library(shinyalert)
+  library(Hmisc)
+  library(rms)
+  library(ggplot2)
+  library(tidyverse)
+  library(shinycssloaders)
+  library(tvthemes)  # nice ggplot addition
 
-options(max.print=1000000)    
+  options(max.print=1000000)    
+  
+  fig.width8 <- 1380
+  fig.height7 <- 770
+  
+  ## convenience functions
+  p0f <- function(x) {formatC(x, format="f", digits=0)}
+  p1f <- function(x) {formatC(x, format="f", digits=1)}
+  p2f <- function(x) {formatC(x, format="f", digits=2)}
+  p3f <- function(x) {formatC(x, format="f", digits=3)}
+  p4f <- function(x) {formatC(x, format="f", digits=4)}
+  p5f <- function(x) {formatC(x, format="f", digits=5)}
 
-fig.width8 <- 1380
-fig.height7 <- 770
+  logit <- function(p) log(1/(1/p-1))
+  expit <- function(x) 1/(1/exp(x) + 1)
+  inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
+  is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
+  
+  options(width=200)
+  options(scipen=999)
 
-## convenience functions
-p0f <- function(x) {formatC(x, format="f", digits=0)}
-p1f <- function(x) {formatC(x, format="f", digits=1)}
-p2f <- function(x) {formatC(x, format="f", digits=2)}
-p3f <- function(x) {formatC(x, format="f", digits=3)}
-p4f <- function(x) {formatC(x, format="f", digits=4)}
-p5f <- function(x) {formatC(x, format="f", digits=5)}
-# p2f <- function(x) {formatC(x, format="f", digits=4)}
-
-logit <- function(p) log(1/(1/p-1))
-expit <- function(x) 1/(1/exp(x) + 1)
-inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
-is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
-
-options(width=200)
-options(scipen=999)
-# w=4  # line type
-# ww=3 # line thickness
-# wz=1 
-
-# range of independent variable
-lowerV=0
-upperV=10
+  # range of independent variable
+  lowerV=0
+  upperV=10
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 
@@ -137,8 +133,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     
     if (is.na(spec))  {spec=mean(dat2$linear.predictors, is.finite=TRUE)}
     if (is.na(Xspec)) {Xspec=mean(dat$x, is.finite=TRUE)}
-    # spec=median(dat2$linear.predictors)
-    
+
     #find nearest values to spec using brute force approach
     it <- which.min(abs(dat2$linear.predictors - spec))
     txpre<-dat2[it,]$x 
@@ -153,7 +148,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     txlow <- limits[1]
     txup <-  limits[2]
     
-    # rcs will report the limit as the nearest value to spec if x value is beyond range, so lets report NA 
+    # rcs will report the limit as the nearest value to spec if x value is beyond range, so lets report 999
     txpre <- ifelse((txpre >= upperV )|(txpre <= lowerV ), 999, txpre)
     txlow <- ifelse((txlow >= upperV )|(txlow <= lowerV ), 999, txlow)
     txup <-  ifelse((txup >=  upperV )|(txup  <= lowerV ), 999, txup)
@@ -184,7 +179,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     
     df2 <- (ssr/dfs)^.5
     
-    foo <- as.data.frame(cbind(x=x1,   obsy=y1, x2=x,y2=y,pred= xx$linear.predictors, p2a=xx$lower, p3=xx$upper, r=r, rr2=r2, rsd2=rsd2, dfs=dfs,ssr=ssr, df2=df2))
+    foo <- as.data.frame(cbind(x=x1,obsy=y1, x2=x,y2=y,pred= xx$linear.predictors, p2a=xx$lower, p3=xx$upper, r=r, rr2=r2, rsd2=rsd2, dfs=dfs,ssr=ssr, df2=df2))
     foo <- foo[order(foo$obsy),]
     xx<- NULL
     
@@ -196,10 +191,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     # run regression on the transformed data grab slope intercept
     intercept <- coef(f)[1][[1]]
     slope <- coef(f)[2][[1]]
-    
-    # R2 on the transformed x and y,  an idea but not used
-    # v1 <- unlist(cor.test(x,y)$estimate^2)[1][[1]]   
-    
+ 
     # obtain the predictions 
     
     p <- predict.lm(f, interval="confidence")
@@ -222,19 +214,14 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     
     if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
 
-    # 
     # calculate residual squared 
-    # residuals original y and transformed back predicted values 
-    # residual sum of squares, this will be used to judge best model
+    # residuals original y and transformed back predicted values, residual sum of squares, this will be used to judge best model
     r <- (y1-p[,1]) 
     r2 <-  (y1-p[,1])^2
     ssr <- sum(r2, na.rm=T) 
-    
-    # R2 on the original x and transformed back predicted y, an idea but not used
-    # v2 <- unlist(cor.test(x1,p[,1])$estimate^2)[1][[1]]
-
+  
     # transform the response that we will read back
-    if (is.na(spec)) {spec=mean(y, is.finite=TRUE)}    ##correct
+    if (is.na(spec)) {spec=mean(y, is.finite=TRUE)}    
     else { 
       if (model %in% c(2,7,10)) {spec <- log(spec)}
       if (model %in% c(3,5)  )  {spec <- 1/spec}
@@ -250,11 +237,10 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
      if (model %in% c(11)   )  {spec <- spec^.5}  
 
     # grab the residual standard deviation
-    
     rsd2 <- as.data.frame(anova(f))[2,3]^.5 
     dfs <- anova(f)["Residuals","Df"]
-    # read back on transformed scale
     
+    # read back on transformed scale
     mse <- rsd2^2
     t <- qt(0.975, n-2)
     a <- t^2*mse/((n-1)*txstd^2)-slope^2
@@ -265,13 +251,12 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     txlow <- (-b-sqrt(b^2-4*a*c))/(2*a) + txbar
     
     # transform the read back estimates to the original scale
-    
     if (model %in% c(4,5,10)) {txpre <- 1/txpre; txup <- 1/txup; txlow <- 1/txlow} 
     if (model %in% c(6,7)  )  {txpre <- exp(txpre); txup <- exp(txup); txlow <- exp(txlow)}  
     if (model %in% c(8)    )  {txpre <- txpre^2;  txup <- txup^2;  txlow <- txlow^2} 
     if (model %in% c(11)   )  {txpre <- txpre^.5; txup <- txup^.5; txlow <- txlow^.5}   
     
-     # if i don't do this X vertical spec line on plot for these models will not be located correctly
+    # if i don't do this X vertical spec line on plot for these models will not be located correctly
     if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
     if (model %in% c(6,7)  )  {Xspec <- exp(Xspec)  }
     if (model %in% c(8)    )  {Xspec <- Xspec^2}
@@ -288,12 +273,10 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     
     foo <- data.frame(cbind(x=x1, obsy=y1, x2=x,y2=y,pred= p[,1], p2a=p[,2], p3=p[,3], r=r, rr2=r2, rsd2=rsd2, dfs=dfs,ssr=ssr,df2=df2))
     foo <- foo[order(foo$obsy),]
-    
-    
+
   }
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # help with plotting
-  
   ymin <- min(y)
   ymax <- max(y)
   ystep <- (ymax-ymin)/8
@@ -301,7 +284,6 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   ymax1 <-  ymax+ystep
  
   # plot and present the estimated read back
-  
   p1 <- ggplot(foo, aes(x=x,y=pred)) + 
     geom_line( ) +
     geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
