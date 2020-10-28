@@ -211,6 +211,9 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     if (model %in% c(3,5)  )  {pspec <- 1/pspec}
     if (model %in% c(9)    )  {pspec <- (pspec)^2}
     if (model %in% c(11)   )  {pspec <- pspec^.5}
+    
+    if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
+
     # 
     # calculate residual squared 
     # residuals original y and transformed back predicted values 
