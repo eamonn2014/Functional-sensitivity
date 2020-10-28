@@ -20,7 +20,7 @@
   set.seed(333) # reproducible
   library(directlabels)
   library(shiny) 
-  library(shinyjs)  #refresh'
+  library(shinyjs)  
   library(shinyWidgets)
   library(shinythemes)  # more funky looking apps
   library(shinyalert)
@@ -326,7 +326,6 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
                               p2f(txlow),", ",
                               p2f(txup),")",  
                               sep=" "),
-                #  subtitle = paste("Model for the curve #",model," ",mod,""),
                 caption = paste0("If spec is missing, mean of the data is used")
   )  #   +
   
@@ -341,10 +340,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
  
 }
 
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 css <- "
 #large .selectize-input { line-height: 40px; }
@@ -363,7 +359,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                  
                  h4("An independent variable is generated using a Uniform(0:10) distribution. The response is derived from inputs and from a choice 
                  of data generating mechanisms. The data can be analysed using a selection of models. The best model fit can be selected ('Best scenario'), judged 
-                 by the model with minimum sum of square of the residuals. A plot of the model fit is presented, predictions and read back are possible. On tab 2 model assumptions are evaluated."), 
+                 by the model with minimum sum of square of the residuals. A plot of the model fit is presented, predictions and read back are possible. Tab 2 shows summary stats, tab 3 model assumptions are evaluated."), 
                  
                  h3("  "), 
                  sidebarLayout(
@@ -550,7 +546,14 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                          
                                          width = 30 )     ,
                                
-                               tabPanel("2 Diagnostics", value=3, 
+                               tabPanel("2 Summary statistics", value=3, 
+                                        h4(paste("X")),
+                                        shinycssloaders::withSpinner(verbatimTextOutput("X"),type = 5),
+                                        h4(paste("Y")),
+                                        shinycssloaders::withSpinner(verbatimTextOutput("Y"),type = 5),
+                               ),
+                               
+                               tabPanel("3 Diagnostics", value=3, 
                                         
                                         shinycssloaders::withSpinner(
                                           div(plotOutput("diagnostics",  width=fig.width8, height=fig.height7)),
@@ -560,18 +563,11 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         p(strong("Upper left panel shows residuals versus fitted on the x-axis. 
                                               Bottom left panel is the QQ plot for checking normality of residuals from the OLS fit.
                                               Top right panel is the histogram for checking normality of residuals from the OLS fit with 
-                                              ~N(mean=0, sd=LS model sigma) curve and true SD superimposed.
+                                              ~N(mean=0, sd=OLS model sigma) curve and true SD superimposed.
                                               ")),
                                         
                                ),
-                       
-                               tabPanel("3 Summary statistics", value=3, 
-                                        h4(paste("X")),
-                                        shinycssloaders::withSpinner(verbatimTextOutput("X"),type = 5),
-                                        h4(paste("Y")),
-                                        shinycssloaders::withSpinner(verbatimTextOutput("Y"),type = 5),
-                               ),
-                               
+
                                tabPanel("4 Summary of models", value=3, 
                                         
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr"),type = 5),
@@ -721,7 +717,6 @@ server <- shinyServer(function(input, output   ) {
     return(list(  model=model, foo=mdata, f=f, mod=mod ))
     
   })
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # collect for listing here
   md2 <- reactive({
@@ -753,8 +748,7 @@ server <- shinyServer(function(input, output   ) {
       A[j,4] <- p4f(res$ssr)    # sum of squared residuals
       A[j,5] <- p4f(res$rsd2)   # sigma
       A[j,6] <- p4f(sqrt(res$ssr/res$dfs))
-      
-      
+
     }
     
     A <- data.frame( A[,c(1,2)],  apply(A[,c(3,4,5,6)],2, as.numeric))
@@ -763,7 +757,6 @@ server <- shinyServer(function(input, output   ) {
     return(list(  ssr=A, M=M))
     
   })
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$X <- renderPrint({
     
@@ -771,16 +764,13 @@ server <- shinyServer(function(input, output   ) {
     return(summary(d$x))
     
   }) 
-  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$Y <- renderPrint({
     
     d <- md()$foo
     return(summary(d$obsy))
     
   }) 
-  
-  
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$plot1 <- renderPlot({         #standard errors
     
