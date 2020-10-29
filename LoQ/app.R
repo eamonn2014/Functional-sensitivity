@@ -291,7 +291,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
                   axis.title = element_text(size = 16, angle = 00)
   )   
   
-  p <- p + labs(title = paste0("Fitted model '",mod,"' with 95% confidence and raw data. \nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
+  p <- p + labs(title = paste0("Fitted model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
                               p2f(Xspec) ,", the estimate of Y is ",
                               p4f(pspec[1])," with 95%CI: (", 
                               p4f(pspec[2]),", ",
