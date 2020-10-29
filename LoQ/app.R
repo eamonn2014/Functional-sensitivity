@@ -560,6 +560,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         h4(paste("Explain what is going on. ")),
                                         h4(paste("Convert main plot to plotly. ")),
                                         h4(paste("Add mse? ")),
+                                        h4(paste("new tab to allow user upload data ")),
                                )
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW   
                              )
