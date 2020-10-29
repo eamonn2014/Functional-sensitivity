@@ -41,8 +41,8 @@
   options(scipen=999)
 
   # range of independent variable
-#  lowerV=0
-#  upperV=10
+ lowerV=0
+ upperV=10
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function that does all the work!
@@ -1044,40 +1044,8 @@ server <- shinyServer(function(input, output   ) {
     loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
     
   })
-  #~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    
-    
-    
-     
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  
-  
-  
-  
-  
-  
-  
   
 })
 
