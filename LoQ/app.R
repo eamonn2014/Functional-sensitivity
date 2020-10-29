@@ -19,6 +19,8 @@
 
   options(max.print=1000000)    
   
+  fig.width6 <- 1100
+  fig.height6 <- 600
   fig.width8 <- 1380
   fig.height7 <- 770
   
@@ -39,8 +41,8 @@
   options(scipen=999)
 
   # range of independent variable
-  lowerV=0
-  upperV=10
+#  lowerV=0
+#  upperV=10
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function that does all the work!
@@ -108,7 +110,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     f <- ols(y~rcs(x,4), dat)   
     
     # obtain the predictions 
-    dat2 <- expand.grid(x=seq(lowerV,upperV,.001))
+    dat2 <- expand.grid(x=seq(min(x1),max(x1),.001))
     dat2 <- cbind(dat2, predict(f, dat2, se.fit=TRUE))
     dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
     dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
@@ -250,6 +252,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   }
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # help with plotting
+  lowerV=floor(min(foo$x)); upperV=ceiling(max(foo$x))
   ymin <- min(y)
   ymax <- max(y)
   ystep <- (ymax-ymin)/8
@@ -260,9 +263,9 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   p1 <- ggplot(foo, aes(x=x,y=pred)) + 
     geom_line( ) +
     geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
-    geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  +
-    scale_x_continuous(limits = c(lowerV, upperV), breaks=lowerV: upperV)  
-  scale_y_continuous(limits = c(ymin1, ymax1))   
+    geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  #+
+#    scale_x_continuous(limits = c(lowerV, upperV), breaks=seq(lowerV, upperV)) #, by=((upperV-lowerV)/10))) + # breaks = seq(0, 100, by = 20)
+ # scale_y_continuous(limits = c(ymin1, ymax1))   
   
   p <- p1  + geom_hline(yintercept=spec,  colour="#990000", linetype="dashed")
   p <- p   + geom_vline(xintercept=Xspec, colour="#008000", linetype="dashed")
@@ -288,7 +291,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
                   axis.title = element_text(size = 16, angle = 00)
   )   
   
-  p <- p + labs(title = paste0("Fitted model '",mod,"' with 95% confidence and raw data. Residual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
+  p <- p + labs(title = paste0("Fitted model '",mod,"' with 95% confidence and raw data. \nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
                               p2f(Xspec) ,", the estimate of Y is ",
                               p4f(pspec[1])," with 95%CI: (", 
                               p4f(pspec[2]),", ",
@@ -331,7 +334,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                  
                  h4("An independent variable is generated using a Uniform(0:10) distribution. The response is derived from the user inputs and from a choice 
                  of data generating mechanisms. The data can be analysed using a selection of models. The best model fit can be selected ('Best scenario'), judged 
-                 by the model with minimum sum of square of the residuals. A plot of the model fit is presented, predictions and read back are possible. Tab 2 shows summary stats, tab 3 model assumptions are evaluated."), 
+                 by the model with minimum sum of square of the residuals. A plot of the model fit is presented, predictions and read back are possible. Tab 2 shows summary stats, tab 3 assumptions and tab 6 upload your data."), 
                  
                  h3("  "), 
                  sidebarLayout(
@@ -554,16 +557,107 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
                                ),
                                
+                                
                                
-                               tabPanel("6 Wiki", value=3, 
+                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~NEW
+                               tabPanel("6 Upload data for analysis", fluid = TRUE, width = 4,
+                                        
+                                        h4(("Upload your own data for analysis. Requires 2 columns of numeric data. Select 'Header' 
+                         if your data columns have names. 
+                         The top two radio button options are to help load,
+                                 the bottom option is to either print the top six rows of the data or show all the data.
+                               ")) ,
+                                        
+                                        h4(("Here are two example data sets (download either file and click 'Browse...' to locate and upload for the analysis):")) ,
+                                        
+                                        tags$a(href = "https://raw.githubusercontent.com/eamonn2014/Bayesian_bootstrap/master/icreamsales", tags$span(style="color:blue", "Example 1 Ice cream sales and temperature N=12, has a header"),), 
+                                        div(p(" ")),
+                                   
+                                        
+                                        sidebarLayout(
+                                          
+                                          # Sidebar panel for inputs ----
+                                          sidebarPanel(width=2,
+                                            
+                                            # Input: Select a file ----
+                                            fileInput("file1", "Choose CSV File",
+                                                      multiple = TRUE,
+                                                      accept = c("text/csv",
+                                                                 "text/comma-separated-values,text/plain",
+                                                                 ".csv")),
+                                            
+                                            # Horizontal line ----
+                                            tags$hr(),
+                                            
+                                            # Input: Checkbox if file has header ----
+                                            checkboxInput("header", "Header", TRUE),
+                                            
+                                            # Input: Select separator ----
+                                            radioButtons("sep", "Separator",
+                                                         choices = c(Comma = ",",
+                                                                     Semicolon = ";",
+                                                                     Tab = "\t",
+                                                                     Whitespace = ""),
+                                                         selected = ""),
+                                            
+                                            # Input: Select quotes ----
+                                            radioButtons("quote", "Quote",
+                                                         choices = c(None = "",
+                                                                     "Double Quote" = '"',
+                                                                     "Single Quote" = "'"),
+                                                         selected = ''),
+                                            
+                                            # Horizontal line ----
+                                           # tags$hr(),
+                                            
+                                            # Input: Select number of rows to display ----
+                                            # radioButtons("disp", "List all the data or first 6 rows only",
+                                            #              choices = c(Head = "head",
+                                            #                          All = "all"),
+                                            #              selected = "head"),
+                                            
+                                            # Horizontal line ----
+                                            # tags$hr(),
+                                            
+                                            # Input: Select number of rows to display ----
+                                            # radioButtons("what", "Output",
+                                            #              choices = c(Analysis = "Analysis",
+                                            #                          Plot = "plot"),
+                                            #              selected = "Analysis")
+                                            
+                                          ),
+                                          
+                                          # Main panel for displaying outputs ----
+                                          mainPanel(
+                                            
+                                            # Output: Data file ----
+                                           
+                                            div(plotOutput("plot2", width=fig.width6, height=fig.height6)),
+                                            h4(paste("Figure 3. User uploaded data")),  
+                                           
+                                            
+                                            
+                                          ),
+                                        )
+                               ) ,
+                               
+                               
+                               tabPanel(" Wiki", value=3, 
                                         h4(paste("Deal with read back when fitted and or limits cross multiple times the  y of interest (spec).")),
                                         h4(paste("Explain what is going on. ")),
                                         h4(paste("Convert main plot to plotly. ")),
                                         h4(paste("Add mse? ")),
-                                        h4(paste("new tab to allow user upload data ")),
+                                       
                                )
-                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW   
-                             )
+                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW 
+                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NE
+                               
+                               
+                               
+                               
+                               
+                               ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+                               )
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    )
                  ) 
@@ -873,6 +967,117 @@ server <- shinyServer(function(input, output   ) {
 
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # analyse user data
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  mdx <- reactive({
+    
+    df<-NULL
+    req(input$file1)
+    df <- read.csv(input$file1$datapath,
+                   header = input$header,
+                   sep = input$sep,
+                   quote = input$quote)
+    
+     d <- as.data.frame(df)
+     
+     d <- d[,c("x","y")]
+     
+     
+     spec <- as.numeric(input$spec)
+     Xspec <- as.numeric(input$Xspec)
+     
+     y <- d$y
+     x <- d$x
+      
+     ssr <- rep(NA,12)
+      
+     mdata <- list(NA)
+      
+      if (input$ana %in% "best") {
+        
+        for (j in 1:12) {
+          
+          res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0, Xspec=Xspec) # don't print
+          ssr[j] <- res$ssr
+          
+        }
+        
+        model <- which(ssr==min(ssr)) 
+        mdata <- res$foo
+        res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0,  Xspec=Xspec)  # run best model
+        f=res2$f   
+        mod<- res2$mod
+        
+      } else {
+        
+        res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec,  Xspec=Xspec) 
+        mdata <- res$foo
+        model <- as.numeric(input$ana)
+        f=res$f
+        mod<- res$mod
+        
+      }
+      
+      return(list(  model=model, foo=mdata, f=f, mod=mod, x=x,y=y ))
+      
+    })
+    
+    
+  output$plot2 <- renderPlot({         #standard errors
+    
+    model <- mdx()$model
+    foo <- mdx()$fo2
+    
+    spec <- as.numeric(input$spec)
+    Xspec <- as.numeric(input$Xspec)
+
+    y <- mdx()$y
+    x <- mdx()$x
+    
+  #  lowerV = floor(min(x))
+  #  upperV = ceiling(max(y))
+    
+    loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+    
+  })
+  #~~~~~~~~~~~~~~~~
+    
+    
+    
+    
+     
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  
+  
+  
+  
+  
+  
+  
   
 })
 
