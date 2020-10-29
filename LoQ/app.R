@@ -564,12 +564,13 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                         h4(("Upload your own data for analysis. Requires 2 columns of numeric data. Select 'Header' 
                          if your data columns have names. 
-                         The top two radio button options are to help load, 
+                          The top two radio button options are to help load, 
                                ")) ,
                                         
-                                        h4(("Here is an example data sets (download file and click 'Browse...' to locate and upload for the analysis):")) ,
-                                        
-                                        tags$a(href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/data_example_1", tags$span(style="color:blue", "Example 1, has a header"),), 
+                                        h4(("Here is a link to an example data set (download file and click 'Browse...' to locate and upload for the analysis):")) ,
+                                       
+                                        tags$a(href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/data_example_1", tags$span(style="color:blue", "Example data for analysis, has a header."),), 
+                                        div(p(" ")),
                                         div(p(" ")),
                                    
                                         
@@ -641,7 +642,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                ) ,
                                
                                
-                               tabPanel(" Wiki", value=3, 
+                               tabPanel("7 Wiki", value=3, 
                                         h4(paste("Deal with read back when fitted and or limits cross multiple times the  y of interest (spec).")),
                                         h4(paste("Explain what is going on. ")),
                                         h4(paste("Convert main plot to plotly. ")),
