@@ -546,7 +546,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                ),
 
-                               tabPanel("4 Summary of models", value=3, 
+                               tabPanel("4 Models summary", value=3, 
                                         
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr"),type = 5),
                                         h4(paste("Table 2 Summary of model fits, note model sigma when data generating mechanism and analysis model coincide")),
@@ -563,14 +563,13 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                 
                                
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~NEW
-                               tabPanel("6 Upload data for analysis", fluid = TRUE, width = 4,
+                               tabPanel("6 User upload", fluid = TRUE, width = 4,
                                         
                                         h4(("Upload your own data for analysis. Requires 2 columns of numeric data. Select 'Header' 
                          if your data columns have names. 
-                          The top two radio button options are to help load. Of course only the 'Analysis model' radio buttons are needed.
-                               ")) ,
+                          The top two radio button options are to help load. Of course only the 'Analysis model' radio buttons are needed. Here is a link to example data (download a file and click 'Browse...' to locate and upload for the analysis):")) ,
                                         
-                                        h4(("Here is a link to example data (download a file and click 'Browse...' to locate and upload for the analysis):")) ,
+                                        h4((":")) ,
                                        
                                         tags$a(href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/data_example_1", tags$span(style="color:blue", "Example 1 data for analysis, has a header."),), 
                                         div(p(" ")),
@@ -650,7 +649,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                           ),
                                         )
                                ) ,
-                               tabPanel("8 User diagnostics", value=3, 
+                               tabPanel("7 User diag.", value=3, 
                                         shinycssloaders::withSpinner(
                                           div(plotOutput("diagnosticsu",  width=fig.width8, height=fig.height7)),
                                         ),
@@ -664,17 +663,17 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                ),
                                
-                               tabPanel("9 Summary of models", value=3, 
+                               tabPanel("8 User summary", value=3, 
                                         
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssru"),type = 5),
-                                        h4(paste("Table 2 Summary of model fits, note model sigma when data generating mechanism and analysis model coincide")),
+                                        h4(paste("Table 4 Summary of model fits.")),
                                         
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr2u"),type = 5),
-                                        h4(paste("Table 3 Models on transformed data")),
+                                        h4(paste("Table 5 Models on transformed data")),
                                ),
                                
                                
-                               tabPanel("10 User data listing", value=3, 
+                               tabPanel("9 User listing", value=3, 
                                         shinycssloaders::withSpinner(verbatimTextOutput("d3"),type = 5),
                                         
                                ),
