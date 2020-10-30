@@ -567,7 +567,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                           The top two radio button options are to help load, 
                                ")) ,
                                         
-                                        h4(("Here is a link example data (download a file and click 'Browse...' to locate and upload for the analysis):")) ,
+                                        h4(("Here is a link to example data (download a file and click 'Browse...' to locate and upload for the analysis):")) ,
                                        
                                         tags$a(href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/data_example_1", tags$span(style="color:blue", "Example 1 data for analysis, has a header."),), 
                                         div(p(" ")),
