@@ -133,9 +133,9 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     txup <-  limits[2]
     
     # rcs will report the limit as the nearest value to spec if x value is beyond range, so lets report 999
-    txpre <- ifelse((txpre >= upperV )|(txpre <= lowerV ), 999, txpre)
-    txlow <- ifelse((txlow >= upperV )|(txlow <= lowerV ), 999, txlow)
-    txup <-  ifelse((txup >=  upperV )|(txup  <= lowerV ), 999, txup)
+    txpre <- ifelse((txpre >= max(dat$x) |(txpre <= min(dat$x)) ), 999, txpre)
+    txlow <- ifelse((txlow >= max(dat$x) |(txlow <= min(dat$x) )), 999, txlow)
+    txup <-  ifelse((txup >=  max(dat$x) |(txup  <= min(dat$x) )), 999, txup)
     
     rsd2 <-  anova(f)["ERROR","MS"]^.5
     dfs <- anova(f)["ERROR","d.f."]
