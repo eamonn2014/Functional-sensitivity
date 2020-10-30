@@ -73,6 +73,22 @@
   y <- d$y
   x <- d$x
   
+  # x	 <-c(
+  #   0.1208444444	,
+  #   0.0769101124	,
+  #   0.0450227273	,
+  #   0.0246853933	,
+  #   0.0103555556	,
+  #   0.0037840909
+  # )
+  # 
+  # y <-c(
+  #   7.3282535623,
+  #   12.384142008,
+  #   17.022255039,
+  #   29.872271843,
+  #   64.921152057,
+  #   136.43305684)
  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   # function that does all the work!
@@ -221,7 +237,9 @@
       if (model %in% c(9)    )  {pspec <- (pspec)^2}
       if (model %in% c(11)   )  {pspec <- pspec^.5}
       
+      if(sum(is.nan(pspec) )==0) {
       if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
+      }
       
       # residuals original y and transformed back predicted values, residual sum of squares, this will be used to judge best model
       r <- (y1-p[,1]) 
