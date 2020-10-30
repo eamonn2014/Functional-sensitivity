@@ -337,7 +337,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                  
                  h4("An independent variable is generated using a Uniform(0:10) distribution. The response is derived from the user inputs and from a choice 
                  of data generating mechanisms. The data can be analysed using a selection of models. The best model fit can be selected ('Best scenario'), judged 
-                 by the model with minimum sum of square of the residuals. A plot of the model fit is presented, predictions and read back are possible. Tab 2 shows summary stats, tab 3 assumptions and tab 6 upload your data."), 
+                 by the model with minimum sum of square of the residuals. A plot of the model fit is presented, predictions and read back are possible. Tab 2 shows summary stats, tab 3 assumptions and tab 6 upload your own data."), 
                  
                  h3("  "), 
                  sidebarLayout(
