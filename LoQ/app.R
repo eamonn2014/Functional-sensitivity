@@ -706,7 +706,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                            This is the residual that is presented with Figure 1. 
                                            Note the this sigma and the ols sigma will conincide when the data generating mechanism and analysis 
                                            model coincide and will approximate the user input 'Residual err.'"),
-                                      h4("Tabs 6-10 
+                                      h4("Tabs 6-9 
                                         allow the user to upload data, perform and evaluate an analysis. 
                                         Obviously there is no data generating mechanism so the top panel of radio buttons are not required and so have no impact."),
                                     
