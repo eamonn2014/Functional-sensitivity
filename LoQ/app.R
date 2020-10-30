@@ -678,12 +678,38 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                ),
                                
-                               tabPanel("11 Wiki", value=3, 
+                               tabPanel("10 Wiki", value=3, 
+                                        
                                         tags$hr(),
-                                        h4(paste("To do:")),
-                                        h4(paste("Deal with read back when fitted and or limits cross multiple times the  y of interest (spec).")),
-                                        h4(paste("Explain what is going on. ")),
-                                        h4(paste("Convert main plot to plotly. ")),
+                                      
+                                        
+                                        h4("The panel on the left contains the user inputs. The two empty specs relate to Y and X, 
+                                        when left empty the mean of the predictions and the mean of X are used to read back X and predict Y respectively. "),
+                                        h4("When we enter a Y spec this goes through an analysis transformation and we read back. 
+                                        Now we have an x that we back transform. "),
+                                           
+                                           h4("If we enter a X or use the mean of X we predict Y and back transform."),
+                                        h4("Tab 1 is the model fit based on the selcted radio buttons. Tab 2 is simple summary stats of the original data (plotted in Figure 1). 
+                                        The Diagnostic tab 3 assesses the ols model fit (using transformed data)."),
+                                        
+                                        h4("Tab 4 summarises briefy all analysis models. 'Back transformed' sigma is the residual error 
+                                        calculated from the column 'ssr' in the listing divded by the degrees of freedom."),
+                                        
+                                        h4("Here we describe the contents of the data listing tab: x is uniform(N,0,10) and y is then derived from the user inputs in tandem with the selected 
+                                           'Data generating mechanism'. Next we make a transformation of the data determined by the analysis method model. 
+                                           See columns 'transformed x' and 'transformed y'. A simple OLS model is fit and prediction made. The prediction 
+                                           is then transformed back to the original scale and this is presented next with associated 95% confidence interval. 
+                                           This is what we plot along with x and y mentioned in the first sentance. The residual is y minus the prediction. 
+                                           We square this next, the sum of this is used to judge the best model (see column 'ssr'). 
+                                           The column labelled 'sigma' is the residual error from the OLS model. 
+                                           The last column is the residual error calculated from the column 'ssr' divded by the degrees of freedom. 
+                                           This is the residual that is presented with Figure 1. 
+                                           Note the this sigma and the ols sigma will conincide when the data generating mechanism and analysis 
+                                           model coincide and will approximate the user input 'Residual err.'"),
+                                      h4("Tabs 6-10 
+                                        allow the user to upload data, perform and evaluate an analysis. 
+                                        Obviously there is no data generating mechanism so the top panel of radio buttons are not required and so have no impact."),
+                                    
                                         tags$hr(),
                                         
                                         h4(paste("R code to quickly write a small data set to your desktop...ready to be uploaded to app")),
@@ -695,8 +721,11 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         h4("write.table(d, file = paste0( file.path(Sys.getenv('USERPROFILE'),'Desktop'),'/d.txt'),
                                                     sep = ' ', col.names = TRUE,
                                                     quote=FALSE, qmethod = 'double', row.names = FALSE)"),
-                                        
-                                        tags$hr()
+                                         
+                                        tags$hr(),
+                                        h4(paste("To do:")),
+                                        h4(paste("* Deal with read back when fitted and or limits cross multiple times the  y of interest (spec).")),
+                                        h4(paste("* Convert main plot to plotly.")),
                                         
                                        
                                )
