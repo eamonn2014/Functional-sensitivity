@@ -567,7 +567,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                         h4(("Upload your own data for analysis. Requires 2 columns of numeric data. Select 'Header' 
                          if your data columns have names. 
-                          The top two radio button options are to help load, 
+                          The top two radio button options are to help load. Of course only the 'Analysis model' radio buttons are needed.
                                ")) ,
                                         
                                         h4(("Here is a link to example data (download a file and click 'Browse...' to locate and upload for the analysis):")) ,
@@ -641,15 +641,34 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                            
                                             div(plotOutput("plot2", width=fig.width6, height=fig.height6)),
                                             h4(paste("Figure 3. User uploaded data")),  
-                                           
+                                            h4(paste("X")),
+                                            shinycssloaders::withSpinner(verbatimTextOutput("Xu"),type = 5),
+                                            h4(paste("Y")),
+                                            shinycssloaders::withSpinner(verbatimTextOutput("Yu"),type = 5),
                                             
                                             
                                           ),
                                         )
                                ) ,
+                               tabPanel("8 User diagnostics", value=3, 
+                                        shinycssloaders::withSpinner(
+                                          div(plotOutput("diagnosticsu",  width=fig.width8, height=fig.height7)),
+                                        ),
+                                        
+                                        h4("Figure 4. Three residual plots to check for absence of trends in central tendency and in variability"),
+                                        p(strong("Upper left panel shows residuals versus fitted on the x-axis. 
+                                              Bottom left panel is the QQ plot for checking normality of residuals from the OLS fit.
+                                              Top right panel is the histogram for checking normality of residuals from the OLS fit with 
+                                              ~N(mean=0, sd=OLS model sigma) curve and true SD superimposed.
+                                              ")),
+                                        
+                               ),
+                               tabPanel("9 User data listing", value=3, 
+                                        shinycssloaders::withSpinner(verbatimTextOutput("d3"),type = 5),
+                                        
+                               ),
                                
-                               
-                               tabPanel("7 Wiki", value=3, 
+                               tabPanel("10 Wiki", value=3, 
                                         h4(paste("Deal with read back when fitted and or limits cross multiple times the  y of interest (spec).")),
                                         h4(paste("Explain what is going on. ")),
                                         h4(paste("Convert main plot to plotly. ")),
@@ -974,9 +993,6 @@ server <- shinyServer(function(input, output   ) {
 
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # analyse user data
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1053,6 +1069,112 @@ server <- shinyServer(function(input, output   ) {
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  output$Xu <- renderPrint({
+    
+    d <- mdx()$foo
+    return(summary(d$x))
+    
+  }) 
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  output$Yu <- renderPrint({
+    
+    d <- mdx()$foo
+    return(summary(d$obsy))
+    
+  }) 
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  output$d3 <- renderPrint({
+    
+    d <- mdx()$foo
+    
+    d <- plyr::arrange(d,x)
+    names(d) <- c("x","y","transformed x","transformed y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2","sigma","df","sum of sq residuals (ssr)","ssr/df")
+    return(print(d))
+    
+  })
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  output$diagnosticsu<- renderPlot({         
+    
+    f <- mdx()$f
+    mod <- mdx()$mod
+    model <- mdx()$model
+    
+    # sigma1 <- as.numeric(input$sigma1)
+    residx <-  resid(f)
+    fittedx <-    fitted(f)
+    
+    d <- cbind(residx, fittedx)
+    d2 <- as.data.frame(d)
+    
+    # https://stackoverflow.com/questions/14200027/how-to-adjust-binwidth-in-ggplot2
+    # hist(residx,breaks="FD")
+    # breaks <- pretty(range(residx), n = nclass.FD(residx), min.n = 1)
+    # bwidth <- breaks[2]-breaks[1]
+    
+    if (length(residx) < 200) {  bwidth <- length(residx) } else { bwidth <- 200 }
+    
+    yl <- ylab('Residuals')
+    
+    xl <- xlab("fitted")
+    
+    p1 <- ggplot(d2 , aes(x=fittedx , y=residx)) + geom_point (   colour="#69b3a2") + yl + xl
+    
+    p2 <- ggplot(d2 , aes(sample=residx )) + stat_qq(colour="#69b3a2") +
+      geom_abline(intercept=mean(residx), slope=sd(residx)  ,  colour="black") +
+      xlab('Normal theoretical quantiles')   + yl
+    ggtitle( " ")
+    
+    library(gridExtra)
+    library(grid)
+    df <- data.frame(Residuals = residx)
+    p3 <- ggplot(df, aes(x = Residuals)) + #stat_bin(bins = 30) +
+      geom_histogram(aes(y =..density..), 
+                     #breaks = seq(-50, 50, by = 2),
+                     bins=bwidth,
+                     colour = "black",
+                     fill = "#69b3a2") +
+      xlab('Residuals with superimposed sigma')   #+
+    
+    chk1 <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
+    chk2 <-  as.numeric(gsub("[^0-9.-]", "", input$ana ))
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+    if (model %in% c(12) ) {
+      
+      std <-  f$stats["Sigma"][[1]]
+      p3 <-  p3 + 
+        #  stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
+        stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
+      
+      grid.arrange(p1,  p3, p2, ncol=2,
+                   top = textGrob(paste0(" LS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+    }
+    
+    else  if (chk1==chk2) {  
+      
+      std <-  sigma(f) 
+      p3 <-  p3 + 
+        #   stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
+        stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
+      
+      grid.arrange(p1,  p3, p2, ncol=2,
+                   top = textGrob(paste0(" LS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+      
+    } else {
+      
+      std <-  sigma(f) 
+      p3 <- p3 + 
+        stat_function(fun = dnorm, args = list(mean = 0, sd = std  ), col='red')  
+      
+      grid.arrange(p1,  p3, p2, ncol=2,
+                   top = textGrob(paste0(" LS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+      
+    }
+  })
   
 })
 
