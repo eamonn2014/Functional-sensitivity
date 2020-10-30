@@ -663,12 +663,23 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                               ")),
                                         
                                ),
-                               tabPanel("9 User data listing", value=3, 
+                               
+                               tabPanel("9 Summary of models", value=3, 
+                                        
+                                        shinycssloaders::withSpinner(verbatimTextOutput("ssru"),type = 5),
+                                        h4(paste("Table 2 Summary of model fits, note model sigma when data generating mechanism and analysis model coincide")),
+                                        
+                                        shinycssloaders::withSpinner(verbatimTextOutput("ssr2u"),type = 5),
+                                        h4(paste("Table 3 Models on transformed data")),
+                               ),
+                               
+                               
+                               tabPanel("10 User data listing", value=3, 
                                         shinycssloaders::withSpinner(verbatimTextOutput("d3"),type = 5),
                                         
                                ),
                                
-                               tabPanel("10 Wiki", value=3, 
+                               tabPanel("11 Wiki", value=3, 
                                         h4(paste("Deal with read back when fitted and or limits cross multiple times the  y of interest (spec).")),
                                         h4(paste("Explain what is going on. ")),
                                         h4(paste("Convert main plot to plotly. ")),
@@ -1048,8 +1059,11 @@ server <- shinyServer(function(input, output   ) {
       return(list(  model=model, foo=mdata, f=f, mod=mod, x=x,y=y ))
       
     })
-    
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   output$plot2 <- renderPlot({         #standard errors
     
     model <- mdx()$model
@@ -1069,7 +1083,64 @@ server <- shinyServer(function(input, output   ) {
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
+  md2u <- reactive({
+    
+    spec <- as.numeric(input$spec)
+    Xspec <- as.numeric(input$Xspec)
+    
+    y <- mdx()$y
+    x <- mdx()$x
+    
+    
+    A <- array(NA, dim=c(12,6))
+    M <- list(NA, dim=c(24,1))
+    M <- array(NA, dim=c(24,1))
+    
+    for (j in 1:12) {
+      
+      res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0,  Xspec=Xspec) # don't print
+      
+      k <- j*2
+      m <- k-1
+      
+      M[k] <- res$f 
+      M[m] <- res$mod
+      
+      A[j,1] <- j          # model no
+      A[j,2] <- res$mod    # model
+      
+      A[j,3] <- p0f(res$dfs)    # d.f.
+      A[j,4] <- p4f(res$ssr)    # sum of squared residuals
+      A[j,5] <- p4f(res$rsd2)   # sigma
+      A[j,6] <- p4f(sqrt(res$ssr/res$dfs))
+      
+    }
+    
+    A <- data.frame( A[,c(1,2)],  apply(A[,c(3,4,5,6)],2, as.numeric))
+    
+    A <- plyr::arrange(A,A[,4])
+    return(list(  ssr=A, M=M))
+    
+  })
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  output$ssr2u <- renderPrint({
+    
+    d <- md2u()$M
+    
+    return(print(d))
+    
+  })  
   
+  output$ssru <- renderPrint({
+    
+    d <- md2u()$ssr
+    d <- as.data.frame(d)
+    names(d) <- c("model #","Model description", "d.f.", "Sum of square of residuals","Model Sigma" ,"Back transf. sigma")
+    return(print(d, row.names = FALSE))
+    
+  })  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$Xu <- renderPrint({
@@ -1139,30 +1210,31 @@ server <- shinyServer(function(input, output   ) {
                      fill = "#69b3a2") +
       xlab('Residuals with superimposed sigma')   #+
     
-    chk1 <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
-    chk2 <-  as.numeric(gsub("[^0-9.-]", "", input$ana ))
+   # chk1 <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
+    #chk2 <-  as.numeric(gsub("[^0-9.-]", "", input$ana ))
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
     if (model %in% c(12) ) {
       
+      
       std <-  f$stats["Sigma"][[1]]
       p3 <-  p3 + 
-        #  stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
+       # stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
         stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
       
       grid.arrange(p1,  p3, p2, ncol=2,
-                   top = textGrob(paste0(" LS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                   top = textGrob(paste0(" LS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
     }
     
-    else  if (chk1==chk2) {  
+    else  if (input$ana =="best") {  
       
       std <-  sigma(f) 
       p3 <-  p3 + 
-        #   stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
+      #  stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
         stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
       
       grid.arrange(p1,  p3, p2, ncol=2,
-                   top = textGrob(paste0(" LS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                   top = textGrob(paste0(" LS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
       
     } else {
       
