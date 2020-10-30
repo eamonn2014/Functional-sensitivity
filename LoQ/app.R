@@ -569,7 +569,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                          if your data columns have names. 
                           The top two radio button options are to help load. Of course only the 'Analysis model' radio buttons are needed. Here is a link to example data (download a file and click 'Browse...' to locate and upload for the analysis):")) ,
                                         
-                                        h4((":")) ,
+                                       
                                        
                                         tags$a(href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/data_example_1", tags$span(style="color:blue", "Example 1 data for analysis, has a header."),), 
                                         div(p(" ")),
