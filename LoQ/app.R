@@ -679,10 +679,25 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                ),
                                
                                tabPanel("11 Wiki", value=3, 
+                                        tags$hr(),
+                                        h4(paste("To do:")),
                                         h4(paste("Deal with read back when fitted and or limits cross multiple times the  y of interest (spec).")),
                                         h4(paste("Explain what is going on. ")),
                                         h4(paste("Convert main plot to plotly. ")),
-                                        h4(paste("Add mse? ")),
+                                        tags$hr(),
+                                        
+                                        h4(paste("R code to quickly write a small data set to your desktop...ready to be uploaded to app")),
+                                        h4("set.seed(124)"),
+                                        h4("n <- sample(1:100,1)"),
+                                        h4("x <- sort(rexp(n)*40)"),
+                                        h4("y <- 10 + x^.5 + rnorm(n)"),
+                                        h4("d <- cbind( x, y )"),
+                                        h4("write.table(d, file = paste0( file.path(Sys.getenv('USERPROFILE'),'Desktop'),'/d.txt'),
+                                                    sep = ' ', col.names = TRUE,
+                                                    quote=FALSE, qmethod = 'double', row.names = FALSE)"),
+                                        
+                                        tags$hr()
+                                        
                                        
                                )
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW 
