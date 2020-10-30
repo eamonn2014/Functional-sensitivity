@@ -47,8 +47,9 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function that does all the work!
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-loq <- function (x, y, model, spec, print.plot=1, Xspec) {
+ 
+ 
+loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   
   # Define analysis models
   if (model %in% 1 ) {mod="Linear Y=a+bX"}  
@@ -191,7 +192,9 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
     if (model %in% c(9)    )  {pspec <- (pspec)^2}
     if (model %in% c(11)   )  {pspec <- pspec^.5}
     
-    if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
+    if(sum(is.nan(pspec) )==0) { ##if no invalid computation do this:
+      if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
+    }
 
     # residuals original y and transformed back predicted values, residual sum of squares, this will be used to judge best model
     r <- (y1-p[,1]) 
@@ -314,7 +317,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec) {
   
   return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod, rsd2=rsd2, dfs=dfs  ))
  
-}
+} 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 css <- "
@@ -1010,7 +1013,7 @@ server <- shinyServer(function(input, output   ) {
           
         }
         
-        model <- which(ssr==min(ssr)) 
+        model <- which(ssr==min(ssr, na.rm=TRUE)) 
         mdata <- res$foo
         res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0,  Xspec=Xspec)  # run best model
         f=res2$f   
