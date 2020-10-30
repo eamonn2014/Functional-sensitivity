@@ -41,8 +41,8 @@
   options(scipen=999)
 
   # range of independent variable
- lowerV=0
- upperV=10
+   lowerV=0
+   upperV=10
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function that does all the work!
@@ -819,7 +819,6 @@ server <- shinyServer(function(input, output   ) {
     return(list(  y=y, x=x, d=d))
     
   })
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   md <- reactive({
     
@@ -1046,10 +1045,9 @@ server <- shinyServer(function(input, output   ) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
   })
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # analyse user data
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # analyse user data, alot of above code is reused
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   mdx <- reactive({
     
     df<-NULL
@@ -1102,12 +1100,8 @@ server <- shinyServer(function(input, output   ) {
       return(list(  model=model, foo=mdata, f=f, mod=mod, x=x,y=y ))
       
     })
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-  output$plot2 <- renderPlot({         #standard errors
+  output$plot2 <- renderPlot({         
     
     model <- mdx()$model
     foo <- mdx()$fo2
@@ -1117,15 +1111,12 @@ server <- shinyServer(function(input, output   ) {
 
     y <- mdx()$y
     x <- mdx()$x
-    
-  #  lowerV = floor(min(x))
-  #  upperV = ceiling(max(y))
-    
+ 
     loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
     
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+  # Repeat alot of above for user loaded data  
   md2u <- reactive({
     
     spec <- as.numeric(input$spec)
@@ -1173,7 +1164,7 @@ server <- shinyServer(function(input, output   ) {
     return(print(d))
     
   })  
-  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$ssru <- renderPrint({
     
     d <- md2u()$ssr
@@ -1182,9 +1173,6 @@ server <- shinyServer(function(input, output   ) {
     return(print(d, row.names = FALSE))
     
   })  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$Xu <- renderPrint({
     
@@ -1210,7 +1198,6 @@ server <- shinyServer(function(input, output   ) {
     
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
   output$diagnosticsu<- renderPlot({         
     
     f <- mdx()$f
@@ -1252,17 +1239,13 @@ server <- shinyServer(function(input, output   ) {
                      colour = "black",
                      fill = "#69b3a2") +
       xlab('Residuals with superimposed sigma')   #+
-    
-   # chk1 <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
-    #chk2 <-  as.numeric(gsub("[^0-9.-]", "", input$ana ))
-    
+   
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
     if (model %in% c(12) ) {
       
       
       std <-  f$stats["Sigma"][[1]]
       p3 <-  p3 + 
-       # stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
         stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
       
       grid.arrange(p1,  p3, p2, ncol=2,
@@ -1273,7 +1256,6 @@ server <- shinyServer(function(input, output   ) {
       
       std <-  sigma(f) 
       p3 <-  p3 + 
-      #  stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma1)        )) + 
         stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
       
       grid.arrange(p1,  p3, p2, ncol=2,
