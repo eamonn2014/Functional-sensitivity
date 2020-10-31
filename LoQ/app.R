@@ -665,7 +665,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                               Bottom left panel is the QQ plot for checking normality of residuals from the OLS fit.
                                               Top right panel is the histogram for checking normality of residuals from the OLS fit with 
                                               ~N(mean=0, sd=OLS model sigma) curve and true SD superimposed.
-                                              ")),
+                                              ")), 
                                         
                                ),
                                
