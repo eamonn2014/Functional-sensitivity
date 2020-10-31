@@ -116,7 +116,8 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
     dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
     
-    if (is.na(spec))  {spec=mean(dat2$linear.predictors, is.finite=TRUE)}
+   # if (is.na(spec))  {spec=mean(dat2$linear.predictors, is.finite=TRUE)}
+    if (is.na(spec))  {spec=mean(dat$y, is.finite=TRUE)}
     if (is.na(Xspec)) {Xspec=mean(dat$x, is.finite=TRUE)}
 
     #find nearest values to spec using brute force approach
@@ -421,13 +422,13 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                      
                                    splitLayout(
                                      textInput('sigma1', 
-                                               div(h5(tags$span(style="color:blue", "Residual err."))), ".1"),
+                                               div(h5(tags$span(style="color:blue", "Residual error"))), ".1"),
                                      
                                      textInput('spec', 
-                                               div(h5(tags$span(style="color:blue", "Enter Y spec"))), ""),
+                                               div(h5(tags$span(style="color:blue", "Y specification"))), ""),
                                      
                                      textInput('Xspec', 
-                                               div(h5(tags$span(style="color:blue", "Enter X spec"))), "")
+                                               div(h5(tags$span(style="color:blue", "X specification"))), "")
                                      
                                    ),
                                    
@@ -685,7 +686,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                         h4("The panel on the left contains the user inputs. The two empty specs relate to Y and X, 
                                         when left empty the mean of the predictions and the mean of X are used to read back X and predict Y respectively. "),
-                                        h4("When we enter a Y spec this goes through an analysis transformation and we read back. 
+                                        h4("When we enter a Y specification this goes through an analysis transformation and we read back. 
                                         Now we have an x that we back transform. "),
                                            
                                            h4("If we enter a X or use the mean of X we predict Y and back transform."),
@@ -705,7 +706,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                            The last column is the residual error calculated from the column 'ssr' divded by the degrees of freedom. 
                                            This is the residual that is presented with Figure 1. 
                                            Note the this sigma and the ols sigma will conincide when the data generating mechanism and analysis 
-                                           model coincide and will approximate the user input 'Residual err.'"),
+                                           model coincide and will approximate the user input 'Residual error'"),
                                       h4("Tabs 6-9 
                                         allow the user to upload data, perform and evaluate an analysis. 
                                         Obviously there is no data generating mechanism so the top panel of radio buttons are not required and so have no impact."),
@@ -724,7 +725,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                          
                                         tags$hr(),
                                         h4(paste("To do:")),
-                                        h4(paste("* Deal with read back when fitted and or limits cross multiple times the  y of interest (spec).")),
+                                        h4(paste("* Deal with read back when fitted and or limits cross multiple times the  y of interest (specification).")),
                                         h4(paste("* Convert main plot to plotly.")),
                                         
                                        
@@ -1019,7 +1020,7 @@ server <- shinyServer(function(input, output   ) {
         stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
       
       grid.arrange(p1,  p3, p2, ncol=2,
-                   top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                   top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
       }
     
     else  if (chk1==chk2) {  
@@ -1030,7 +1031,7 @@ server <- shinyServer(function(input, output   ) {
         stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
       
       grid.arrange(p1,  p3, p2, ncol=2,
-                   top = textGrob(paste0(" LS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                   top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
 
     } else {
       
@@ -1039,7 +1040,7 @@ server <- shinyServer(function(input, output   ) {
         stat_function(fun = dnorm, args = list(mean = 0, sd = std  ), col='red')  
       
       grid.arrange(p1,  p3, p2, ncol=2,
-                   top = textGrob(paste0(" LS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                   top = textGrob(paste0(" OLS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
       
     }
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
@@ -1249,7 +1250,7 @@ server <- shinyServer(function(input, output   ) {
         stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
       
       grid.arrange(p1,  p3, p2, ncol=2,
-                   top = textGrob(paste0(" LS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                   top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
     }
     
     else  if (input$ana =="best") {  
@@ -1259,7 +1260,7 @@ server <- shinyServer(function(input, output   ) {
         stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
       
       grid.arrange(p1,  p3, p2, ncol=2,
-                   top = textGrob(paste0(" LS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                   top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
       
     } else {
       
@@ -1268,7 +1269,7 @@ server <- shinyServer(function(input, output   ) {
         stat_function(fun = dnorm, args = list(mean = 0, sd = std  ), col='red')  
       
       grid.arrange(p1,  p3, p2, ncol=2,
-                   top = textGrob(paste0(" LS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+                   top = textGrob(paste0(" OLS model fit diagnostics, ",mod," estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
       
     }
   })
