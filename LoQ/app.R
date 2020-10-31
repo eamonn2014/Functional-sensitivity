@@ -2,53 +2,53 @@
 # White-margined Burrower Bug nymph - Sehirus cinctus 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  rm(list=ls()) 
-  set.seed(333) # reproducible
-  library(directlabels)
-  library(shiny) 
-  library(shinyjs)  
-  library(shinyWidgets)
-  library(shinythemes)  # more funky looking apps
-  library(shinyalert)
-  library(Hmisc)
-  library(rms)
-  library(ggplot2)
-  library(tidyverse)
-  library(shinycssloaders)
-  library(tvthemes)  # nice ggplot addition
+rm(list=ls()) 
+set.seed(333) # reproducible
+library(directlabels)
+library(shiny) 
+library(shinyjs)  
+library(shinyWidgets)
+library(shinythemes)  # more funky looking apps
+library(shinyalert)
+library(Hmisc)
+library(rms)
+library(ggplot2)
+library(tidyverse)
+library(shinycssloaders)
+library(tvthemes)  # nice ggplot addition
 
-  options(max.print=1000000)    
-  
-  fig.width6 <- 1100
-  fig.height6 <- 600
-  fig.width8 <- 1380
-  fig.height7 <- 770
-  
-  ## convenience functions
-  p0f <- function(x) {formatC(x, format="f", digits=0)}
-  p1f <- function(x) {formatC(x, format="f", digits=1)}
-  p2f <- function(x) {formatC(x, format="f", digits=2)}
-  p3f <- function(x) {formatC(x, format="f", digits=3)}
-  p4f <- function(x) {formatC(x, format="f", digits=4)}
-  p5f <- function(x) {formatC(x, format="f", digits=5)}
+options(max.print=1000000)    
 
-  logit <- function(p) log(1/(1/p-1))
-  expit <- function(x) 1/(1/exp(x) + 1)
-  inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
-  is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
-  
-  options(width=200)
-  options(scipen=999)
+fig.width6 <- 1100
+fig.height6 <- 600
+fig.width8 <- 1380
+fig.height7 <- 770
 
-  # range of independent variable
-   lowerV=0
-   upperV=10
+## convenience functions
+p0f <- function(x) {formatC(x, format="f", digits=0)}
+p1f <- function(x) {formatC(x, format="f", digits=1)}
+p2f <- function(x) {formatC(x, format="f", digits=2)}
+p3f <- function(x) {formatC(x, format="f", digits=3)}
+p4f <- function(x) {formatC(x, format="f", digits=4)}
+p5f <- function(x) {formatC(x, format="f", digits=5)}
+
+logit <- function(p) log(1/(1/p-1))
+expit <- function(x) 1/(1/exp(x) + 1)
+inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
+is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
+
+options(width=200)
+options(scipen=999)
+
+# range of independent variable
+lowerV=0
+upperV=10
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function that does all the work!
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
- 
+
+
 loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   
   # Define analysis models
@@ -78,7 +78,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   ty10 <- log(y); tx10 <- 1/x
   ty11 <- y^2;    tx11 <- x^2
   ty12 <- y;      tx12 <- x 
-
+  
   # transform spec for prediction, not only where x is trandsformed, above
   if (model %in% 4 ) {Xspec <- 1/Xspec}
   if (model %in% 5 ) {Xspec <- 1/Xspec}
@@ -87,7 +87,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   if (model %in% 8 ) {Xspec <- sqrt(Xspec)}
   if (model %in% 10) {Xspec <- 1/Xspec}
   if (model %in% 11) {Xspec <- Xspec^2}
-      
+  
   # save the original data
   x1 <- x
   y1 <- y
@@ -116,10 +116,10 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
     dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
     
-   # if (is.na(spec))  {spec=mean(dat2$linear.predictors, is.finite=TRUE)}
+    # if (is.na(spec))  {spec=mean(dat2$linear.predictors, is.finite=TRUE)}
     if (is.na(spec))  {spec=mean(dat$y, is.finite=TRUE)}
     if (is.na(Xspec)) {Xspec=mean(dat$x, is.finite=TRUE)}
-
+    
     #find nearest values to spec using brute force approach
     it <- which.min(abs(dat2$linear.predictors - spec))
     txpre<-dat2[it,]$x 
@@ -167,14 +167,14 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     xx<- NULL
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# ALL OTHER MODELS
-     } else {
+  } else {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     f <- lm(y~x)  
     # run regression on the transformed data grab slope intercept
     intercept <- coef(f)[1][[1]]
     slope <- coef(f)[2][[1]]
- 
+    
     # obtain the predictions 
     p <- predict.lm(f, interval="confidence")
     
@@ -196,12 +196,12 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     if(sum(is.nan(pspec) )==0) { ##if no invalid computation do this:
       if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
     }
-
+    
     # residuals original y and transformed back predicted values, residual sum of squares, this will be used to judge best model
     r <- (y1-p[,1]) 
     r2 <-  (y1-p[,1])^2
     ssr <- sum(r2, na.rm=T) 
-  
+    
     # transform the specification that we will read back from, note only those in which y is transformed
     if (is.na(spec)) {spec=mean(y, is.finite=TRUE)}    
     else { 
@@ -209,14 +209,14 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
       if (model %in% c(3,5)  )  {spec <- 1/spec}
       if (model %in% c(9)    )  {spec <- sqrt(spec)}
       if (model %in% c(11)   )  {spec <- spec ^2}
-      }
+    }
     
     tyspec <- spec     
-     if (model %in% c(2,7,10)) {spec <- exp(spec)} 
-     if (model %in% c(3,5)  )  {spec <- 1/spec} 
-     if (model %in% c(9)    )  {spec <- (spec)^2} 
-     if (model %in% c(11)   )  {spec <- spec^.5}  
-
+    if (model %in% c(2,7,10)) {spec <- exp(spec)} 
+    if (model %in% c(3,5)  )  {spec <- 1/spec} 
+    if (model %in% c(9)    )  {spec <- (spec)^2} 
+    if (model %in% c(11)   )  {spec <- spec^.5}  
+    
     # grab the residual standard deviation
     rsd2 <- as.data.frame(anova(f))[2,3]^.5 
     dfs <- anova(f)["Residuals","Df"]
@@ -242,7 +242,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     if (model %in% c(6,7)  )  {Xspec <- exp(Xspec)  }
     if (model %in% c(8)    )  {Xspec <- Xspec^2}
     if (model %in% c(11)   )  {Xspec <- Xspec^.5 }
-       
+    
     # ensure order of limits is correct
     limits <- sort(c(txlow,txup))
     txlow <- limits[1]
@@ -252,7 +252,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     
     foo <- data.frame(cbind(x=x1, obsy=y1, x2=x,y2=y,pred= p[,1], p2a=p[,2], p3=p[,3], r=r, rr2=r2, rsd2=rsd2, dfs=dfs,ssr=ssr,df2=df2))
     foo <- foo[order(foo$obsy),]
-
+    
   }
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # help with plotting
@@ -262,14 +262,14 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   ystep <- (ymax-ymin)/8
   ymin1 <-  ymin-ystep
   ymax1 <-  ymax+ystep
- 
+  
   # plot and present the estimated read back
   p1 <- ggplot(foo, aes(x=x,y=pred)) + 
     geom_line( ) +
     geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
     geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  #+
-#    scale_x_continuous(limits = c(lowerV, upperV), breaks=seq(lowerV, upperV)) #, by=((upperV-lowerV)/10))) + # breaks = seq(0, 100, by = 20)
- # scale_y_continuous(limits = c(ymin1, ymax1))   
+  #    scale_x_continuous(limits = c(lowerV, upperV), breaks=seq(lowerV, upperV)) #, by=((upperV-lowerV)/10))) + # breaks = seq(0, 100, by = 20)
+  # scale_y_continuous(limits = c(ymin1, ymax1))   
   
   p <- p1  + geom_hline(yintercept=spec,  colour="#990000", linetype="dashed")
   p <- p   + geom_vline(xintercept=Xspec, colour="#008000", linetype="dashed")
@@ -296,16 +296,16 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   )   
   
   p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
-                              p2f(Xspec) ,", the estimate of Y is ",
-                              p4f(pspec[1])," with 95%CI: (", 
-                              p4f(pspec[2]),", ",
-                              p4f(pspec[3]),")",
+                               p2f(Xspec) ,", the estimate of Y is ",
+                               p4f(pspec[1])," with 95%CI: (", 
+                               p4f(pspec[2]),", ",
+                               p4f(pspec[3]),")",
                                "\nRead back at response of ", 
-                              p2f(spec) ,", the estimate of X is ",
-                              p2f(txpre)," with 95%CI: (", 
-                              p2f(txlow),", ",
-                              p2f(txup),")",  
-                              sep=" "),
+                               p2f(spec) ,", the estimate of X is ",
+                               p2f(txpre)," with 95%CI: (", 
+                               p2f(txlow),", ",
+                               p2f(txup),")",  
+                               sep=" "),
                 caption = paste0("If X and/or Y specification is missing, mean of the data is used, dashed lines")
   )  #   +
   
@@ -317,7 +317,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   if (print.plot==1) {print(p)}
   
   return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod, rsd2=rsd2, dfs=dfs  ))
- 
+  
 } 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -419,7 +419,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                      textInput('b', 
                                                div(h5(tags$span(style="color:blue", "Slope"))), ".1")
                                    ),
-                                     
+                                   
                                    splitLayout(
                                      textInput('sigma1', 
                                                div(h5(tags$span(style="color:blue", "Residual error"))), ".1"),
@@ -432,7 +432,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                      
                                    ),
                                    
-                                    
+                                   
                                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     
                                    
                                    radioButtons(
@@ -548,7 +548,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                               ")),
                                         
                                ),
-
+                               
                                tabPanel("4 Models summary", value=3, 
                                         
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr"),type = 5),
@@ -557,16 +557,16 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr2"),type = 5),
                                         h4(paste("Table 3 Models on transformed data")),
                                ),
-                             
+                               
                                
                                tabPanel("5 Data listing", value=3, 
-                                     #   h4(paste("Table 4 Means")),
-                                      #  shinycssloaders::withSpinner(verbatimTextOutput("dA"),type = 5),
+                                        #   h4(paste("Table 4 Means")),
+                                        #  shinycssloaders::withSpinner(verbatimTextOutput("dA"),type = 5),
                                         h4(paste("Table 4 Listing")),
                                         shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
                                ),
                                
-                                
+                               
                                
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~NEW
                                tabPanel("6 User upload", fluid = TRUE, width = 4,
@@ -575,8 +575,8 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                          if your data columns have names. 
                           The top two radio button options are to help load. Of course only the 'Analysis model' radio buttons are needed. Here is a link to example data (download a file and click 'Browse...' to locate and upload for the analysis):")) ,
                                         
-                                       
-                                       
+                                        
+                                        
                                         tags$a(href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/data_example_1", tags$span(style="color:blue", "Example 1 data for analysis, has a header."),), 
                                         div(p(" ")),
                                         div(p(" ")),
@@ -590,60 +590,60 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                           
                                           # Sidebar panel for inputs ----
                                           sidebarPanel(width=2,
-                                            
-                                            # Input: Select a file ----
-                                            fileInput("file1", "Choose CSV File",
-                                                      multiple = TRUE,
-                                                      accept = c("text/csv",
-                                                                 "text/comma-separated-values,text/plain",
-                                                                 ".csv")),
-                                            
-                                            # Horizontal line ----
-                                            tags$hr(),
-                                            
-                                            # Input: Checkbox if file has header ----
-                                            checkboxInput("header", "Header", TRUE),
-                                            
-                                            # Input: Select separator ----
-                                            radioButtons("sep", "Separator",
-                                                         choices = c(Comma = ",",
-                                                                     Semicolon = ";",
-                                                                     Tab = "\t",
-                                                                     Whitespace = ""),
-                                                         selected = ""),
-                                            
-                                            # Input: Select quotes ----
-                                            radioButtons("quote", "Quote",
-                                                         choices = c(None = "",
-                                                                     "Double Quote" = '"',
-                                                                     "Single Quote" = "'"),
-                                                         selected = ''),
-                                            
-                                            # Horizontal line ----
-                                           # tags$hr(),
-                                            
-                                            # Input: Select number of rows to display ----
-                                            # radioButtons("disp", "List all the data or first 6 rows only",
-                                            #              choices = c(Head = "head",
-                                            #                          All = "all"),
-                                            #              selected = "head"),
-                                            
-                                            # Horizontal line ----
-                                            # tags$hr(),
-                                            
-                                            # Input: Select number of rows to display ----
-                                            # radioButtons("what", "Output",
-                                            #              choices = c(Analysis = "Analysis",
-                                            #                          Plot = "plot"),
-                                            #              selected = "Analysis")
-                                            
+                                                       
+                                                       # Input: Select a file ----
+                                                       fileInput("file1", "Choose CSV File",
+                                                                 multiple = TRUE,
+                                                                 accept = c("text/csv",
+                                                                            "text/comma-separated-values,text/plain",
+                                                                            ".csv")),
+                                                       
+                                                       # Horizontal line ----
+                                                       tags$hr(),
+                                                       
+                                                       # Input: Checkbox if file has header ----
+                                                       checkboxInput("header", "Header", TRUE),
+                                                       
+                                                       # Input: Select separator ----
+                                                       radioButtons("sep", "Separator",
+                                                                    choices = c(Comma = ",",
+                                                                                Semicolon = ";",
+                                                                                Tab = "\t",
+                                                                                Whitespace = ""),
+                                                                    selected = ""),
+                                                       
+                                                       # Input: Select quotes ----
+                                                       radioButtons("quote", "Quote",
+                                                                    choices = c(None = "",
+                                                                                "Double Quote" = '"',
+                                                                                "Single Quote" = "'"),
+                                                                    selected = ''),
+                                                       
+                                                       # Horizontal line ----
+                                                       # tags$hr(),
+                                                       
+                                                       # Input: Select number of rows to display ----
+                                                       # radioButtons("disp", "List all the data or first 6 rows only",
+                                                       #              choices = c(Head = "head",
+                                                       #                          All = "all"),
+                                                       #              selected = "head"),
+                                                       
+                                                       # Horizontal line ----
+                                                       # tags$hr(),
+                                                       
+                                                       # Input: Select number of rows to display ----
+                                                       # radioButtons("what", "Output",
+                                                       #              choices = c(Analysis = "Analysis",
+                                                       #                          Plot = "plot"),
+                                                       #              selected = "Analysis")
+                                                       
                                           ),
                                           
                                           # Main panel for displaying outputs ----
                                           mainPanel(
                                             
                                             # Output: Data file ----
-                                           
+                                            
                                             div(plotOutput("plot2", width=fig.width6, height=fig.height6)),
                                             h4(paste("Figure 3. User uploaded data")),  
                                             h4(paste("X")),
@@ -689,14 +689,14 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                tabPanel("10 Wiki", value=3, 
                                         
                                         tags$hr(),
-                                      
+                                        
                                         
                                         h4("The panel on the left contains the user inputs. The two empty specifications relate to Y and X, 
                                         when left empty the mean of the Y and the mean of X are used to read back X and predict Y respectively. "),
                                         h4("When we enter a Y specification this goes through an analysis transformation and we read back. 
                                         Now we have an X that we back transform. "),
-                                           
-                                           h4("If we enter a X or use the mean of X we predict Y and back transform."),
+                                        
+                                        h4("If we enter a X or use the mean of X we predict Y and back transform."),
                                         h4("Tab 1 is the model fit based on the selcted radio buttons. Tab 2 is simple summary stats of the original data (plotted in Figure 1). 
                                         The Diagnostic tab 3 assesses the OLS model fit (using transformed data)."),
                                         
@@ -715,10 +715,10 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                            This is the residual that is presented with Figure 1. 
                                            Note the this sigma and the OLS sigma will conincide when the data generating mechanism and analysis 
                                            model coincide and will approximate the user input 'Residual error'"),
-                                      h4("Tabs 6-9 
+                                        h4("Tabs 6-9 
                                         allow the user to upload data, perform and evaluate an analysis. 
                                         Obviously there is no data generating mechanism so the top panel of radio buttons are not required and so have no impact."),
-                                      h4("Note the restricted cubic spine model will be the only model in which the fit may not pass through the mean of the data."),
+                                        h4("Note the restricted cubic spine model will be the only model in which the fit may not pass through the mean of the data."),
                                         tags$hr(),
                                         
                                         h4(paste("R code to quickly write a small data set to your desktop...ready to be uploaded to app")),
@@ -730,13 +730,13 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         h4("write.table(d, file = paste0( file.path(Sys.getenv('USERPROFILE'),'Desktop'),'/d.txt'),
                                                     sep = ' ', col.names = TRUE,
                                                     quote=FALSE, qmethod = 'double', row.names = FALSE)"),
-                                         
+                                        
                                         tags$hr(),
                                         h4(paste("To do:")),
                                         h4(paste("* Deal with read back when fitted and or limits cross multiple times the  y of interest (specification).")),
                                         h4(paste("* Convert main plot to plotly.")),
                                         
-                                       
+                                        
                                )
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW 
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NE
@@ -746,7 +746,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                
                                
                                ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-                               )
+                             )
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    )
                  ) 
@@ -900,7 +900,7 @@ server <- shinyServer(function(input, output   ) {
       A[j,4] <- p4f(res$ssr)    # sum of squared residuals
       A[j,5] <- p4f(res$rsd2)   # sigma
       A[j,6] <- p4f(sqrt(res$ssr/res$dfs))
-
+      
     }
     
     A <- data.frame( A[,c(1,2)],  apply(A[,c(3,4,5,6)],2, as.numeric))
@@ -913,14 +913,14 @@ server <- shinyServer(function(input, output   ) {
   output$X <- renderPrint({
     
     d <- md()$foo
-    return(summary(d$x))
+    return(print(summary(d$x), digits=6))
     
   }) 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$Y <- renderPrint({
     
     d <- md()$foo
-    return(summary(d$obsy))
+    return(print(summary(d$obsy), digits=6))
     
   }) 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -936,7 +936,7 @@ server <- shinyServer(function(input, output   ) {
     x <- d$x
     
     loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
-
+    
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$d2 <- renderPrint({
@@ -955,8 +955,8 @@ server <- shinyServer(function(input, output   ) {
     d <- plyr::arrange(d,x)
     dA <- apply(d,2,mean)
     dA <- p5f(dA)
-   
-   
+    
+    
     dA <- lapply(dA, as.numeric)
     dA <- as.data.frame(dA)
     names(dA) <- c("x","y","transformed x","transformed y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2","sigma","df","sum of sq residuals (ssr)","ssr/df")
@@ -1044,7 +1044,7 @@ server <- shinyServer(function(input, output   ) {
       
       grid.arrange(p1,  p3, p2, ncol=2,
                    top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-      }
+    }
     
     else  if (chk1==chk2) {  
       
@@ -1055,7 +1055,7 @@ server <- shinyServer(function(input, output   ) {
       
       grid.arrange(p1,  p3, p2, ncol=2,
                    top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-
+      
     } else {
       
       std <-  sigma(f) 
@@ -1067,7 +1067,7 @@ server <- shinyServer(function(input, output   ) {
       
     }
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-
+    
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # analyse user data, alot of above code is reused
@@ -1081,49 +1081,49 @@ server <- shinyServer(function(input, output   ) {
                    sep = input$sep,
                    quote = input$quote)
     
-     d <- as.data.frame(df)
-     
-     d <- d[,c("x","y")]
-     
-     
-     spec <- as.numeric(input$spec)
-     Xspec <- as.numeric(input$Xspec)
-     
-     y <- d$y
-     x <- d$x
+    d <- as.data.frame(df)
+    
+    d <- d[,c("x","y")]
+    
+    
+    spec <- as.numeric(input$spec)
+    Xspec <- as.numeric(input$Xspec)
+    
+    y <- d$y
+    x <- d$x
+    
+    ssr <- rep(NA,12)
+    
+    mdata <- list(NA)
+    
+    if (input$ana %in% "best") {
       
-     ssr <- rep(NA,12)
-      
-     mdata <- list(NA)
-      
-      if (input$ana %in% "best") {
+      for (j in 1:12) {
         
-        for (j in 1:12) {
-          
-          res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0, Xspec=Xspec) # don't print
-          ssr[j] <- res$ssr
-          
-        }
-        
-        model <- which(ssr==min(ssr, na.rm=TRUE)) 
-        mdata <- res$foo
-        res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0,  Xspec=Xspec)  # run best model
-        f=res2$f   
-        mod<- res2$mod
-        
-      } else {
-        
-        res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec,  Xspec=Xspec) 
-        mdata <- res$foo
-        model <- as.numeric(input$ana)
-        f=res$f
-        mod<- res$mod
+        res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0, Xspec=Xspec) # don't print
+        ssr[j] <- res$ssr
         
       }
       
-      return(list(  model=model, foo=mdata, f=f, mod=mod, x=x,y=y ))
+      model <- which(ssr==min(ssr, na.rm=TRUE)) 
+      mdata <- res$foo
+      res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0,  Xspec=Xspec)  # run best model
+      f=res2$f   
+      mod<- res2$mod
       
-    })
+    } else {
+      
+      res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec,  Xspec=Xspec) 
+      mdata <- res$foo
+      model <- as.numeric(input$ana)
+      f=res$f
+      mod<- res$mod
+      
+    }
+    
+    return(list(  model=model, foo=mdata, f=f, mod=mod, x=x,y=y ))
+    
+  })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   output$plot2 <- renderPlot({         
     
@@ -1132,10 +1132,10 @@ server <- shinyServer(function(input, output   ) {
     
     spec <- as.numeric(input$spec)
     Xspec <- as.numeric(input$Xspec)
-
+    
     y <- mdx()$y
     x <- mdx()$x
- 
+    
     loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
     
   })
@@ -1201,14 +1201,14 @@ server <- shinyServer(function(input, output   ) {
   output$Xu <- renderPrint({
     
     d <- mdx()$foo
-    return(summary(d$x))
+    return(print(summary(d$x), digits=6))
     
   }) 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$Yu <- renderPrint({
     
     d <- mdx()$foo
-    return(summary(d$obsy))
+    return(print(summary(d$obsy), digits=6))
     
   }) 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1220,7 +1220,7 @@ server <- shinyServer(function(input, output   ) {
     names(d) <- c("x","y","transformed x","transformed y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2","sigma","df","sum of sq residuals (ssr)","ssr/df")
     return(print(d))
     
-  
+    
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1280,7 +1280,7 @@ server <- shinyServer(function(input, output   ) {
                      colour = "black",
                      fill = "#69b3a2") +
       xlab('Residuals with superimposed sigma')   #+
-   
+    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
     if (model %in% c(12) ) {
       
