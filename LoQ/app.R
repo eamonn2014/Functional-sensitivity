@@ -530,6 +530,8 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         shinycssloaders::withSpinner(verbatimTextOutput("X"),type = 5),
                                         h4(paste("Y")),
                                         shinycssloaders::withSpinner(verbatimTextOutput("Y"),type = 5),
+                                        h4(paste("Table 1 Summary statistics")),
+                                        
                                ),
                                
                                tabPanel("3 Diagnostics", value=3, 
@@ -558,6 +560,9 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                              
                                
                                tabPanel("5 Data listing", value=3, 
+                                     #   h4(paste("Table 4 Means")),
+                                      #  shinycssloaders::withSpinner(verbatimTextOutput("dA"),type = 5),
+                                        h4(paste("Table 4 Listing")),
                                         shinycssloaders::withSpinner(verbatimTextOutput("d2"),type = 5),
                                ),
                                
@@ -667,16 +672,18 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                tabPanel("8 User summary", value=3, 
                                         
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssru"),type = 5),
-                                        h4(paste("Table 4 Summary of model fits.")),
+                                        h4(paste("Table 5 Summary of model fits.")),
                                         
                                         shinycssloaders::withSpinner(verbatimTextOutput("ssr2u"),type = 5),
-                                        h4(paste("Table 5 Models on transformed data")),
+                                        h4(paste("Table 6 Models on transformed data")),
                                ),
                                
                                
                                tabPanel("9 User listing", value=3, 
+                                        #h4(paste("Table 8 Means")),
+                                        #shinycssloaders::withSpinner(verbatimTextOutput("d4u"),type = 5),
+                                        h4(paste("Table 7 Listing")),
                                         shinycssloaders::withSpinner(verbatimTextOutput("d3"),type = 5),
-                                        
                                ),
                                
                                tabPanel("10 Wiki", value=3, 
@@ -942,6 +949,21 @@ server <- shinyServer(function(input, output   ) {
     
   }) 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  output$dA <- renderPrint({
+    
+    d <- md()$foo
+    d <- plyr::arrange(d,x)
+    dA <- apply(d,2,mean)
+    dA <- p5f(dA)
+   
+   
+    dA <- lapply(dA, as.numeric)
+    dA <- as.data.frame(dA)
+    names(dA) <- c("x","y","transformed x","transformed y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2","sigma","df","sum of sq residuals (ssr)","ssr/df")
+    return(print(dA, row.names=FALSE))
+    
+  })
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$d <- renderPrint({
     
     d <- dat()$d
@@ -1197,6 +1219,23 @@ server <- shinyServer(function(input, output   ) {
     d <- plyr::arrange(d,x)
     names(d) <- c("x","y","transformed x","transformed y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2","sigma","df","sum of sq residuals (ssr)","ssr/df")
     return(print(d))
+    
+  
+  })
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  output$d4u <- renderPrint({
+    
+    d <- mdx()$foo
+    d <- plyr::arrange(d,x)
+    dA <- apply(d,2,mean)
+    dA <- p5f(dA)
+    
+    
+    dA <- lapply(dA, as.numeric)
+    dA <- as.data.frame(dA)
+    names(dA) <- c("x","y","transformed x","transformed y","prediction","lower 95%CI", "upper 95%CI", "residual","residual^2","sigma","df","sum of sq residuals (ssr)","ssr/df")
+    return(print(dA, row.names=FALSE))
     
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
