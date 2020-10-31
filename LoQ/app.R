@@ -684,28 +684,29 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         tags$hr(),
                                       
                                         
-                                        h4("The panel on the left contains the user inputs. The two empty specs relate to Y and X, 
-                                        when left empty the mean of the predictions and the mean of X are used to read back X and predict Y respectively. "),
+                                        h4("The panel on the left contains the user inputs. The two empty specifications relate to Y and X, 
+                                        when left empty the mean of the Y and the mean of X are used to read back X and predict Y respectively. "),
                                         h4("When we enter a Y specification this goes through an analysis transformation and we read back. 
-                                        Now we have an x that we back transform. "),
+                                        Now we have an X that we back transform. "),
                                            
                                            h4("If we enter a X or use the mean of X we predict Y and back transform."),
                                         h4("Tab 1 is the model fit based on the selcted radio buttons. Tab 2 is simple summary stats of the original data (plotted in Figure 1). 
-                                        The Diagnostic tab 3 assesses the ols model fit (using transformed data)."),
+                                        The Diagnostic tab 3 assesses the OLS model fit (using transformed data)."),
                                         
                                         h4("Tab 4 summarises briefy all analysis models. 'Back transformed' sigma is the residual error 
                                         calculated from the column 'ssr' in the listing divded by the degrees of freedom."),
                                         
-                                        h4("Here we describe the contents of the data listing tab: x is uniform(N,0,10) and y is then derived from the user inputs in tandem with the selected 
+                                        h4("Now we describe the contents of the data listing tab: X is uniform(N,0,10) and y is then derived from the user
+                                        inputs in tandem with the selected 
                                            'Data generating mechanism'. Next we make a transformation of the data determined by the analysis method model. 
                                            See columns 'transformed x' and 'transformed y'. A simple OLS model is fit and prediction made. The prediction 
                                            is then transformed back to the original scale and this is presented next with associated 95% confidence interval. 
-                                           This is what we plot along with x and y mentioned in the first sentance. The residual is y minus the prediction. 
+                                           This is what we plot along with X and Y mentioned in the first sentence. The residual is Y minus the prediction. 
                                            We square this next, the sum of this is used to judge the best model (see column 'ssr'). 
                                            The column labelled 'sigma' is the residual error from the OLS model. 
                                            The last column is the residual error calculated from the column 'ssr' divded by the degrees of freedom. 
                                            This is the residual that is presented with Figure 1. 
-                                           Note the this sigma and the ols sigma will conincide when the data generating mechanism and analysis 
+                                           Note the this sigma and the OLS sigma will conincide when the data generating mechanism and analysis 
                                            model coincide and will approximate the user input 'Residual error'"),
                                       h4("Tabs 6-9 
                                         allow the user to upload data, perform and evaluate an analysis. 
