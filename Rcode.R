@@ -29,17 +29,18 @@
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Create data # range of independent variable
+# Create data, range of independent variable
   lowerV=0
   upperV=10
   N=100
   a=10 
-  b=.1 
-  sigma=.1
-  spec=15
-  Xspec=5
+  b=0.1 
+  sigma=0.1
+  spec=NA
+  Xspec=NA
   model="model11"    
-
+  ana <- 'best'
+  
   x <-  array(runif(N, lowerV, upperV))  # no negative values            
   noise <-  rnorm(N,0, sigma)           # residual error
 
@@ -94,7 +95,17 @@
   # function that does all the work!
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  loq <- function (x, y, model, spec, print.plot=1, Xspec) {
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+  # function that does all the work!
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+  # function that does all the work!
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  
+  loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     
     # Define analysis models
     if (model %in% 1 ) {mod="Linear Y=a+bX"}  
@@ -156,12 +167,13 @@
       f <- ols(y~rcs(x,4), dat)   
       
       # obtain the predictions 
-      dat2 <- expand.grid(x=seq(lowerV,upperV,.001))
+      dat2 <- expand.grid(x=seq(min(x1),max(x1),.001))
       dat2 <- cbind(dat2, predict(f, dat2, se.fit=TRUE))
       dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
       dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
       
-      if (is.na(spec))  {spec=mean(dat2$linear.predictors, is.finite=TRUE)}
+      # if (is.na(spec))  {spec=mean(dat2$linear.predictors, is.finite=TRUE)}
+      if (is.na(spec))  {spec=mean(dat$y, is.finite=TRUE)}
       if (is.na(Xspec)) {Xspec=mean(dat$x, is.finite=TRUE)}
       
       #find nearest values to spec using brute force approach
@@ -179,9 +191,9 @@
       txup <-  limits[2]
       
       # rcs will report the limit as the nearest value to spec if x value is beyond range, so lets report 999
-      txpre <- ifelse((txpre >= upperV )|(txpre <= lowerV ), 999, txpre)
-      txlow <- ifelse((txlow >= upperV )|(txlow <= lowerV ), 999, txlow)
-      txup <-  ifelse((txup >=  upperV )|(txup  <= lowerV ), 999, txup)
+      txpre <- ifelse((txpre >= max(dat$x) |(txpre <= min(dat$x)) ), 999, txpre)
+      txlow <- ifelse((txlow >= max(dat$x) |(txlow <= min(dat$x) )), 999, txlow)
+      txup <-  ifelse((txup >=  max(dat$x) |(txup  <= min(dat$x) )), 999, txup)
       
       rsd2 <-  anova(f)["ERROR","MS"]^.5
       dfs <- anova(f)["ERROR","d.f."]
@@ -237,8 +249,8 @@
       if (model %in% c(9)    )  {pspec <- (pspec)^2}
       if (model %in% c(11)   )  {pspec <- pspec^.5}
       
-      if(sum(is.nan(pspec) )==0) {
-      if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
+      if(sum(is.nan(pspec) )==0) { ##if no invalid computation do this:
+        if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
       }
       
       # residuals original y and transformed back predicted values, residual sum of squares, this will be used to judge best model
@@ -300,6 +312,7 @@
     }
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # help with plotting
+    lowerV=floor(min(foo$x)); upperV=ceiling(max(foo$x))
     ymin <- min(y)
     ymax <- max(y)
     ystep <- (ymax-ymin)/8
@@ -310,9 +323,9 @@
     p1 <- ggplot(foo, aes(x=x,y=pred)) + 
       geom_line( ) +
       geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
-      geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  +
-      scale_x_continuous(limits = c(lowerV, upperV), breaks=lowerV: upperV)  
-    scale_y_continuous(limits = c(ymin1, ymax1))   
+      geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  #+
+    #    scale_x_continuous(limits = c(lowerV, upperV), breaks=seq(lowerV, upperV)) #, by=((upperV-lowerV)/10))) + # breaks = seq(0, 100, by = 20)
+    # scale_y_continuous(limits = c(ymin1, ymax1))   
     
     p <- p1  + geom_hline(yintercept=spec,  colour="#990000", linetype="dashed")
     p <- p   + geom_vline(xintercept=Xspec, colour="#008000", linetype="dashed")
@@ -338,7 +351,7 @@
                     axis.title = element_text(size = 16, angle = 00)
     )   
     
-    p <- p + labs(title = paste0("Fitted model '",mod,"' with 95% confidence and raw data. Residual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
+    p <- p + labs(title = paste0("Fitted model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
                                  p2f(Xspec) ,", the estimate of Y is ",
                                  p4f(pspec[1])," with 95%CI: (", 
                                  p4f(pspec[2]),", ",
@@ -361,21 +374,20 @@
     
     return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod, rsd2=rsd2, dfs=dfs  ))
     
-  }
+  } 
   
+   
+   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   ssr <- rep(NA,12)
   
   mdata <- list(NA)
-  model=2  # data generating
-  spec=mean(y)
-  Xspec=mean(x)
-  
+  model=2  # data generating mechanism
+ 
   res <- loq(x=x, y=y, model=2, spec=NA  , print.plot=1, Xspec=NA ) # don't
   
-  
-  # best model
+  # run through all models and select best model
     for (j in 1:12) {
       
       res <- loq(x=x, y=y, model=j, spec= NA, print.plot=0, Xspec=NA) # don't print
@@ -386,31 +398,73 @@
     model <- which(ssr==min(ssr)) 
     mdata <- res$foo
     res2 <- loq(x=x, y=y, model=model, spec=  NA, print.plot=1,  Xspec=NA)  # run best model
-     #
-    
+ 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     ## select any model
     res <- loq(x=x, y=y, model=12, spec= NA,  Xspec=NA, print.plot=1) 
     head(res$foo)
     
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+# diagnostics
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      
+      f <- res$f
+      mod <- res$mod
+      model <- model 
+      
+      
+     # sigma1 <- as.numeric(input$sigma1)
+      residx <-  resid(f)
+      fittedx <-    fitted(f)
+      
+      d <- cbind(residx, fittedx)
+      d2 <- as.data.frame(d)
+      
+      # https://stackoverflow.com/questions/14200027/how-to-adjust-binwidth-in-ggplot2
+      hist(residx,breaks="FD")
+      breaks <- pretty(range(residx), n = nclass.FD(residx), min.n = 1)
+      bwidth <- breaks[2]-breaks[1]
+      
+      yl <- ylab('Residuals')
+      
+      xl <- xlab("fitted")
+      
+      p1 <- ggplot(d2 , aes(x=fittedx , y=residx)) + geom_point (   colour="#69b3a2") + yl + xl
+      
+      p2 <- ggplot(d2 , aes(sample=residx )) + stat_qq(colour="#69b3a2") +
+        geom_abline(intercept=mean(residx), slope=sd(residx)  ,  colour="black") +
+        xlab('Normal theoretical quantiles')   + yl
+      ggtitle( " ")
+      
+      library(gridExtra)
+      library(grid)
+      df <- data.frame(Residuals = residx)
+      p3 <- ggplot(df, aes(x = Residuals)) + #stat_bin(bins = 30) +
+        geom_histogram(aes(y =..density..), 
+                       #breaks = seq(-50, 50, by = 2),
+                       binwidth=bwidth,
+                       colour = "black",
+                       fill = "#69b3a2") +
+        xlab('Residuals with superimposed sigma')   #+
+      
+      chk1 <-  as.numeric(gsub("[^0-9.-]", "", 11 ))  # change these at whim, I use 11
+      chk2 <-  as.numeric(gsub("[^0-9.-]", "", 11 ))
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+      
+        
+        std <-  f$stats["Sigma"][[1]]
+        p3 <-  p3 + 
+          stat_function(fun = dnorm, args = list(mean = 0, sd =  as.numeric(sigma)        )) + 
+          stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
+        
+        grid.arrange(p1,  p3, p2, ncol=2,
+                     top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma) 
+                                           ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+        
+        
+ 
   
   
   
