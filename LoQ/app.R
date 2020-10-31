@@ -693,7 +693,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         h4("Tab 1 is the model fit based on the selcted radio buttons. Tab 2 is simple summary stats of the original data (plotted in Figure 1). 
                                         The Diagnostic tab 3 assesses the OLS model fit (using transformed data)."),
                                         
-                                        h4("Tab 4 summarises briefy all analysis models. 'Back transformed' sigma is the residual error 
+                                        h4("Tab 4 summarises briefly all analysis models. 'Back transformed' sigma is the residual error 
                                         calculated from the column 'ssr' in the listing divded by the degrees of freedom."),
                                         
                                         h4("Now we describe the contents of the data listing tab: X is uniform(N,0,10) and y is then derived from the user
