@@ -306,7 +306,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
                               p2f(txlow),", ",
                               p2f(txup),")",  
                               sep=" "),
-                caption = paste0("If spec is missing, mean of the data is used")
+                caption = paste0("If X and/or Y specification is missing, mean of the data is used, dashed lines")
   )  #   +
   
   # tried this package for plots themes but got errors
