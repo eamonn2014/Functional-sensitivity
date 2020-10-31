@@ -295,7 +295,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
                   axis.title = element_text(size = 16, angle = 00)
   )   
   
-  p <- p + labs(title = paste0("Fitted model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
+  p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
                               p2f(Xspec) ,", the estimate of Y is ",
                               p4f(pspec[1])," with 95%CI: (", 
                               p4f(pspec[2]),", ",
@@ -711,7 +711,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                       h4("Tabs 6-9 
                                         allow the user to upload data, perform and evaluate an analysis. 
                                         Obviously there is no data generating mechanism so the top panel of radio buttons are not required and so have no impact."),
-                                    
+                                      h4("Note the restricted cubic spine model will be the only model in which the fit may not pass through the mean of the data."),
                                         tags$hr(),
                                         
                                         h4(paste("R code to quickly write a small data set to your desktop...ready to be uploaded to app")),
