@@ -339,7 +339,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                  h2("Exploring transformations and model fitting"), 
                  
                  h4("An independent variable is generated from a Uniform(0:10) distribution. The response derived from the user inputs and chosen
-                 data generating mechanisms. The data can be analysed using a selection of models. The best model fit can be selected ('Best scenario'), judged 
+                 data generating mechanism. The data can be analysed using a selection of models. The best model fit can be selected ('Best scenario'), judged 
                  by the model with minimum sum of square of the residuals. A plot of the model fit is shown, predictions & read back are possible. Tab 2 shows summary stats, tab 3 assumptions and tab 6 upload your own data. See the Wiki."), 
                  
                  h3("  "), 
@@ -569,7 +569,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                ),
                                
                                
-                               tabPanel("5 Data listing", value=3, 
+                               tabPanel("5 Listing", value=3, 
                                         #   h4(paste("Table 4 Means")),
                                         #  shinycssloaders::withSpinner(verbatimTextOutput("dA"),type = 5),
                                         h4(paste("Table 4 Listing")),
@@ -669,7 +669,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                           ),
                                         )
                                ) ,
-                               tabPanel("7 User diag.", value=3, 
+                               tabPanel("7 User diagnostics", value=3, 
                                         shinycssloaders::withSpinner(
                                           div(plotOutput("diagnosticsu",  width=fig.width8, height=fig.height7)),
                                         ),
