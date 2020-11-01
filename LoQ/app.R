@@ -593,6 +593,10 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         tags$a(href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/data_example_2", tags$span(style="color:blue", "Example 2 data for analysis, has a header."),), 
                                         div(p(" ")),
                                         div(p(" ")),
+                                        tags$a(href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/data_example_3", tags$span(style="color:blue", "Example 3 data for analysis, has a header."),), 
+                                        div(p(" ")),
+                                        div(p(" ")),
+                                        
                                         
                                         
                                         
