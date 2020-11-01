@@ -149,7 +149,8 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     pspec <- as.vector(unlist(XXX))
     pspec<- pspec[c(1,3,4)]
     if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
-    tp <- pspec
+    tp <- pspec  # capture this now to help explanation
+    
     # predict again for plot, so we have predictions for the actual data
     xx <- predict(f, dat, se.fit=TRUE)
     xx$lower <- xx$linear.predictors - qt(0.975,n-4) * xx$se.fit     # n-4 as we are using rcs 4 df are used up
@@ -187,7 +188,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     
     if (is.na(Xspec)) {Xspec=mean(x, is.finite=TRUE)}
     
-    tp <- pspec <- predict.lm(f, newdata=data.frame(x=Xspec), interval="confidence")
+    tp <- pspec <- predict.lm(f, newdata=data.frame(x=Xspec), interval="confidence")  # tp will be used in explanationary text
     
     if (model %in% c(2,7,10)) {pspec <- exp(pspec)}
     if (model %in% c(3,5)  )  {pspec <- 1/pspec}
@@ -524,9 +525,12 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                          
                                          h4(paste("Figure 1 Model fit showing raw data and prediction with 95% confidence")),
                                          
-                                         width = 30 )     ,
+                                         
+                                         
+                                         h4(htmlOutput("textWithNumber2",) ),
+                                         width = 30  )     ,
                                
-                                h4(htmlOutput("textWithNumber2",) ),
+                                
                                
                                tabPanel("2 Summary stats", value=3, 
                                         h4(paste("X")),
@@ -831,6 +835,8 @@ server <- shinyServer(function(input, output   ) {
     
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Execute analysis
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   md <- reactive({
     
     spec <- as.numeric(input$spec)
@@ -873,6 +879,7 @@ server <- shinyServer(function(input, output   ) {
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # collect for listing here
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   md2 <- reactive({
     
     spec <- as.numeric(input$spec)
@@ -911,22 +918,28 @@ server <- shinyServer(function(input, output   ) {
     return(list(  ssr=A, M=M))
     
   })
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # X summary stats
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$X <- renderPrint({
     
     d <- md()$foo
     return(print(summary(d$x), digits=6))
     
   }) 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Y summary stats
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$Y <- renderPrint({
     
     d <- md()$foo
     return(print(summary(d$obsy), digits=6))
     
   }) 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  output$plot1 <- renderPlot({        # MAIN PLOT!
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # MAIN PLOT!
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  output$plot1 <- renderPlot({     
     
     model <- md()$model
     foo <- md()$foo
@@ -941,9 +954,10 @@ server <- shinyServer(function(input, output   ) {
     
   })
   
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # explain how prediction and spec come about on tab 2
-  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # EXPLANATION OF PREDICTION PROCESS, APPEARS ON TAB1 AND TAB 2
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
   output$textWithNumber2 <- output$textWithNumber <- renderText({ 
     
     ## repeat plot1 code
@@ -986,15 +1000,16 @@ server <- shinyServer(function(input, output   ) {
     if (a %in% 11) {mod2="Square X and Y Y^2=a+X^2/b"} 
     if (a %in% 12) {mod2="Restricted cubic spline (rcs) 4 knots"} 
     
-    # avoid complications pull this
+    # to avoid complications pull this
     if (is.na(Xspec)) {Xspec=mean(res$txbar, is.finite=TRUE)}
     
     HTML(paste0( 
       
-      br(), br(),
+       br(), br(),
       
-      "Explanation of prediction and the transformation process:",
-      br(), br(),
+       "Explanation of the prediction and the transformation process:",
+      
+       br(), br(),
       
        "Step 1 After processing the user inputs and using the selected data generating mechanism process,  "
        , tags$span(style="color:red",  mod) ,
@@ -1009,40 +1024,48 @@ server <- shinyServer(function(input, output   ) {
        " Step 2 Transform this data according to analysis model, "
        , tags$span(style="color:red",  mod2) ,
        
-      " now we have our transformed data, mean X "
-      , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
-      " mean Y "
-      , tags$span(style="color:red",  p4f(mean(res$tybar))),
+       " now we have our transformed data, mean X "
+       , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
+       " mean Y "
+       , tags$span(style="color:red",  p4f(mean(res$tybar))),
 
-        br(), br(),
-        " Step 3 We also have our X specification, the mean of the analysis transformed data if no user X specification entered "
-        , tags$span(style="color:red",  p4f(mean(Xspec))) ,
-      br(), br(),
-      " Step 4 Now let us predict Y for the specification on the transformed data "
-      , tags$span(style="color:red",  p4f(res$tp[1])) , 
-      ", 95%CI ( "
-      , tags$span(style="color:red",  p4f(res$tp[2])) ,
-      ", "
-      , tags$span(style="color:red",  p4f(res$tp[3])) ,
-      " ) ",
-      br(), br(),
-      " Step 5 Now let us back transform the specification (if required) "
-      , tags$span(style="color:red",  p4f(res$Xspec)) , 
+       br(), br(),
+      
+       " Step 3 We also have our X specification, the mean of the analysis transformed data if no user X specification entered "
+       , tags$span(style="color:red",  p4f(mean(Xspec))) ,
+      
+       br(), br(),
+      
+       " Step 4 Now let us predict Y for the specification on the transformed data "
+       , tags$span(style="color:red",  p4f(res$tp[1])) , 
+       ", 95%CI ( "
+       , tags$span(style="color:red",  p4f(res$tp[2])) ,
+       ", "
+       , tags$span(style="color:red",  p4f(res$tp[3])) ,
+       " ) ",
+      
+       br(), br(),
+      
+       " Step 5 Now let us back transform the specification (if required) "
+       , tags$span(style="color:red",  p4f(res$Xspec)) , 
        
-      br(), br(),
-      " Step 6 Now let us back transform the prediction (if required) "
-      , tags$span(style="color:red",  p4f(res$pspec[1])) , 
+       br(), br(),
+      
+       " Step 6 Now let us back transform the prediction (if required) "
+       , tags$span(style="color:red",  p4f(res$pspec[1])) , 
       ", 95%CI ( "
-      , tags$span(style="color:red",  p4f(res$pspec[2])) ,
+       , tags$span(style="color:red",  p4f(res$pspec[2])) ,
       ", "
-      , tags$span(style="color:red",  p4f(res$pspec[3])) ,
-      " ) "
+       , tags$span(style="color:red",  p4f(res$pspec[3])) ,
+       " ) "
       
     ))
     
   })      
   
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # DATA LISTING
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$d2 <- renderPrint({
     
     d <- md()$foo
@@ -1052,12 +1075,14 @@ server <- shinyServer(function(input, output   ) {
     return(print(d))
     
   }) 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # DATA LISTING AVERAGED
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$dA <- renderPrint({
     
     d <- md()$foo
     d <- plyr::arrange(d,x)
-    dA <- apply(d,2,mean)
+    dA <- apply(d,2,mean)   # could use colSums
     dA <- p5f(dA)
     
     
@@ -1077,7 +1102,9 @@ server <- shinyServer(function(input, output   ) {
     return(print(d))
     
   }) 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # SUMMARY OF ALL MODELS
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$ssr <- renderPrint({
     
     d <- md2()$ssr
@@ -1094,7 +1121,9 @@ server <- shinyServer(function(input, output   ) {
     return(print(d))
     
   })  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # DIAGNOSTICS
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$diagnostics<- renderPlot({         
     
     f <- md()$f
@@ -1174,7 +1203,7 @@ server <- shinyServer(function(input, output   ) {
     
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # analyse user data, alot of above code is reused
+  # FROM HERE ON WE ANALYSE USER LOADED DATA A LOT OF THE ABOVE CODE IS REUSED
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   mdx <- reactive({
     
