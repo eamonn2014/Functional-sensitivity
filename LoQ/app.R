@@ -480,7 +480,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                        tags$span(style = "color:blue", "Square X and Y Y^2=a+X^2/b"),
                                        tags$span(style = "color:blue", "Restricted cubic spline 4 knots")
                                      ),
-                                     choiceValues = c( "best","1", "2", "3",  "4", "5", "6",
+                                     choiceValues = c( "99","1", "2", "3",  "4", "5", "6",
                                                        "7", "8", "9",  "10", "11", "12")
                                      ,
                                      selected=c("1")
@@ -853,7 +853,7 @@ server <- shinyServer(function(input, output   ) {
     
     mdata <- list(NA)
     
-    if (input$ana %in% "best") {
+    if (input$ana %in% 99) {
       
       for (j in 1:12) {
         
@@ -1185,9 +1185,8 @@ server <- shinyServer(function(input, output   ) {
       
       grid.arrange(p1,  p3, p2, ncol=2,
                    top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-    }
-    
-    else  if (chk1==chk2) {  
+  
+    } else if (chk1==chk2) {  
       
       std <-  sigma(f) 
       p3 <-  p3 + 
@@ -1196,6 +1195,15 @@ server <- shinyServer(function(input, output   ) {
       
       grid.arrange(p1,  p3, p2, ncol=2,
                    top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+      
+    # } else if (input$ana =="best") {  
+    #   
+    #   std <-  sigma(f) 
+    #   p3 <-  p3 + 
+    #     stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
+    #   
+    #   grid.arrange(p1,  p3, p2, ncol=2,
+    #                top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
       
     } else {
       
@@ -1237,7 +1245,7 @@ server <- shinyServer(function(input, output   ) {
     
     mdata <- list(NA)
     
-    if (input$ana %in% "best") {
+    if (input$ana %in% 99) {
       
       for (j in 1:12) {
         
@@ -1432,9 +1440,8 @@ server <- shinyServer(function(input, output   ) {
       
       grid.arrange(p1,  p3, p2, ncol=2,
                    top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-    }
     
-    else  if (input$ana =="best") {  
+      } else if (input$ana ==99) {  
       
       std <-  sigma(f) 
       p3 <-  p3 + 
