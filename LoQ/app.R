@@ -79,7 +79,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   ty11 <- y^2;    tx11 <- x^2
   ty12 <- y;      tx12 <- x 
   
-  # transform spec for prediction, not only where x is trandsformed, above
+  # transform spec for prediction, note only where x is transformed, above
   if (model %in% 4 ) {Xspec <- 1/Xspec}
   if (model %in% 5 ) {Xspec <- 1/Xspec}
   if (model %in% 6 ) {Xspec <- log(Xspec)}
@@ -100,7 +100,8 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   n <- length(x)
   txbar <- mean(x)
   txstd <- sd(x)
-  
+  # only used in text explanations
+  tybar <- mean(y)     
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~RCS MODEL
   if (model %in% 12) {       
     
@@ -148,7 +149,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     pspec <- as.vector(unlist(XXX))
     pspec<- pspec[c(1,3,4)]
     if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
-    
+    tp <- pspec
     # predict again for plot, so we have predictions for the actual data
     xx <- predict(f, dat, se.fit=TRUE)
     xx$lower <- xx$linear.predictors - qt(0.975,n-4) * xx$se.fit     # n-4 as we are using rcs 4 df are used up
@@ -186,7 +187,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     
     if (is.na(Xspec)) {Xspec=mean(x, is.finite=TRUE)}
     
-    pspec <- predict.lm(f, newdata=data.frame(x=Xspec), interval="confidence")
+    tp <- pspec <- predict.lm(f, newdata=data.frame(x=Xspec), interval="confidence")
     
     if (model %in% c(2,7,10)) {pspec <- exp(pspec)}
     if (model %in% c(3,5)  )  {pspec <- 1/pspec}
@@ -316,7 +317,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   
   if (print.plot==1) {print(p)}
   
-  return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod, rsd2=rsd2, dfs=dfs  ))
+  return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod, rsd2=rsd2, dfs=dfs , tybar=tybar, txbar=txbar, Xspec=Xspec, tp=tp, pspec=pspec ))
   
 } 
 
@@ -532,6 +533,9 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         shinycssloaders::withSpinner(verbatimTextOutput("Y"),type = 5),
                                         h4(paste("Table 1 Summary statistics")),
                                         
+                                        
+                                        h4(htmlOutput("textWithNumber",) ),
+                                        
                                ),
                                
                                tabPanel("3 Diagnostics", value=3, 
@@ -698,6 +702,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                         h4("If we enter a X or use the mean of X we predict Y and back transform."),
                                         h4("Tab 1 is the model fit based on the selcted radio buttons. Tab 2 is simple summary stats of the original data (plotted in Figure 1). 
+                                        Also find a step by step explanation of prediction and the transformation process.
                                         The Diagnostic tab 3 assesses the OLS model fit (using transformed data)."),
                                         
                                         h4("Tab 4 summarises briefly all analysis models. 'Back transformed' sigma is the residual error 
@@ -738,13 +743,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                         
                                )
-                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NEW 
-                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   END NE
-                               
-                               
-                               
-                               
-                               
+                 
                                ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
                              )
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -924,7 +923,7 @@ server <- shinyServer(function(input, output   ) {
     
   }) 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  output$plot1 <- renderPlot({         #standard errors
+  output$plot1 <- renderPlot({        # MAIN PLOT!
     
     model <- md()$model
     foo <- md()$foo
@@ -938,6 +937,117 @@ server <- shinyServer(function(input, output   ) {
     loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
     
   })
+  
+  
+  # explain how prediction and spec come abouton tab 2
+  
+  output$textWithNumber <- renderText({ 
+    
+    ## repeat plot1 code
+    model <- md()$model
+    foo <- md()$foo
+    
+    spec <- as.numeric(input$spec)
+    Xspec <- as.numeric(input$Xspec)
+    d <- dat()  # Get the  data
+    y <- d$y
+    x <- d$x
+
+    res  <- loq(x= x, y= y, model=model, spec= spec, print.plot=0,  Xspec=Xspec) # don't print plot
+    
+    m <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
+    a <-  as.numeric(gsub("[^0-9.-]", "", input$ana ))
+    
+    if (m %in% 1 ) {mod="Linear Y=a+bX"}  
+    if (m %in% 2 ) {mod="Exponential Y=exp(a+bX)"} 
+    if (m %in% 3 ) {mod="Reciprocal-Y Y=1/(a+bX)"} 
+    if (m %in% 4 ) {mod="Reciprocal-X Y=a+b/X"} 
+    if (m %in% 5 ) {mod="Double Reciprocal Y=1/(a+b/X)"} 
+    if (m %in% 6 ) {mod="Logarithmic-X Y=a+b(log(X))"} 
+    if (m %in% 7 ) {mod="Multiplicative Y=aX^b"} 
+    if (m %in% 8 ) {mod="Square Root-X Y=a+b(sqrt(X))"} 
+    if (m %in% 9 ) {mod="Square Root-Y Y=(a+bX)^2"} 
+    if (m %in% 10) {mod="S-curve Y=exp(a+b/X)"} 
+    if (m %in% 11) {mod="Square X and Y Y^2=a+X^2/b"} 
+
+    if (a %in% 1 ) {mod2="Linear Y=a+bX"}  
+    if (a %in% 2 ) {mod2="Exponential Y=exp(a+bX)"} 
+    if (a %in% 3 ) {mod2="Reciprocal-Y Y=1/(a+bX)"} 
+    if (a %in% 4 ) {mod2="Reciprocal-X Y=a+b/X"} 
+    if (a %in% 5 ) {mod2="Double Reciprocal Y=1/(a+b/X)"} 
+    if (a %in% 6 ) {mod2="Logarithmic-X Y=a+b(log(X))"} 
+    if (a %in% 7 ) {mod2="Multiplicative Y=aX^b"} 
+    if (a %in% 8 ) {mod2="Square Root-X Y=a+b(sqrt(X))"} 
+    if (a %in% 9 ) {mod2="Square Root-Y Y=(a+bX)^2"} 
+    if (a %in% 10) {mod2="S-curve Y=exp(a+b/X)"} 
+    if (a %in% 11) {mod2="Square X and Y Y^2=a+X^2/b"} 
+    if (a %in% 12) {mod2="Restricted cubic spline (rcs) 4 knots"} 
+    
+    # avoid complications pull this
+    if (is.na(Xspec)) {Xspec=mean(res$txbar, is.finite=TRUE)}
+    
+    HTML(paste0( 
+      
+      br(), br(),
+      
+      "Explanation of prediction and the transformation process:",
+      br(), br(),
+      
+                 "Step 1 After processing the user inputs and using the selected data generating mechanism process  "
+                 , tags$span(style="color:red",  mod) ,
+                 
+                 " we have our data, mean X "
+                 , tags$span(style="color:red",  p4f(mean(d$x))) ,
+                 " mean Y "
+                 , tags$span(style="color:red",  p4f(mean(d$y))) ,
+      
+                 br(), br(),
+      
+                 " Step 2 Transform this data according to analysis model, "
+                 , tags$span(style="color:red",  mod2) ,
+                 
+                " now we have our transformed data, mean X "
+                , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
+                " mean Y "
+                , tags$span(style="color:red",  p4f(mean(res$tybar))),
+      
+                  br(), br(),
+                  " Step 3 We also have our X specification, the mean of the analysis transformed data if no user X specification entered "
+                  , tags$span(style="color:red",  p4f(mean(Xspec))) ,
+      br(), br(),
+      " Step 4 Now let us predict Y for the specification on the transformed data "
+      , tags$span(style="color:red",  p4f(res$tp[1])) , 
+      ", 95%CI ( "
+      , tags$span(style="color:red",  p4f(res$tp[2])) ,
+      ", "
+      , tags$span(style="color:red",  p4f(res$tp[3])) ,
+      " ) ",
+      br(), br(),
+      " Step 5 Now let us back transform the specification (if required) "
+      , tags$span(style="color:red",  p4f(res$Xspec)) , 
+       
+      br(), br(),
+      " Step 6 Now let us back transform the prediction (if required) "
+      , tags$span(style="color:red",  p4f(res$pspec[1])) , 
+      ", 95%CI ( "
+      , tags$span(style="color:red",  p4f(res$pspec[2])) ,
+      ", "
+      , tags$span(style="color:red",  p4f(res$pspec[3])) ,
+      " ) "
+      
+    ))
+    
+  })      
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$d2 <- renderPrint({
     
