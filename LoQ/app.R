@@ -730,7 +730,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         h4("Tabs 6-9 
                                         allow the user to upload data, perform and evaluate an analysis. 
                                         Obviously there is no data generating mechanism so the top panel of radio buttons are not required and so have no impact."),
-                                        h4("Note the restricted cubic spine model will be the only model in which the fit may not pass through the mean of the data."),
+                                        #h4("Note the restricted cubic spine model will be the only model in which the fit may not pass through the mean of the data (defined when data the generating mechanism and analysis method coincide)."),
                                         tags$hr(),
                                         
                                         h4(paste("R code to quickly write a small data set to your desktop...ready to be uploaded to app")),
@@ -874,9 +874,9 @@ server <- shinyServer(function(input, output   ) {
       
     }
     
-    return(list(  model=model, foo=mdata, f=f, mod=mod ))
+    return(list(  model=model, foo=mdata, f=f, mod=mod))
     
-  })
+  }) 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # collect for listing here
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -973,7 +973,9 @@ server <- shinyServer(function(input, output   ) {
     res  <- loq(x= x, y= y, model=model, spec= spec, print.plot=0,  Xspec=Xspec) # don't print plot
     
     m <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
-    a <-  as.numeric(gsub("[^0-9.-]", "", input$ana )) # user uploaded data does not have this, so will get an error
+   # a <-  as.numeric(gsub("[^0-9.-]", "", input$ana )) # user uploaded data does not have this, so will get an error
+    
+    a <- model
     
     if (m %in% 1 ) {mod="Linear Y=a+bX"}  
     if (m %in% 2 ) {mod="Exponential Y=exp(a+bX)"} 
@@ -986,7 +988,7 @@ server <- shinyServer(function(input, output   ) {
     if (m %in% 9 ) {mod="Square Root-Y Y=(a+bX)^2"} 
     if (m %in% 10) {mod="S-curve Y=exp(a+b/X)"} 
     if (m %in% 11) {mod="Square X and Y Y^2=a+X^2/b"} 
-    
+
     if (a %in% 1 ) {mod2="Linear Y=a+bX"}  
     if (a %in% 2 ) {mod2="Exponential Y=exp(a+bX)"} 
     if (a %in% 3 ) {mod2="Reciprocal-Y Y=1/(a+bX)"} 
