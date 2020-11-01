@@ -1036,7 +1036,9 @@ server <- shinyServer(function(input, output   ) {
       
       br(), br(),
       
-      " Step 4 Now let us predict Y for the specification on the transformed data "
+      " Step 4 Using our analysis model: "
+        , tags$span(style="color:red",  mod2) ,
+      " and X specification on the transformed data shown in step 3 let us predict Y = "
       , tags$span(style="color:red",  p4f(res$tp[1])) , 
       ", 95%CI ( "
       , tags$span(style="color:red",  p4f(res$tp[2])) ,
@@ -1046,12 +1048,12 @@ server <- shinyServer(function(input, output   ) {
       
       br(), br(),
       
-      " Step 5 Now let us back transform the specification (if required) "
+      " Step 5 Now let us back transform (if required) the specification shown in step 3 "
       , tags$span(style="color:red",  p4f(res$Xspec)) , 
       
       br(), br(),
       
-      " Step 6 Now let us back transform the prediction (if required) "
+      " Step 6 Finally let us back transform (if required) the prediction shown in step 4 "
       , tags$span(style="color:red",  p4f(res$pspec[1])) , 
       ", 95%CI ( "
       , tags$span(style="color:red",  p4f(res$pspec[2])) ,
