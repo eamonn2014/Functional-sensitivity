@@ -973,7 +973,7 @@ server <- shinyServer(function(input, output   ) {
     res  <- loq(x= x, y= y, model=model, spec= spec, print.plot=0,  Xspec=Xspec) # don't print plot
     
     m <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
-    a <-  as.numeric(gsub("[^0-9.-]", "", input$ana ))
+    a <-  as.numeric(gsub("[^0-9.-]", "", input$ana )) # user uploaded data does not have this, so will get an error
     
     if (m %in% 1 ) {mod="Linear Y=a+bX"}  
     if (m %in% 2 ) {mod="Exponential Y=exp(a+bX)"} 
@@ -1011,10 +1011,10 @@ server <- shinyServer(function(input, output   ) {
       
       br(), br(),
       
-      "Step 1 After processing the user inputs and using the selected data generating mechanism process,  "
+      "Step 1 After processing the user inputs and selected data generating mechanism, "
       , tags$span(style="color:red",  mod) ,
       
-      " we have our data, mean X "
+      " we have our data, with mean X "
       , tags$span(style="color:red",  p4f(mean(d$x))) ,
       " mean Y "
       , tags$span(style="color:red",  p4f(mean(d$y))) ,
