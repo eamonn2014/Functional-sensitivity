@@ -938,8 +938,8 @@ server <- shinyServer(function(input, output   ) {
     
   })
   
-  
-  # explain how prediction and spec come abouton tab 2
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # explain how prediction and spec come about on tab 2
   
   output$textWithNumber <- renderText({ 
     
@@ -993,27 +993,27 @@ server <- shinyServer(function(input, output   ) {
       "Explanation of prediction and the transformation process:",
       br(), br(),
       
-                 "Step 1 After processing the user inputs and using the selected data generating mechanism process  "
-                 , tags$span(style="color:red",  mod) ,
-                 
-                 " we have our data, mean X "
-                 , tags$span(style="color:red",  p4f(mean(d$x))) ,
-                 " mean Y "
-                 , tags$span(style="color:red",  p4f(mean(d$y))) ,
-      
-                 br(), br(),
-      
-                 " Step 2 Transform this data according to analysis model, "
-                 , tags$span(style="color:red",  mod2) ,
-                 
-                " now we have our transformed data, mean X "
-                , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
-                " mean Y "
-                , tags$span(style="color:red",  p4f(mean(res$tybar))),
-      
-                  br(), br(),
-                  " Step 3 We also have our X specification, the mean of the analysis transformed data if no user X specification entered "
-                  , tags$span(style="color:red",  p4f(mean(Xspec))) ,
+       "Step 1 After processing the user inputs and using the selected data generating mechanism process  "
+       , tags$span(style="color:red",  mod) ,
+       
+       " we have our data, mean X "
+       , tags$span(style="color:red",  p4f(mean(d$x))) ,
+       " mean Y "
+       , tags$span(style="color:red",  p4f(mean(d$y))) ,
+
+       br(), br(),
+
+       " Step 2 Transform this data according to analysis model, "
+       , tags$span(style="color:red",  mod2) ,
+       
+      " now we have our transformed data, mean X "
+      , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
+      " mean Y "
+      , tags$span(style="color:red",  p4f(mean(res$tybar))),
+
+        br(), br(),
+        " Step 3 We also have our X specification, the mean of the analysis transformed data if no user X specification entered "
+        , tags$span(style="color:red",  p4f(mean(Xspec))) ,
       br(), br(),
       " Step 4 Now let us predict Y for the specification on the transformed data "
       , tags$span(style="color:red",  p4f(res$tp[1])) , 
@@ -1038,15 +1038,6 @@ server <- shinyServer(function(input, output   ) {
     ))
     
   })      
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$d2 <- renderPrint({
