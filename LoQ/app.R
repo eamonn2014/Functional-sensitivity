@@ -526,7 +526,9 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                          
                                          width = 30 )     ,
                                
-                               tabPanel("2 Summary statistics", value=3, 
+                                h4(htmlOutput("textWithNumber2",) ),
+                               
+                               tabPanel("2 Summary stats", value=3, 
                                         h4(paste("X")),
                                         shinycssloaders::withSpinner(verbatimTextOutput("X"),type = 5),
                                         h4(paste("Y")),
@@ -701,8 +703,9 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         Now we have an X that we back transform. "),
                                         
                                         h4("If we enter a X or use the mean of X we predict Y and back transform."),
-                                        h4("Tab 1 is the model fit based on the selcted radio buttons. Tab 2 is simple summary stats of the original data (plotted in Figure 1). 
-                                        Also find a step by step explanation of prediction and the transformation process.
+                                        h4("Tab 1 is the model fit based on the selcted radio buttons. Also find a step by step explanation of prediction and the transformation process.
+                                        Tab 2 is simple summary stats of the original data (plotted in Figure 1) and a repeat of the step by step explanation of prediction and the transformation process.
+                                        
                                         The Diagnostic tab 3 assesses the OLS model fit (using transformed data)."),
                                         
                                         h4("Tab 4 summarises briefly all analysis models. 'Back transformed' sigma is the residual error 
@@ -938,10 +941,10 @@ server <- shinyServer(function(input, output   ) {
     
   })
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # explain how prediction and spec come about on tab 2
   
-  # explain how prediction and spec come abouton tab 2
-  
-  output$textWithNumber <- renderText({ 
+  output$textWithNumber2 <- output$textWithNumber <- renderText({ 
     
     ## repeat plot1 code
     model <- md()$model
@@ -993,27 +996,27 @@ server <- shinyServer(function(input, output   ) {
       "Explanation of prediction and the transformation process:",
       br(), br(),
       
-                 "Step 1 After processing the user inputs and using the selected data generating mechanism process  "
-                 , tags$span(style="color:red",  mod) ,
-                 
-                 " we have our data, mean X "
-                 , tags$span(style="color:red",  p4f(mean(d$x))) ,
-                 " mean Y "
-                 , tags$span(style="color:red",  p4f(mean(d$y))) ,
-      
-                 br(), br(),
-      
-                 " Step 2 Transform this data according to analysis model, "
-                 , tags$span(style="color:red",  mod2) ,
-                 
-                " now we have our transformed data, mean X "
-                , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
-                " mean Y "
-                , tags$span(style="color:red",  p4f(mean(res$tybar))),
-      
-                  br(), br(),
-                  " Step 3 We also have our X specification, the mean of the analysis transformed data if no user X specification entered "
-                  , tags$span(style="color:red",  p4f(mean(Xspec))) ,
+       "Step 1 After processing the user inputs and using the selected data generating mechanism process,  "
+       , tags$span(style="color:red",  mod) ,
+       
+       " we have our data, mean X "
+       , tags$span(style="color:red",  p4f(mean(d$x))) ,
+       " mean Y "
+       , tags$span(style="color:red",  p4f(mean(d$y))) ,
+
+       br(), br(),
+
+       " Step 2 Transform this data according to analysis model, "
+       , tags$span(style="color:red",  mod2) ,
+       
+      " now we have our transformed data, mean X "
+      , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
+      " mean Y "
+      , tags$span(style="color:red",  p4f(mean(res$tybar))),
+
+        br(), br(),
+        " Step 3 We also have our X specification, the mean of the analysis transformed data if no user X specification entered "
+        , tags$span(style="color:red",  p4f(mean(Xspec))) ,
       br(), br(),
       " Step 4 Now let us predict Y for the specification on the transformed data "
       , tags$span(style="color:red",  p4f(res$tp[1])) , 
@@ -1038,15 +1041,6 @@ server <- shinyServer(function(input, output   ) {
     ))
     
   })      
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$d2 <- renderPrint({
