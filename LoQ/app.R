@@ -530,7 +530,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                          h4(htmlOutput("textWithNumber2",) ),
                                          width = 30  )     ,
                                
-                                
+                               
                                
                                tabPanel("2 Summary stats", value=3, 
                                         h4(paste("X")),
@@ -750,7 +750,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                         
                                )
-                 
+                               
                                ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
                              )
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -957,7 +957,7 @@ server <- shinyServer(function(input, output   ) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # EXPLANATION OF PREDICTION PROCESS, APPEARS ON TAB1 AND TAB 2
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
+  
   output$textWithNumber2 <- output$textWithNumber <- renderText({ 
     
     ## repeat plot1 code
@@ -969,7 +969,7 @@ server <- shinyServer(function(input, output   ) {
     d <- dat()  # Get the  data
     y <- d$y
     x <- d$x
-
+    
     res  <- loq(x= x, y= y, model=model, spec= spec, print.plot=0,  Xspec=Xspec) # don't print plot
     
     m <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
@@ -986,7 +986,7 @@ server <- shinyServer(function(input, output   ) {
     if (m %in% 9 ) {mod="Square Root-Y Y=(a+bX)^2"} 
     if (m %in% 10) {mod="S-curve Y=exp(a+b/X)"} 
     if (m %in% 11) {mod="Square X and Y Y^2=a+X^2/b"} 
-
+    
     if (a %in% 1 ) {mod2="Linear Y=a+bX"}  
     if (a %in% 2 ) {mod2="Exponential Y=exp(a+bX)"} 
     if (a %in% 3 ) {mod2="Reciprocal-Y Y=1/(a+bX)"} 
@@ -1005,59 +1005,59 @@ server <- shinyServer(function(input, output   ) {
     
     HTML(paste0( 
       
-       br(), br(),
+      br(), br(),
       
-       "Explanation of the prediction and the transformation process:",
+      "Explanation of the prediction and the transformation process:",
       
-       br(), br(),
+      br(), br(),
       
-       "Step 1 After processing the user inputs and using the selected data generating mechanism process,  "
-       , tags$span(style="color:red",  mod) ,
-       
-       " we have our data, mean X "
-       , tags$span(style="color:red",  p4f(mean(d$x))) ,
-       " mean Y "
-       , tags$span(style="color:red",  p4f(mean(d$y))) ,
-
-       br(), br(),
-
-       " Step 2 Transform this data according to analysis model, "
-       , tags$span(style="color:red",  mod2) ,
-       
-       " now we have our transformed data, mean X "
-       , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
-       " mean Y "
-       , tags$span(style="color:red",  p4f(mean(res$tybar))),
-
-       br(), br(),
+      "Step 1 After processing the user inputs and using the selected data generating mechanism process,  "
+      , tags$span(style="color:red",  mod) ,
       
-       " Step 3 We also have our X specification, the mean of the analysis transformed data if no user X specification entered "
-       , tags$span(style="color:red",  p4f(mean(Xspec))) ,
+      " we have our data, mean X "
+      , tags$span(style="color:red",  p4f(mean(d$x))) ,
+      " mean Y "
+      , tags$span(style="color:red",  p4f(mean(d$y))) ,
       
-       br(), br(),
+      br(), br(),
       
-       " Step 4 Now let us predict Y for the specification on the transformed data "
-       , tags$span(style="color:red",  p4f(res$tp[1])) , 
-       ", 95%CI ( "
-       , tags$span(style="color:red",  p4f(res$tp[2])) ,
-       ", "
-       , tags$span(style="color:red",  p4f(res$tp[3])) ,
-       " ) ",
+      " Step 2 Transform this data according to analysis model, "
+      , tags$span(style="color:red",  mod2) ,
       
-       br(), br(),
+      " now we have our transformed data, mean X "
+      , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
+      " mean Y "
+      , tags$span(style="color:red",  p4f(mean(res$tybar))),
       
-       " Step 5 Now let us back transform the specification (if required) "
-       , tags$span(style="color:red",  p4f(res$Xspec)) , 
-       
-       br(), br(),
+      br(), br(),
       
-       " Step 6 Now let us back transform the prediction (if required) "
-       , tags$span(style="color:red",  p4f(res$pspec[1])) , 
+      " Step 3 We also have our X specification, the mean of the analysis transformed data if no user X specification entered "
+      , tags$span(style="color:red",  p4f(mean(Xspec))) ,
+      
+      br(), br(),
+      
+      " Step 4 Now let us predict Y for the specification on the transformed data "
+      , tags$span(style="color:red",  p4f(res$tp[1])) , 
       ", 95%CI ( "
-       , tags$span(style="color:red",  p4f(res$pspec[2])) ,
+      , tags$span(style="color:red",  p4f(res$tp[2])) ,
       ", "
-       , tags$span(style="color:red",  p4f(res$pspec[3])) ,
-       " ) "
+      , tags$span(style="color:red",  p4f(res$tp[3])) ,
+      " ) ",
+      
+      br(), br(),
+      
+      " Step 5 Now let us back transform the specification (if required) "
+      , tags$span(style="color:red",  p4f(res$Xspec)) , 
+      
+      br(), br(),
+      
+      " Step 6 Now let us back transform the prediction (if required) "
+      , tags$span(style="color:red",  p4f(res$pspec[1])) , 
+      ", 95%CI ( "
+      , tags$span(style="color:red",  p4f(res$pspec[2])) ,
+      ", "
+      , tags$span(style="color:red",  p4f(res$pspec[3])) ,
+      " ) "
       
     ))
     
