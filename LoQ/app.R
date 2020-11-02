@@ -1067,7 +1067,7 @@ server <- shinyServer(function(input, output   ) {
       
       br(), br(),
       
-      " Step 4 Using our analysis model: "
+      " Step 4 Using our analysis model: "  
       , tags$span(style="color:red",  mod2) ,
       " and X specification on the transformed data shown in step 3 let us predict Y = "
       , tags$span(style="color:red",  p4f(res$tp[1])) , 
