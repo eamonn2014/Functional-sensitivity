@@ -131,6 +131,8 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     it <- which.min(abs(dat2$upper - spec))
     txup<-dat2[it,]$x 
     
+    yspec <- spec
+    
     limits <- sort(c(txlow,txup))
     txlow <- limits[1]
     txup <-  limits[2]
@@ -186,8 +188,15 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     if (model %in% c(9)    )  {p <- p^2} 
     if (model %in% c(11)   )  {p <- p^.5} 
     
-    if (is.na(Xspec)) {Xspec=mean(x, is.finite=TRUE)}
+    if (is.na(Xspec)) {Xspec=mean(x1, is.finite=TRUE)
     
+    if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
+    if (model %in% c(6,7)  )  {Xspec <- log(Xspec)  }
+    if (model %in% c(8)    )  {Xspec <- Xspec^.5}
+    if (model %in% c(11)   )  {Xspec <- Xspec^2 }
+    
+    }
+
     tp <- pspec <- predict.lm(f, newdata=data.frame(x=Xspec), interval="confidence")  # tp will be used in explanationary text
     
     if (model %in% c(2,7,10)) {pspec <- exp(pspec)}
@@ -204,21 +213,29 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     r2 <-  (y1-p[,1])^2
     ssr <- sum(r2, na.rm=T) 
     
+    
+    #######################################################################################################################
     # transform the specification that we will read back from, note only those in which y is transformed
-    if (is.na(spec)) {spec=mean(y, is.finite=TRUE)}    
-    else { 
+    if (is.na(spec)) {spec=mean(pspec[1], is.finite=TRUE)}    
+    
+    yspec <- spec
+    
+    
+  # else { 
       if (model %in% c(2,7,10)) {spec <- log(spec)}
       if (model %in% c(3,5)  )  {spec <- 1/spec}
       if (model %in% c(9)    )  {spec <- sqrt(spec)}
       if (model %in% c(11)   )  {spec <- spec ^2}
-    }
+    #}
     
-    tyspec <- spec     
-    if (model %in% c(2,7,10)) {spec <- exp(spec)} 
-    if (model %in% c(3,5)  )  {spec <- 1/spec} 
-    if (model %in% c(9)    )  {spec <- (spec)^2} 
-    if (model %in% c(11)   )  {spec <- spec^.5}  
+   
     
+    # if (model %in% c(2,7,10)) {spec <- exp(spec)} 
+    # if (model %in% c(3,5)  )  {spec <- 1/spec} 
+    # if (model %in% c(9)    )  {spec <- (spec)^2} 
+    # if (model %in% c(11)   )  {spec <- spec^.5}  
+    # 
+    tyspec <- spec 
     # grab the residual standard deviation
     rsd2 <- as.data.frame(anova(f))[2,3]^.5 
     dfs <- anova(f)["Residuals","Df"]
@@ -234,10 +251,18 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     txlow <- (-b-sqrt(b^2-4*a*c))/(2*a) + txbar
     
     # transform the read back estimates to the original scale
-    if (model %in% c(4,5,10)) {txpre <- 1/txpre; txup <- 1/txup; txlow <- 1/txlow} 
-    if (model %in% c(6,7)  )  {txpre <- exp(txpre); txup <- exp(txup); txlow <- exp(txlow)}  
-    if (model %in% c(8)    )  {txpre <- txpre^2;  txup <- txup^2;  txlow <- txlow^2} 
-    if (model %in% c(11)   )  {txpre <- txpre^.5; txup <- txup^.5; txlow <- txlow^.5}   
+    if (model %in% c(4,5,10)) {txpre <- 1/txpre; txup <- 1/txup; txlow <- 1/txlow}
+    if (model %in% c(6,7)  )  {txpre <- exp(txpre); txup <- exp(txup); txlow <- exp(txlow)}
+    if (model %in% c(8)    )  {txpre <- txpre^2;  txup <- txup^2;  txlow <- txlow^2}
+    if (model %in% c(11)   )  {txpre <- txpre^.5; txup <- txup^.5; txlow <- txlow^.5}
+    
+  
+    
+    
+    
+    ########################################################################################################################
+    
+    
     
     # if i don't do this X vertical spec line on plot for these models will not be located correctly
     if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
@@ -273,7 +298,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   #    scale_x_continuous(limits = c(lowerV, upperV), breaks=seq(lowerV, upperV)) #, by=((upperV-lowerV)/10))) + # breaks = seq(0, 100, by = 20)
   # scale_y_continuous(limits = c(ymin1, ymax1))   
   
-  p <- p1  + geom_hline(yintercept=spec,  colour="#990000", linetype="dashed")
+  p <- p1  + geom_hline(yintercept=yspec,  colour="#990000", linetype="dashed")
   p <- p   + geom_vline(xintercept=Xspec, colour="#008000", linetype="dashed")
   
   p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
@@ -303,7 +328,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
                                p4f(pspec[2]),", ",
                                p4f(pspec[3]),")",
                                "\nRead back at response of ", 
-                               p2f(spec) ,", the estimate of X is ",
+                               p2f(yspec) ,", the estimate of X is ",
                                p2f(txpre)," with 95%CI: (", 
                                p2f(txlow),", ",
                                p2f(txup),")",  
@@ -977,7 +1002,7 @@ server <- shinyServer(function(input, output   ) {
     res  <- loq(x= x, y= y, model=model, spec= spec, print.plot=0,  Xspec=Xspec) # don't print plot
     
     m <-  as.numeric(gsub("[^0-9.-]", "", input$truth ))
-   # a <-  as.numeric(gsub("[^0-9.-]", "", input$ana )) # user uploaded data does not have this, so will get an error
+    # a <-  as.numeric(gsub("[^0-9.-]", "", input$ana )) # user uploaded data does not have this, so will get an error
     
     a <- model
     
@@ -992,7 +1017,7 @@ server <- shinyServer(function(input, output   ) {
     if (m %in% 9 ) {mod="Square Root-Y Y=(a+bX)^2"} 
     if (m %in% 10) {mod="S-curve Y=exp(a+b/X)"} 
     if (m %in% 11) {mod="Square X and Y Y^2=a+X^2/b"} 
-
+    
     if (a %in% 1 ) {mod2="Linear Y=a+bX"}  
     if (a %in% 2 ) {mod2="Exponential Y=exp(a+bX)"} 
     if (a %in% 3 ) {mod2="Reciprocal-Y Y=1/(a+bX)"} 
@@ -1037,13 +1062,13 @@ server <- shinyServer(function(input, output   ) {
       
       br(), br(),
       
-      " Step 3 We also have our X specification, the mean of the analysis transformed data if no user X specification entered "
+      " Step 3 We also have our X specification, the mean of the potentially transformed X if no user X specification entered "
       , tags$span(style="color:red",  p4f(mean(Xspec))) ,
       
       br(), br(),
       
       " Step 4 Using our analysis model: "
-        , tags$span(style="color:red",  mod2) ,
+      , tags$span(style="color:red",  mod2) ,
       " and X specification on the transformed data shown in step 3 let us predict Y = "
       , tags$span(style="color:red",  p4f(res$tp[1])) , 
       ", 95%CI ( "
@@ -1054,12 +1079,12 @@ server <- shinyServer(function(input, output   ) {
       
       br(), br(),
       
-      " Step 5 Now let us back transform (if required) the specification shown in step 3 "
-      , tags$span(style="color:red",  p4f(res$Xspec)) , 
+      # " Step 5 Now let us back transform (if required) the specification shown in step 3 "
+      # , tags$span(style="color:red",  p4f(res$Xspec)) , 
+      # 
+      # br(), br(),
       
-      br(), br(),
-      
-      " Step 6 Finally let us back transform (if required) the prediction shown in step 4 "
+      " Step 5 Finally let us back transform (if required) the prediction shown in step 4 "
       , tags$span(style="color:red",  p4f(res$pspec[1])) , 
       ", 95%CI ( "
       , tags$span(style="color:red",  p4f(res$pspec[2])) ,
@@ -1185,7 +1210,7 @@ server <- shinyServer(function(input, output   ) {
       
       grid.arrange(p1,  p3, p2, ncol=2,
                    top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-  
+      
     } else if (chk1==chk2) {  
       
       std <-  sigma(f) 
@@ -1196,14 +1221,14 @@ server <- shinyServer(function(input, output   ) {
       grid.arrange(p1,  p3, p2, ncol=2,
                    top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", true sigma (black) ",as.numeric(sigma1)  ,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
       
-    # } else if (input$ana =="best") {  
-    #   
-    #   std <-  sigma(f) 
-    #   p3 <-  p3 + 
-    #     stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
-    #   
-    #   grid.arrange(p1,  p3, p2, ncol=2,
-    #                top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
+      # } else if (input$ana =="best") {  
+      #   
+      #   std <-  sigma(f) 
+      #   p3 <-  p3 + 
+      #     stat_function(fun = dnorm, args = list(mean = 0, sd =  std    ), col='red') 
+      #   
+      #   grid.arrange(p1,  p3, p2, ncol=2,
+      #                top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
       
     } else {
       
@@ -1440,8 +1465,8 @@ server <- shinyServer(function(input, output   ) {
       
       grid.arrange(p1,  p3, p2, ncol=2,
                    top = textGrob(paste0(" OLS model fit diagnostics, ",mod,", estimated sigma (red) ", p4f(std),""),gp=gpar(fontsize=20,font=3)))
-    
-      } else if (input$ana ==99) {  
+      
+    } else if (input$ana ==99) {  
       
       std <-  sigma(f) 
       p3 <-  p3 + 
