@@ -333,7 +333,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
                                p2f(txlow),", ",
                                p2f(txup),")",  
                                sep=" "),
-                caption = paste0("If X and/or Y specification is missing, mean of the data is used, dashed lines")
+                caption = paste0("If X specification is missing, the mean of X is used. If Y specification is missing the prediction of X used as the Y value to read back from (dashed lines).")
   )  #   +
   
   # tried this package for plots themes but got errors
@@ -1067,7 +1067,7 @@ server <- shinyServer(function(input, output   ) {
       
       br(), br(),
       
-      " Step 4 Using our analysis model: "
+      " Step 4 Using our analysis model: "  
       , tags$span(style="color:red",  mod2) ,
       " and X specification on the transformed data shown in step 3 let us predict Y = "
       , tags$span(style="color:red",  p4f(res$tp[1])) , 
