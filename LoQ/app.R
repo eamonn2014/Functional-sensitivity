@@ -1017,20 +1017,20 @@ server <- shinyServer(function(input, output   ) {
       
       br(), br(),
       
-      "Step 1 After processing the user inputs and selected data generating mechanism, "
+      "Step 1 After processing the user inputs and selected data generating mechanism "
       , tags$span(style="color:red",  mod) ,
       
-      " we have our data, with mean X "
+      ", we have our data, with mean X "
       , tags$span(style="color:red",  p4f(mean(d$x))) ,
       " mean Y "
       , tags$span(style="color:red",  p4f(mean(d$y))) ,
       
       br(), br(),
       
-      " Step 2 Transform this data according to analysis model, "
+      " Step 2 Transform this data according to analysis model "
       , tags$span(style="color:red",  mod2) ,
       
-      " now we have our transformed data, mean X "
+      ", now we have our transformed data, mean X "
       , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
       " mean Y "
       , tags$span(style="color:red",  p4f(mean(res$tybar))),
