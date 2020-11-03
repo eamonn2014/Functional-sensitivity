@@ -188,15 +188,16 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     if (model %in% c(9)    )  {p <- p^2} 
     if (model %in% c(11)   )  {p <- p^.5} 
     
-    if (is.na(Xspec)) {Xspec=mean(x1, is.finite=TRUE)
+    if (is.na(Xspec)) {
+      
+      Xspec=mean(x1, is.finite=TRUE)
     
     if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
     if (model %in% c(6,7)  )  {Xspec <- log(Xspec)  }
     if (model %in% c(8)    )  {Xspec <- Xspec^.5}
     if (model %in% c(11)   )  {Xspec <- Xspec^2 }
-    
     }
-
+    
     tp <- pspec <- predict.lm(f, newdata=data.frame(x=Xspec), interval="confidence")  # tp will be used in explanationary text
     
     if (model %in% c(2,7,10)) {pspec <- exp(pspec)}
@@ -213,28 +214,17 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     r2 <-  (y1-p[,1])^2
     ssr <- sum(r2, na.rm=T) 
     
-    
     #######################################################################################################################
     # transform the specification that we will read back from, note only those in which y is transformed
     if (is.na(spec)) {spec=mean(pspec[1], is.finite=TRUE)}    
     
     yspec <- spec
     
-    
-  # else { 
-      if (model %in% c(2,7,10)) {spec <- log(spec)}
-      if (model %in% c(3,5)  )  {spec <- 1/spec}
-      if (model %in% c(9)    )  {spec <- sqrt(spec)}
-      if (model %in% c(11)   )  {spec <- spec ^2}
-    #}
-    
-   
-    
-    # if (model %in% c(2,7,10)) {spec <- exp(spec)} 
-    # if (model %in% c(3,5)  )  {spec <- 1/spec} 
-    # if (model %in% c(9)    )  {spec <- (spec)^2} 
-    # if (model %in% c(11)   )  {spec <- spec^.5}  
-    # 
+    if (model %in% c(2,7,10)) {spec <- log(spec)}
+    if (model %in% c(3,5)  )  {spec <- 1/spec}
+    if (model %in% c(9)    )  {spec <- sqrt(spec)}
+    if (model %in% c(11)   )  {spec <- spec ^2}
+ 
     tyspec <- spec 
     # grab the residual standard deviation
     rsd2 <- as.data.frame(anova(f))[2,3]^.5 
@@ -256,14 +246,8 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     if (model %in% c(8)    )  {txpre <- txpre^2;  txup <- txup^2;  txlow <- txlow^2}
     if (model %in% c(11)   )  {txpre <- txpre^.5; txup <- txup^.5; txlow <- txlow^.5}
     
-  
-    
-    
-    
-    ########################################################################################################################
-    
-    
-    
+ ########################################################################################################################
+
     # if i don't do this X vertical spec line on plot for these models will not be located correctly
     if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
     if (model %in% c(6,7)  )  {Xspec <- exp(Xspec)  }
