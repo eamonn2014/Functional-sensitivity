@@ -1658,7 +1658,7 @@ server <- shinyServer(function(input, output   ) {
   # })
   # 
   
-  output$plot2 <- renderPlot({     
+  output$plot2 <- renderPlot({     #
     
     model <- mdx()$model
     foo <- mdx()$fo2
