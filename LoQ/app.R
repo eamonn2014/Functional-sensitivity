@@ -17,7 +17,7 @@
   library(tidyverse)
   library(shinycssloaders)
   library(tvthemes)  # nice ggplot addition
-  
+  library(scales) # For the trans_format function
   options(max.print=1000000)    
   
   fig.width6 <- 1100
@@ -44,15 +44,40 @@
   # range of independent variable
   lowerV=0
   upperV=100
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-# function to create seq of log values
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  lseq <- function(from=.001, to=100000000000, length.out=15) {
-    # logarithmic spaced sequence
-    # blatantly stolen from library("emdbook"), because need only this
-    exp(seq(log(from), log(to), length.out = length.out))
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+  # function to create minor lines to match log tick values https://r-graphics.org/recipe-axes-axis-log-ticks
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  # breaks_5log10 <- function(x) {  # not used
+  #   low <- floor(log10(min(x)/5))
+  #   high <- ceiling(log10(max(x)/5))
+  #   
+  #   5 * 10^(seq.int(low, high))
+  # }
+  
+  # my adaptation of the above function to add more minor ticks
+  breaks_5log10 <- function(x) {
+    low <- floor(log10(min(x)/5))
+    high <- ceiling(log10(max(x)/5))
+    
+    c(2:9 %o% 10^(low:high))
   }
+ 
+  breaks_log10 <- function(x) {
+    low <- floor(log10(min(x)))
+    high <- ceiling(log10(max(x)))
+    
+    10^(seq.int(low, high))
+  }
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+# function to create seq of log values , not used
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # lseq <- function(from=.001, to=100000000000, length.out=15) {
+  #   # logarithmic spaced sequence
+  #   # blatantly stolen from library("emdbook"), because need only this
+  #   exp(seq(log(from), log(to), length.out = length.out))
+  # }
   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function that does all the work!
@@ -577,13 +602,30 @@
     # scale_y_continuous(limits = c(ymin1, ymax1))   
     
     p <- p1  + geom_hline(yintercept=yspec,  colour="#990000", linetype="dashed")
-    p <- p   + geom_vline(xintercept=Xspec, colour="#008000", linetype="dashed")
+    p <- p   + geom_vline(xintercept=Xspec,  colour="#008000", linetype="dashed")
     
     p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
     p <- p + scale_color_manual(values=c("Red","blue"))
     p <- p + theme_bw()
   
-    p <- p + scale_y_continuous(trans="log", breaks=lseq())  # see lseq function
+    # p <- p + scale_y_continuous(trans="log10", breaks=lseq(),
+    #                          minor_breaks = breaks_5log10,
+    #                             )  # see lseq function
+    # 
+    p <- p + scale_y_log10(breaks = breaks_log10,
+                  minor_breaks = breaks_5log10,
+                  labels = trans_format(log10, math_format(10^.x))) 
+    
+    p <- p + annotation_logticks(sides = "lr")
+    
+
+    # memory error if I use this!
+    # p <- p +scale_x_log10(
+    #   breaks = scales::trans_breaks("log10", function(x) 10^x),
+    #   labels = scales::trans_format("log10", scales::math_format(10^.x))
+    # )
+    # 
+   # p <- p + annotation_logticks(sides = "lr")   + theme(panel.grid.minor = element_blank())
     #p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
     p <- p + labs(x = "Independent variable", y = "Response (logged data, labelled with anti-logs)")  
     
@@ -599,7 +641,16 @@
                     plot.caption=element_text(hjust = 0, size = 12),
                     axis.title.y = element_text(size = rel(1.1), angle = 90),
                     axis.title.x = element_text(size = rel(1.1), angle = 00),
-                    axis.title = element_text(size = 16, angle = 00)
+                    axis.title = element_text(size = 16, angle = 00),
+                    panel.grid.minor = element_line(colour="gainsboro", size=0.5 , linetype = 'solid'),
+                    panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "gainsboro")
+                    
+                    
+                    
+                    
+                    
+                    
+                    
     )   
     
     p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
