@@ -3,78 +3,78 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #https://www.youtube.com/watch?v=VF9s7_YY9TQ&ab_channel=AbhinavAgrawal for action button approach
 
-  rm(list=ls()) 
-  set.seed(333) # reproducible
-  library(directlabels)
-  library(shiny) 
-  library(shinyjs)  
-  library(shinyWidgets)
-  library(shinythemes)  # more funky looking apps
-  library(shinyalert)
-  library(Hmisc)
-  library(rms)
-  library(ggplot2)
-  library(tidyverse)
-  library(shinycssloaders)
-  library(tvthemes)  # nice ggplot addition
-  library(scales) # For the trans_format function
-   options(max.print=1000000)    
-  
-  fig.width6 <- 1100
-  fig.height6 <- 600
-  fig.width8 <- 1380
-  fig.height7 <- 770
-  
-  ## convenience functions
-  p0f <- function(x) {formatC(x, format="f", digits=0)}
-  p1f <- function(x) {formatC(x, format="f", digits=1)}
-  p2f <- function(x) {formatC(x, format="f", digits=2)}
-  p3f <- function(x) {formatC(x, format="f", digits=3)}
-  p4f <- function(x) {formatC(x, format="f", digits=4)}
-  p5f <- function(x) {formatC(x, format="f", digits=5)}
-  
-  logit <- function(p) log(1/(1/p-1))
-  expit <- function(x) 1/(1/exp(x) + 1)
-  inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
-  is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
-  
-  options(width=200)
-  options(scipen=999)
-  
-  # range of independent variable
-  # lowerV=0
-  # upperV=100
+rm(list=ls()) 
+set.seed(333) # reproducible
+library(directlabels)
+library(shiny) 
+library(shinyjs)  
+library(shinyWidgets)
+library(shinythemes)  # more funky looking apps
+library(shinyalert)
+library(Hmisc)
+library(rms)
+library(ggplot2)
+library(tidyverse)
+library(shinycssloaders)
+library(tvthemes)  # nice ggplot addition
+library(scales) # For the trans_format function
+options(max.print=1000000)    
+
+fig.width6 <- 1100
+fig.height6 <- 600
+fig.width8 <- 1380
+fig.height7 <- 770
+
+## convenience functions
+p0f <- function(x) {formatC(x, format="f", digits=0)}
+p1f <- function(x) {formatC(x, format="f", digits=1)}
+p2f <- function(x) {formatC(x, format="f", digits=2)}
+p3f <- function(x) {formatC(x, format="f", digits=3)}
+p4f <- function(x) {formatC(x, format="f", digits=4)}
+p5f <- function(x) {formatC(x, format="f", digits=5)}
+
+logit <- function(p) log(1/(1/p-1))
+expit <- function(x) 1/(1/exp(x) + 1)
+inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
+is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
+
+options(width=200)
+options(scipen=999)
+
+# range of independent variable
+# lowerV=0
+# upperV=100
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function to create minor lines to match log tick values https://r-graphics.org/recipe-axes-axis-log-ticks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  breaks_5log10 <- function(x) {
-    low <- floor(log10(min(x)/5))
-    high <- ceiling(log10(max(x)/5))
-    
-    c(2:9 %o% 10^(low:high))
-  }
+breaks_5log10 <- function(x) {
+  low <- floor(log10(min(x)/5))
+  high <- ceiling(log10(max(x)/5))
   
-  breaks_log10 <- function(x) {
-    low <- floor(log10(min(x)))
-    high <- ceiling(log10(max(x)))
-    
-    10^(seq.int(low, high))
-  }
+  c(2:9 %o% 10^(low:high))
+}
+
+breaks_log10 <- function(x) {
+  low <- floor(log10(min(x)))
+  high <- ceiling(log10(max(x)))
   
+  10^(seq.int(low, high))
+}
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function to create ticks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
+
 # https://stackoverflow.com/questions/46412250/ggplot2-displaying-unlabeled-tick-marks-between-labeled-tick-marks
-  # breaks <- seq(lowerV, upperV, 10)
-  # breaks <- seq(lowerV, upperV, 1)
-  # labels <- as.character(breaks)
-  # labels[!(breaks %% 5 == 0)] <- ''
-  # tick.sizes <- rep(.5, length(breaks))
-  # tick.sizes[(breaks %% lowerV == 0)] <- 1
-  
+# breaks <- seq(lowerV, upperV, 10)
+# breaks <- seq(lowerV, upperV, 1)
+# labels <- as.character(breaks)
+# labels[!(breaks %% 5 == 0)] <- ''
+# tick.sizes <- rep(.5, length(breaks))
+# tick.sizes[(breaks %% lowerV == 0)] <- 1
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function that does all the work!
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -329,13 +329,13 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   p <- p + scale_color_manual(values=c("Red","blue"))
   p <- p + theme_bw()
   # p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
- # p <- p + scale_y_continuous(trans="log", breaks=c(0.001, 0.1, 1, 10, 1e2, 1e3, 1e4, 1e5, 1e6))
-
+  # p <- p + scale_y_continuous(trans="log", breaks=c(0.001, 0.1, 1, 10, 1e2, 1e3, 1e4, 1e5, 1e6))
+  
   # p <- p + scale_y_continuous(minor_breaks = waiver()        )
-   
+  
   #p <- p + scale_x_continuous(breaks = breaks, labels = labels, limits = c(lowerV, upperV)) 
- #p <- p + scale_x_continuous(breaks = waiver() , labels = waiver() ) 
-   
+  #p <- p + scale_x_continuous(breaks = waiver() , labels = waiver() ) 
+  
   p <- p + labs(x = "Independent variable", y = "Response") 
   
   p <- p +  theme(panel.background=element_blank(),
@@ -352,8 +352,8 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
                   axis.title.x = element_text(size = rel(1.1), angle = 00),
                   axis.title = element_text(size = 16, angle = 00),
                   #panel.grid.minor = element_line(colour="gainsboro", size=0.3 , linetype = 'solid'),
-                 # panel.grid.major = element_line(size = 0.1, linetype = 'solid', colour = "gray88"),
-                #  panel.grid = element_blank(), axis.ticks.x = element_line(size = tick.sizes)
+                  # panel.grid.major = element_line(size = 0.1, linetype = 'solid', colour = "gray88"),
+                  #  panel.grid = element_blank(), axis.ticks.x = element_line(size = tick.sizes)
                   panel.grid.minor.x = element_line( size=0.5 ,  linetype = 'solid', colour = "gray93"),
                   panel.grid.minor.y = element_line( size=0.5 ,  linetype = 'solid', colour = "gray88"),
                   panel.grid.major = element_line(size =0.5,   linetype = 'solid', colour = "gray88"),            
@@ -622,7 +622,7 @@ loq1 <- function (x, y, model, spec, print.plot=1, Xspec)  {
   tick.sizes <- rep(.5, length(breaks))
   tick.sizes[(breaks %% lowerV == 0)] <- 1
   
-
+  
   
   # plot and present the estimated read back
   p1 <- ggplot(foo, aes(x=x,y=pred)) + 
@@ -635,7 +635,7 @@ loq1 <- function (x, y, model, spec, print.plot=1, Xspec)  {
   p <- p1  + geom_hline(yintercept=yspec,  colour="#990000", linetype="dashed")
   p <- p   + geom_vline(xintercept=Xspec,  colour="#008000", linetype="dashed")
   
- # p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
+  # p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
   p <- p + scale_color_manual(values=c("Red","blue"))
   p <- p + theme_bw()
   
@@ -651,7 +651,7 @@ loq1 <- function (x, y, model, spec, print.plot=1, Xspec)  {
   
   #p <- p + scale_x_continuous(breaks = breaks, labels = labels, limits = c(0,100)) 
   #p <- p + scale_x_continuous(breaks = waiver() , labels = waiver() ) 
-   # memory error if I use this!
+  # memory error if I use this!
   # p <- p +scale_x_log10(
   #   breaks = scales::trans_breaks("log10", function(x) 10^x),
   #   labels = scales::trans_format("log10", scales::math_format(10^.x))
@@ -1237,7 +1237,7 @@ server <- shinyServer(function(input, output   ) {
     sigma1=sample$sigma1
     N=sample$N
     
-   # x <-  array(runif(N, lowerV, upperV))  # no negative values
+    # x <-  array(runif(N, lowerV, upperV))  # no negative values
     x <-  array(runif(N, 0, 100))  # no negative values
     noise <-  rnorm(N,0, sigma1)
     
