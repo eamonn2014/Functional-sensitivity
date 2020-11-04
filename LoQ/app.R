@@ -315,7 +315,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   
   
   # plot and present the estimated read back
-  p1 <- ggplot(foo, aes(x=x,y=pred)) + 
+  p1 <- ggplot(foo, aes(x=x,y=pred)) +  
     geom_line( ) +
     geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
     geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  #+
