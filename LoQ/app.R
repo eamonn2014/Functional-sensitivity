@@ -585,7 +585,7 @@
   
     p <- p + scale_y_continuous(trans="log", breaks=lseq())  # see lseq function
     #p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
-    p <- p + labs(x = "Independent variable", y = "Response (logged data, labelled with anti-logs)") 
+    p <- p + labs(x = "Independent variable", y = "Response (logged data, labelled with anti-logs)")  
     
     p <- p +  theme(panel.background=element_blank(),
                     plot.title=element_text(size=16), 
