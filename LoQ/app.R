@@ -342,8 +342,14 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
                   axis.title.x = element_text(size = rel(1.1), angle = 00),
                   axis.title = element_text(size = 16, angle = 00),
                   #panel.grid.minor = element_line(colour="gainsboro", size=0.3 , linetype = 'solid'),
-                  panel.grid.major = element_line(size = 0.1, linetype = 'solid', colour = "gray88"),
+                 # panel.grid.major = element_line(size = 0.1, linetype = 'solid', colour = "gray88"),
+                #  panel.grid = element_blank(), axis.ticks.x = element_line(size = tick.sizes)
+                  panel.grid.minor.x = element_line( size=0.5 ,  linetype = 'solid', colour = "gray93"),
+                  panel.grid.minor.y = element_line( size=0.5 ,  linetype = 'solid', colour = "gray88"),
+                  panel.grid.major = element_line(size =0.5,   linetype = 'solid', colour = "gray88"),            
                   panel.grid = element_blank(), axis.ticks.x = element_line(size = tick.sizes)
+                  
+                  
                   
   )   
   
