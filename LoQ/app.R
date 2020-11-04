@@ -79,6 +79,13 @@
   #   exp(seq(log(from), log(to), length.out = length.out))
   # }
   
+  # https://stackoverflow.com/questions/46412250/ggplot2-displaying-unlabeled-tick-marks-between-labeled-tick-marks
+  breaks <- seq(lowerV, upperV, 1)
+  
+  labels <- as.character(breaks)
+  labels[!(breaks %% 5 == 0)] <- ''
+  tick.sizes <- rep(.5, length(breaks))
+  tick.sizes[(breaks %% lowerV == 0)] <- 1
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function that does all the work!
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -319,15 +326,19 @@
     p <- p1  + geom_hline(yintercept=yspec,  colour="#990000", linetype="dashed")
     p <- p   + geom_vline(xintercept=Xspec, colour="#008000", linetype="dashed")
     
-    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
+    #p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
     p <- p + scale_color_manual(values=c("Red","blue"))
     p <- p + theme_bw()
     # p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
-    
     #p <- p + scale_y_continuous(trans="log", breaks=c(0.001, 0.1, 1, 10, 1e2, 1e3, 1e4, 1e5, 1e6))
+    p <- p + scale_y_continuous(minor_breaks = waiver())
+    
+    #p <- p + scale_x_continuous(minor_breaks = seq(lowerV, upperV, 20))
+    p <- p + scale_x_continuous(breaks = breaks, labels = labels, limits = c(lowerV,upperV)) 
+    
     
     p <- p + labs(x = "Independent variable", y = "Response") 
-    
+  
     p <- p +  theme(panel.background=element_blank(),
                     plot.title=element_text(size=16), 
                     plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
@@ -340,7 +351,11 @@
                     plot.caption=element_text(hjust = 0, size = 12),
                     axis.title.y = element_text(size = rel(1.1), angle = 90),
                     axis.title.x = element_text(size = rel(1.1), angle = 00),
-                    axis.title = element_text(size = 16, angle = 00)
+                    axis.title = element_text(size = 16, angle = 00),
+                    #panel.grid.minor = element_line(colour="gainsboro", size=0.3 , linetype = 'solid'),
+                    panel.grid.major = element_line(size = 0.1, linetype = 'solid', colour = "gainsboro"),
+                    panel.grid = element_blank(), axis.ticks.x = element_line(size = tick.sizes)
+                    
     )   
     
     p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
@@ -367,7 +382,7 @@
     return(list(ssr=ssr,r=r, foo=foo, f=f, mod=mod, rsd2=rsd2, dfs=dfs , tybar=tybar, txbar=txbar, Xspec=Xspec, tp=tp, pspec=pspec ))
     
   } 
-  # has log transformation of y axis but exactly same function as loq
+  # has log transformation of y axis
   loq1 <- function (x, y, model, spec, print.plot=1, Xspec)  {
     
     # Define analysis models
@@ -618,7 +633,8 @@
     
     p <- p + annotation_logticks(sides = "lr")
     
-
+    p <- p + scale_x_continuous(breaks = breaks, labels = labels, limits = c(lowerV,upperV)) 
+    
     # memory error if I use this!
     # p <- p +scale_x_log10(
     #   breaks = scales::trans_breaks("log10", function(x) 10^x),
@@ -627,7 +643,7 @@
     # 
    # p <- p + annotation_logticks(sides = "lr")   + theme(panel.grid.minor = element_blank())
     #p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
-    p <- p + labs(x = "Independent variable", y = "Response (logged data, labelled with anti-logs)")  
+    p <- p + labs(x = "Independent variable", y = "Response")  
     
     p <- p +  theme(panel.background=element_blank(),
                     plot.title=element_text(size=16), 
@@ -1077,7 +1093,9 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         Now we have an X that we back transform. "),
                                         
                                         h4("If we enter a X or use the mean of X we predict Y and back transform."),
-                                        h4("Tab 1 is the model fit based on the selcted radio buttons. Also find a step by step explanation of prediction and the transformation process.
+                                        h4("Tab 1 is the model fit based on the selcted radio buttons. Also find a step by step explanation of prediction and the transformation process plus an option to
+                                        log transform the y axis; the data are logged with anti-log labels on the axis.
+     
                                         Tab 2 is simple summary stats of the original data (plotted in Figure 1) and a repeat of the step by step explanation of prediction and the transformation process.
                                         
                                         The Diagnostic tab 3 assesses the OLS model fit (using transformed data)."),
