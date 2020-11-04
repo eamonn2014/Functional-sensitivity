@@ -585,7 +585,7 @@
   
     p <- p + scale_y_continuous(trans="log", breaks=lseq())  # see lseq function
     #p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
-    p <- p + labs(x = "Independent variable", y = "Response") 
+    p <- p + labs(x = "Independent variable", y = "Response (logged data, labelled with anti-logs)") 
     
     p <- p +  theme(panel.background=element_blank(),
                     plot.title=element_text(size=16), 
@@ -835,8 +835,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                                       style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                                          actionButton("buttondos", "Log transformed y axis, consider this if the ratio between high & low values is > 1", icon("paper-plane"), 
                                                       style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                                        #h4(paste("consider the transformation if the ratio between the high and low values is > 1")),
-                                         
+
                                          h4(htmlOutput("textWithNumber2",) ),
                                          width = 30  )     ,
                                
@@ -970,11 +969,17 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                             
                                             div(plotOutput("plot2", width=fig.width6, height=fig.height6)),
                                             h4(paste("Figure 3. User uploaded data")),  
+                                            actionButton("buttonuno1", "untransformed y axis", icon("paper-plane"), 
+                                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                            actionButton("buttondos1", "Log transformed y axis, consider this if the ratio between high & low values is > 1", icon("paper-plane"), 
+                                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                            
                                             h4(paste("X")),
                                             shinycssloaders::withSpinner(verbatimTextOutput("Xu"),type = 5),
                                             h4(paste("Y")),
                                             shinycssloaders::withSpinner(verbatimTextOutput("Yu"),type = 5),
                                             
+                                                   
                                             
                                           ),
                                         )
@@ -1079,6 +1084,7 @@ server <- shinyServer(function(input, output   ) {
              "Explore!", 
              type = "info")
 
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   values <- reactiveValues(uno=0, dos=0)
   
@@ -1091,6 +1097,23 @@ server <- shinyServer(function(input, output   ) {
     values$uno <-0
     values$dos <-1
   })
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  values1 <- reactiveValues(uno1=0, dos1=0)
+  
+  observeEvent(input$buttonuno1,{
+    values1$uno1 <-1
+    values1$dos1 <-0
+  })
+  
+  observeEvent(input$buttondos1,{
+    values1$uno1 <-0
+    values1$dos1 <-1
+  })
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # This is where a new sample is instigated and inputs converted to numeric
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1263,23 +1286,23 @@ server <- shinyServer(function(input, output   ) {
     
   }) 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # MAIN PLOT!
+  # MAIN PLOT! updated with log transformation  option
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  output$plot1 <- renderPlot({     
-    
-    model <- md()$model
-    foo <- md()$foo
-    
-    spec <- as.numeric(input$spec)
-    Xspec <- as.numeric(input$Xspec)
-    d <- dat()  # Get the  data
-    y <- d$y
-    x <- d$x
-    
-    loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
-    
-  })
+  # output$plot1 <- renderPlot({     
+  #   
+  #   model <- md()$model
+  #   foo <- md()$foo
+  #   
+  #   spec <- as.numeric(input$spec)
+  #   Xspec <- as.numeric(input$Xspec)
+  #   d <- dat()  # Get the  data
+  #   y <- d$y
+  #   x <- d$x
+  #   
+  #   loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+  #   
+  # })
   
   output$plot1 <- renderPlot({     
     
@@ -1619,7 +1642,23 @@ server <- shinyServer(function(input, output   ) {
     
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-  output$plot2 <- renderPlot({         
+  # output$plot2 <- renderPlot({         
+  #   
+  #   model <- mdx()$model
+  #   foo <- mdx()$fo2
+  #   
+  #   spec <- as.numeric(input$spec)
+  #   Xspec <- as.numeric(input$Xspec)
+  #   
+  #   y <- mdx()$y
+  #   x <- mdx()$x
+  #   
+  #   loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+  #   
+  # })
+  # 
+  
+  output$plot2 <- renderPlot({     
     
     model <- mdx()$model
     foo <- mdx()$fo2
@@ -1630,9 +1669,17 @@ server <- shinyServer(function(input, output   ) {
     y <- mdx()$y
     x <- mdx()$x
     
-    loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+    if(values1$uno1)
+        loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+    else 
+      if(values1$dos1)
+        loq1(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+    else
+      return()  
     
   })
+  
+  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Repeat alot of above for user loaded data  
   md2u <- reactive({
