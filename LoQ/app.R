@@ -728,9 +728,11 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                  
                  h2("Exploring transformations in analysis and presentation"), 
                  
-                 h4("An independent variable is generated from a Uniform(0:100) distribution. The response derived from the user inputs and chosen
-                 data generating mechanism. The data can be analysed using a selection of models. The best model fit can be selected ('Best scenario'), judged 
-                 by the model with minimum sum of square of the residuals. A plot of the model fit is shown, predictions & read back are possible. Tab 2 shows summary stats, tab 3 assumptions and tab 6 upload your own data. See the Wiki."), 
+                 h4("An independent variable X is generated from a Uniform(0:100) distribution. The response Y is then derived from the user inputs and chosen
+                 data generating mechanism. For analysis the data can be transformed in a number of different parametric ways and analysed using least squares regression on the transformed data.
+                 The best model fit can be selected ('Best scenario'), judged by the model with minimum sum of square of the residuals (original Y and back transformed predictions). 
+                    A plot of the model fit is shown, predictions & read back are possible. There is an option to log transform the response and label the Y-axis with antilogs. Tab 2 shows summary stats, tab 3 assumptions and tab 6 upload your own data. 
+                    See the Wiki."), 
                  
                  h3("  "), 
                  sidebarLayout(
@@ -854,7 +856,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                    
                                    radioButtons(
                                      inputId = "ana",
-                                     label =  div(h5(tags$span(style="color:blue","Analysis model :"))),
+                                     label =  div(h5(tags$span(style="color:blue","Analysis transformation :"))),
                                      choiceNames = list(
                                        HTML("<font color='blue'>Best scenario</font>"), 
                                        tags$span(style = "color:blue", "Linear Y=a+bX"), 
@@ -915,12 +917,10 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                          
                                          h4(paste("Figure 1 Model fit showing raw data and prediction with 95% confidence")),
                                          
-                                         
-                                         actionButton("buttonuno", "untransformed y axis", icon("paper-plane"), 
+                                         actionButton("buttonuno", "Hit for untransformed y axis", icon("paper-plane"), 
                                                       style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                                         actionButton("buttondos", "Log transformed y axis, consider this if the ratio between high & low values is > 1", icon("paper-plane"), 
+                                         actionButton("buttondos", "Hit for log transformed y axis, consider this if the ratio between high & low values is > 1", icon("paper-plane"), 
                                                       style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                                         
                                          h4(htmlOutput("textWithNumber2",) ),
                                          width = 30  )     ,
                                
@@ -977,7 +977,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         
                                         h4(("Upload your own data for analysis. Requires 2 columns of numeric data. Select 'Header' 
                          if your data columns have names. 
-                          The top two radio button options are to help load. Of course only the 'Analysis model' radio buttons are needed. Here is a link to example data (download a file and click 'Browse...' to locate and upload for the analysis):")) ,
+                          The top two radio button options are to help load. Of course only the 'Analysis transformation' radio buttons are needed. Here is a link to example data (download a file and click 'Browse...' to locate and upload for the analysis):")) ,
                                         
                                         
                                         
@@ -1482,24 +1482,24 @@ server <- shinyServer(function(input, output   ) {
       
       br(), br(),
       
-      " Step 2 Transform this data according to analysis model "
+      " Step 2 Transform this data according to "
       , tags$span(style="color:red",  mod2) ,
       
-      ", now we have our transformed data, mean X "
+      ", so now we have our transformed data, mean X "
       , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
       " mean Y "
       , tags$span(style="color:red",  p4f(mean(res$tybar))),
       
       br(), br(),
       
-      " Step 3 We also have our X specification, the mean of the potentially transformed X if no user X specification entered "
+      " Step 3 We also have our X specification, the mean of the (potentially) transformed X if no user X specification entered "
       , tags$span(style="color:red",  p4f(mean(Xspec))) ,
       
       br(), br(),
       
-      " Step 4 Using our analysis model: "  
+      " Step 4 Using our data transformed according to "  
       , tags$span(style="color:red",  mod2) ,
-      " and X specification on the transformed data shown in step 3 let us predict Y = "
+      " and our X specification on the transformed data shown in step 3 let us analyse with Y~X ordinary least squares (OLS) regression on the transformed data and predict Y to give "
       , tags$span(style="color:red",  p4f(res$tp[1])) , 
       ", 95%CI ( "
       , tags$span(style="color:red",  p4f(res$tp[2])) ,
@@ -1514,7 +1514,7 @@ server <- shinyServer(function(input, output   ) {
       # 
       # br(), br(),
       
-      " Step 5 Finally let us back transform (if required) the prediction shown in step 4 "
+      " Step 5 Finally let us back transform (if required) the prediction shown in step 4 to give "
       , tags$span(style="color:red",  p4f(res$pspec[1])) , 
       ", 95%CI ( "
       , tags$span(style="color:red",  p4f(res$pspec[2])) ,
