@@ -3,65 +3,65 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #https://www.youtube.com/watch?v=VF9s7_YY9TQ&ab_channel=AbhinavAgrawal for action button approach
 
-rm(list=ls()) 
-set.seed(333) # reproducible
-library(directlabels)
-library(shiny) 
-library(shinyjs)  
-library(shinyWidgets)
-library(shinythemes)  # more funky looking apps
-library(shinyalert)
-library(Hmisc)
-library(rms)
-library(ggplot2)
-library(tidyverse)
-library(shinycssloaders)
-library(tvthemes)  # nice ggplot addition
-library(scales) # For the trans_format function
-options(max.print=1000000)    
-
-fig.width6 <- 1100
-fig.height6 <- 600
-fig.width8 <- 1380
-fig.height7 <- 770
-
-## convenience functions
-p0f <- function(x) {formatC(x, format="f", digits=0)}
-p1f <- function(x) {formatC(x, format="f", digits=1)}
-p2f <- function(x) {formatC(x, format="f", digits=2)}
-p3f <- function(x) {formatC(x, format="f", digits=3)}
-p4f <- function(x) {formatC(x, format="f", digits=4)}
-p5f <- function(x) {formatC(x, format="f", digits=5)}
-
-logit <- function(p) log(1/(1/p-1))
-expit <- function(x) 1/(1/exp(x) + 1)
-inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
-is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
-
-options(width=200)
-options(scipen=999)
-
-# range of independent variable
-# lowerV=0
-# upperV=100
+  rm(list=ls()) 
+  set.seed(333) # reproducible
+  library(directlabels)
+  library(shiny) 
+  library(shinyjs)  
+  library(shinyWidgets)
+  library(shinythemes)  # more funky looking apps
+  library(shinyalert)
+  library(Hmisc)
+  library(rms)
+  library(ggplot2)
+  library(tidyverse)
+  library(shinycssloaders)
+  library(tvthemes)  # nice ggplot addition
+  library(scales) # For the trans_format function
+  options(max.print=1000000)    
+  
+  fig.width6 <- 1100
+  fig.height6 <- 600
+  fig.width8 <- 1380
+  fig.height7 <- 770
+  
+  ## convenience functions
+  p0f <- function(x) {formatC(x, format="f", digits=0)}
+  p1f <- function(x) {formatC(x, format="f", digits=1)}
+  p2f <- function(x) {formatC(x, format="f", digits=2)}
+  p3f <- function(x) {formatC(x, format="f", digits=3)}
+  p4f <- function(x) {formatC(x, format="f", digits=4)}
+  p5f <- function(x) {formatC(x, format="f", digits=5)}
+  
+  logit <- function(p) log(1/(1/p-1))
+  expit <- function(x) 1/(1/exp(x) + 1)
+  inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
+  is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
+  
+  options(width=200)
+  options(scipen=999)
+  
+  # range of independent variable
+  # lowerV=0
+  # upperV=100
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function to create minor lines to match log tick values https://r-graphics.org/recipe-axes-axis-log-ticks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-breaks_5log10 <- function(x) {
-  low <- floor(log10(min(x)/5))
-  high <- ceiling(log10(max(x)/5))
+  breaks_5log10 <- function(x) {
+    low <- floor(log10(min(x)/5))
+    high <- ceiling(log10(max(x)/5))
+    
+    c(2:9 %o% 10^(low:high))
+  }
   
-  c(2:9 %o% 10^(low:high))
-}
-
-breaks_log10 <- function(x) {
-  low <- floor(log10(min(x)))
-  high <- ceiling(log10(max(x)))
-  
-  10^(seq.int(low, high))
-}
+  breaks_log10 <- function(x) {
+    low <- floor(log10(min(x)))
+    high <- ceiling(log10(max(x)))
+    
+    10^(seq.int(low, high))
+  }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function to create ticks
