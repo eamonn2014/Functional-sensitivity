@@ -726,7 +726,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                    direction = "bottom"
                  ),
                  
-                 h2("Exploring transformations in model fitting and in presentation"), 
+                 h2("Exploring transformations in analysis and presentation"), 
                  
                  h4("An independent variable is generated from a Uniform(0:100) distribution. The response derived from the user inputs and chosen
                  data generating mechanism. The data can be analysed using a selection of models. The best model fit can be selected ('Best scenario'), judged 
