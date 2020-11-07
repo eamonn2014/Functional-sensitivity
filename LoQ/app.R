@@ -3,100 +3,96 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #https://www.youtube.com/watch?v=VF9s7_YY9TQ&ab_channel=AbhinavAgrawal for action button approach
 
-rm(list=ls()) 
-set.seed(333) # reproducible
-library(directlabels)
-library(shiny) 
-library(shinyjs)  
-library(shinyWidgets)
-library(shinythemes)  # more funky looking apps
-library(shinyalert)
-library(Hmisc)
-library(rms)
-library(ggplot2)
-library(tidyverse)
-library(shinycssloaders)
-library(tvthemes)  # nice ggplot addition
-library(scales) # For the trans_format function
-options(max.print=1000000)    
-
-fig.width6 <- 1100
-fig.height6 <- 600
-fig.width8 <- 1380
-fig.height7 <- 770
-
-## convenience functions
-p0f <- function(x) {formatC(x, format="f", digits=0)}
-p1f <- function(x) {formatC(x, format="f", digits=1)}
-p2f <- function(x) {formatC(x, format="f", digits=2)}
-p3f <- function(x) {formatC(x, format="f", digits=3)}
-p4f <- function(x) {formatC(x, format="f", digits=4)}
-p5f <- function(x) {formatC(x, format="f", digits=5)}
+  rm(list=ls()) 
+  set.seed(333) # reproducible
+  library(directlabels)
+  library(shiny) 
+  library(shinyjs)  
+  library(shinyWidgets)
+  library(shinythemes)  # more funky looking apps
+  library(shinyalert)
+  library(Hmisc)
+  library(rms)
+  library(ggplot2)
+  library(tidyverse)
+  library(shinycssloaders)
+  library(tvthemes)  # nice ggplot addition
+  library(scales) # For the trans_format function
+  options(max.print=1000000)    
+  
+  fig.width6 <- 1100
+  fig.height6 <- 600
+  fig.width8 <- 1380
+  fig.height7 <- 770
+  
+  ## convenience functions, see next code for better approach
+  p0f <- function(x) {formatC(x, format="f", digits=0)}
+  p1f <- function(x) {formatC(x, format="f", digits=1)}
+  p2f <- function(x) {formatC(x, format="f", digits=2)}
+  p3f <- function(x) {formatC(x, format="f", digits=3)}
+  p4f <- function(x) {formatC(x, format="f", digits=4)}
+  p5f <- function(x) {formatC(x, format="f", digits=5)}
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# trying new formatting approach
-formatz <- function(x){
-  
-  if (!is.na(x)  ) {
+  # trying new formatting approach
+  formatz <- function(x){
     
-    if (abs(x) > 1000000) {
+    if (!is.na(x)  ) {
       
-      formatC(x, format="f", digits=0,  big.mark=",")
-      
-    } else if (abs(x) > 1000 & abs(x) <=1000000) {
-      
-      formatC(x, format="f", digits=2,  big.mark=",")
-      
-    } else if (abs(x) >= 1 & abs(x) <=1000) {
-      
-      formatC(x, format="f", digits=2,  big.mark=",")
-      
-    } else if (abs(x) < 1) {
-      
-      formatC(x, format="f", digits=7,  big.mark=",")
-      
-    } else {
-      
-      formatC(x, format="f", digits=2,  big.mark=",")
+      if (abs(x) > 1000000) {
+        
+        formatC(x, format="f", digits=0,  big.mark=",")
+        
+      } else if (abs(x) > 1000 & abs(x) <=1000000) {
+        
+        formatC(x, format="f", digits=2,  big.mark=",")
+        
+      } else if (abs(x) >= 1 & abs(x) <=1000) {
+        
+        formatC(x, format="f", digits=2,  big.mark=",")
+        
+      } else if (abs(x) < 1) {
+        
+        formatC(x, format="f", digits=7,  big.mark=",")
+        
+      } else {
+        
+        formatC(x, format="f", digits=2,  big.mark=",")
+        
+      }
       
     }
     
-  }
-  
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-logit <- function(p) log(1/(1/p-1))
-expit <- function(x) 1/(1/exp(x) + 1)
-inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
-is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
-
-options(width=200)
-options(scipen=999)
-
-# range of independent variable
-# lowerV=0
-# upperV=100
+  logit <- function(p) log(1/(1/p-1))
+  expit <- function(x) 1/(1/exp(x) + 1)
+  inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
+  is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
+  
+  options(width=200)
+  options(scipen=999)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function to create minor lines to match log tick values https://r-graphics.org/recipe-axes-axis-log-ticks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-breaks_5log10 <- function(x) {
-  low <- floor(log10(min(x)/5))
-  high <- ceiling(log10(max(x)/5))
+  breaks_5log10 <- function(x) {
+    low <- floor(log10(min(x)/5))
+    high <- ceiling(log10(max(x)/5))
+    
+    c(2:9 %o% 10^(low:high))
+  }
   
-  c(2:9 %o% 10^(low:high))
-}
-
-breaks_log10 <- function(x) {
-  low <- floor(log10(min(x)))
-  high <- ceiling(log10(max(x)))
-  
-  10^(seq.int(low, high))
-}
+  breaks_log10 <- function(x) {
+    low <- floor(log10(min(x)))
+    high <- ceiling(log10(max(x)))
+    
+    10^(seq.int(low, high))
+  }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-# function to create ticks
+# function to create ticks, not used
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # https://stackoverflow.com/questions/46412250/ggplot2-displaying-unlabeled-tick-marks-between-labeled-tick-marks
@@ -127,7 +123,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   if (model %in% 11) {mod="Square X and Y Y^2=a+X^2/b"} 
   if (model %in% 12) {mod="Restricted cubic spline (rcs) 4 knots"} 
   
-  # transformation of data for 12 models
+  # transformation of data for 12 models, create all and select below 
   ty1 <- y;       tx1 <- x
   ty2 <- log(y);  tx2 <- x
   ty3 <- 1/y;     tx3 <- x
@@ -142,19 +138,24 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   ty12 <- y;      tx12 <- x 
   
   # transform spec for prediction, note only where x is transformed, above
-  if (model %in% 4 ) {Xspec <- 1/Xspec}
-  if (model %in% 5 ) {Xspec <- 1/Xspec}
-  if (model %in% 6 ) {Xspec <- log(Xspec)}
-  if (model %in% 7 ) {Xspec <- log(Xspec)}
-  if (model %in% 8 ) {Xspec <- sqrt(Xspec)}
-  if (model %in% 10) {Xspec <- 1/Xspec}
-  if (model %in% 11) {Xspec <- Xspec^2}
+  # if (model %in% 4 ) {Xspec <- 1/Xspec}
+  # if (model %in% 5 ) {Xspec <- 1/Xspec}
+  # if (model %in% 6 ) {Xspec <- log(Xspec)}
+  # if (model %in% 7 ) {Xspec <- log(Xspec)}
+  # if (model %in% 8 ) {Xspec <- sqrt(Xspec)}
+  # if (model %in% 10) {Xspec <- 1/Xspec}
+  # if (model %in% 11) {Xspec <- Xspec^2}
+  
+  if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
+  if (model %in% c(6,7)  )  {Xspec <- log(Xspec)  }
+  if (model %in% c(8)    )  {Xspec <- Xspec^.5}
+  if (model %in% c(11)   )  {Xspec <- Xspec^2 }
   
   # save the original data
   x1 <- x
   y1 <- y
   
-  # transform using the selected model (1 - 11)
+  # assign the selected transformed data to x and y 
   x <- eval(parse(text=(paste("tx", model, sep="")) )) 
   y <- eval(parse(text=(paste("ty", model, sep="")) )) 
   
@@ -171,7 +172,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     ddist <<- datadist(dat)
     options(datadist='ddist')#
     
-    f <- ols(y~rcs(x,4), dat)   
+    f <- ols(y~rcs(x,4), dat)   # OLS
     
     # obtain the predictions 
     dat2 <- expand.grid(x=seq(min(x1),max(x1),.001))
@@ -179,11 +180,11 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     dat2$lower <- dat2$linear.predictors - qt(0.975,n-4) * dat2$se.fit     # n-4 as we are using rcs 4 df are used up
     dat2$upper <- dat2$linear.predictors + qt(0.975,n-4) * dat2$se.fit
     
-    # if (is.na(spec))  {spec=mean(dat2$linear.predictors, is.finite=TRUE)}
+    # assign specs if not entered by user
     if (is.na(spec))  {spec=mean(dat$y, is.finite=TRUE)}
     if (is.na(Xspec)) {Xspec=mean(dat$x, is.finite=TRUE)}
     
-    #find nearest values to spec using brute force approach
+    # find nearest values to spec using brute force approach
     it <- which.min(abs(dat2$linear.predictors - spec))
     txpre<-dat2[it,]$x 
     
@@ -193,8 +194,10 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     it <- which.min(abs(dat2$upper - spec))
     txup<-dat2[it,]$x 
     
+    # assign spec to object
     yspec <- spec
     
+    # ensure order is correct
     limits <- sort(c(txlow,txup))
     txlow <- limits[1]
     txup <-  limits[2]
@@ -207,6 +210,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     rsd2 <-  anova(f)["ERROR","MS"]^.5
     dfs <-   anova(f)["ERROR","d.f."]
     
+    # get a prediction for the x spec
     XXX  <- predict(f, Xspec, se.fit=TRUE) 
     XXX$L <- XXX$linear.predictors - qt(0.975,n-4) * XXX$se.fit     # n-4 as we are using rcs 4 df are used up
     XXX$U <- XXX$linear.predictors + qt(0.975,n-4) * XXX$se.fit
@@ -236,6 +240,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   } else {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
+    # run regression on the transformed data grab slope intercept
     f <- lm(y~x)  
     # run regression on the transformed data grab slope intercept
     intercept <- coef(f)[1][[1]]
@@ -249,7 +254,8 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     if (model %in% c(3,5)  )  {p <- 1/p} 
     if (model %in% c(9)    )  {p <- p^2} 
     if (model %in% c(11)   )  {p <- p^.5} 
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Now the X specification
     if (is.na(Xspec)) {
       
       Xspec=mean(x1, is.finite=TRUE)
@@ -262,6 +268,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     
     tp <- pspec <- predict.lm(f, newdata=data.frame(x=Xspec), interval="confidence")  # tp will be used in explanationary text
     
+    # transform back
     if (model %in% c(2,7,10)) {pspec <- exp(pspec)}
     if (model %in% c(3,5)  )  {pspec <- 1/pspec}
     if (model %in% c(9)    )  {pspec <- (pspec)^2}
@@ -271,7 +278,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
       if( pspec[3] < pspec[2] ) {pspec <- pspec[c(1,3,2)] }
     }
     
-    # residuals original y and transformed back predicted values, residual sum of squares, this will be used to judge best model
+    # p created above, residuals using original y and transformed back predicted values, residual sum of squares, this will be used to judge best model
     r <- (y1-p[,1]) 
     r2 <-  (y1-p[,1])^2
     ssr <- sum(r2, na.rm=T) 
@@ -288,6 +295,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     if (model %in% c(11)   )  {spec <- spec ^2}
     
     tyspec <- spec 
+    
     # grab the residual standard deviation
     rsd2 <- as.data.frame(anova(f))[2,3]^.5 
     dfs <- anova(f)["Residuals","Df"]
