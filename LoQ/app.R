@@ -731,7 +731,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                  h4("An independent variable X is generated from a Uniform(0:100) distribution. The response Y is then derived from the user inputs and chosen
                  data generating mechanism. For analysis the data can be transformed in a number of different parametric ways and analysed using least squares regression on the transformed data.
                  The best model fit can be selected ('Best scenario'), judged by the model with minimum sum of square of the residuals (original Y and back transformed predictions). 
-                    A plot of the model fit is shown, predictions & read back are possible. There is an option to log transform the response and label the Y-axis with antilogs. Tab 2 shows summary stats, tab 3 assumptions and tab 6 upload your own data. 
+                    A plot of the model fit is shown, predictions & read back are possible. For presentation, there is an option to log transform Y and label the Y-axis with antilogs. Tab 2 shows summary stats, tab 3 assumptions and tab 6 upload your own data. 
                     See the Wiki."), 
                  
                  h3("  "), 
@@ -1296,7 +1296,7 @@ server <- shinyServer(function(input, output   ) {
       
       model <- which(ssr==min(ssr)) 
       mdata <- res$foo
-      res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0,  Xspec=Xspec)  # run best model
+      res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=1,  Xspec=Xspec)  # run best model
       f=res2$f   
       mod<- res2$mod
       
