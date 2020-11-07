@@ -1186,7 +1186,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         h4(paste("* Deal with read back when fitted and or limits cross multiple times the  y of interest (specification).")),
                                         h4(paste("* Convert main plot to plotly.")),
                                          h4(paste("* Known issue, the R code line printed below that is used in the loq1 function will sometimes throw 'Warning: Error in unit: 'x' and 'units' must have length > 0' and no plot will be displayed. However enter a Y read back value and a plot will appear. So some read back values cause the error when log transformation plot is requested. This line can be removed to eliminate the error, but the drawback then is the log ticks are removed!")),
-                                         h4(paste("* Known issue, the line below used in loq1 function will sometimes throw the 'Warning: Error in unit: 'x' and 'units' must have length > 0' and no plot will be displayed. However enter a Y read back value and a plot will appear. So some read back values cause the error when log transformation plot is requested. This line can be removed to eliminate error, but then the drwback if the log ticks are removed!")),
+                                         h4(paste("* Known issue, the line below used in loq1 function will sometimes throw the 'Warning: Error in unit: 'x' and 'units' must have length > 0' and no plot will be displayed. However enter a Y read back value and a plot will appear. So some read back values cause the error when log transformation plot is requested. This line can be removed to eliminate error, but then the drawback if the log ticks are removed!")),
                                          h4(paste("p <- p + annotation_logticks(sides = 'lr')")),
   
  
@@ -1751,7 +1751,7 @@ server <- shinyServer(function(input, output   ) {
       
       model <- which(ssr==min(ssr, na.rm=TRUE)) 
       mdata <- res$foo
-      res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=0,  Xspec=Xspec)  # run best model
+      res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=1,  Xspec=Xspec)  # run best model
       f=res2$f   
       mod<- res2$mod
       
