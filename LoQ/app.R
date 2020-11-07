@@ -3,65 +3,97 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #https://www.youtube.com/watch?v=VF9s7_YY9TQ&ab_channel=AbhinavAgrawal for action button approach
 
-  rm(list=ls()) 
-  set.seed(333) # reproducible
-  library(directlabels)
-  library(shiny) 
-  library(shinyjs)  
-  library(shinyWidgets)
-  library(shinythemes)  # more funky looking apps
-  library(shinyalert)
-  library(Hmisc)
-  library(rms)
-  library(ggplot2)
-  library(tidyverse)
-  library(shinycssloaders)
-  library(tvthemes)  # nice ggplot addition
-  library(scales) # For the trans_format function
-  options(max.print=1000000)    
+rm(list=ls()) 
+set.seed(333) # reproducible
+library(directlabels)
+library(shiny) 
+library(shinyjs)  
+library(shinyWidgets)
+library(shinythemes)  # more funky looking apps
+library(shinyalert)
+library(Hmisc)
+library(rms)
+library(ggplot2)
+library(tidyverse)
+library(shinycssloaders)
+library(tvthemes)  # nice ggplot addition
+library(scales) # For the trans_format function
+options(max.print=1000000)    
+
+fig.width6 <- 1100
+fig.height6 <- 600
+fig.width8 <- 1380
+fig.height7 <- 770
+
+## convenience functions
+p0f <- function(x) {formatC(x, format="f", digits=0)}
+p1f <- function(x) {formatC(x, format="f", digits=1)}
+p2f <- function(x) {formatC(x, format="f", digits=2)}
+p3f <- function(x) {formatC(x, format="f", digits=3)}
+p4f <- function(x) {formatC(x, format="f", digits=4)}
+p5f <- function(x) {formatC(x, format="f", digits=5)}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# trying new formatting approach
+formatz <- function(x){
   
-  fig.width6 <- 1100
-  fig.height6 <- 600
-  fig.width8 <- 1380
-  fig.height7 <- 770
+  if (!is.na(x)  ) {
+    
+    if (abs(x) > 1000000) {
+      
+      formatC(x, format="f", digits=0,  big.mark=",")
+      
+    } else if (abs(x) > 1000 & abs(x) <=1000000) {
+      
+      formatC(x, format="f", digits=2,  big.mark=",")
+      
+    } else if (abs(x) >= 1 & abs(x) <=1000) {
+      
+      formatC(x, format="f", digits=2,  big.mark=",")
+      
+    } else if (abs(x) < 1) {
+      
+      formatC(x, format="f", digits=7,  big.mark=",")
+      
+    } else {
+      
+      formatC(x, format="f", digits=2,  big.mark=",")
+      
+    }
+    
+  }
   
-  ## convenience functions
-  p0f <- function(x) {formatC(x, format="f", digits=0)}
-  p1f <- function(x) {formatC(x, format="f", digits=1)}
-  p2f <- function(x) {formatC(x, format="f", digits=2)}
-  p3f <- function(x) {formatC(x, format="f", digits=3)}
-  p4f <- function(x) {formatC(x, format="f", digits=4)}
-  p5f <- function(x) {formatC(x, format="f", digits=5)}
-  
-  logit <- function(p) log(1/(1/p-1))
-  expit <- function(x) 1/(1/exp(x) + 1)
-  inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
-  is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
-  
-  options(width=200)
-  options(scipen=999)
-  
-  # range of independent variable
-  # lowerV=0
-  # upperV=100
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+logit <- function(p) log(1/(1/p-1))
+expit <- function(x) 1/(1/exp(x) + 1)
+inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
+is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
+
+options(width=200)
+options(scipen=999)
+
+# range of independent variable
+# lowerV=0
+# upperV=100
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function to create minor lines to match log tick values https://r-graphics.org/recipe-axes-axis-log-ticks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  breaks_5log10 <- function(x) {
-    low <- floor(log10(min(x)/5))
-    high <- ceiling(log10(max(x)/5))
-    
-    c(2:9 %o% 10^(low:high))
-  }
+breaks_5log10 <- function(x) {
+  low <- floor(log10(min(x)/5))
+  high <- ceiling(log10(max(x)/5))
   
-  breaks_log10 <- function(x) {
-    low <- floor(log10(min(x)))
-    high <- ceiling(log10(max(x)))
-    
-    10^(seq.int(low, high))
-  }
+  c(2:9 %o% 10^(low:high))
+}
+
+breaks_log10 <- function(x) {
+  low <- floor(log10(min(x)))
+  high <- ceiling(log10(max(x)))
+  
+  10^(seq.int(low, high))
+}
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function to create ticks
@@ -335,7 +367,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
   
   #p <- p + scale_x_continuous(breaks = breaks, labels = labels, limits = c(lowerV, upperV)) 
   #p <- p + scale_x_continuous(breaks = waiver() , labels = waiver() ) 
-  
+  p <- p + scale_y_continuous(labels = scales::comma) 
   p <- p + labs(x = "Independent variable", y = "Response") 
   
   p <- p +  theme(panel.background=element_blank(),
@@ -363,16 +395,16 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
                   
   )   
   
-  p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
-                               p2f(Xspec) ,", the estimate of Y is ",
-                               p4f(pspec[1])," with 95%CI: (", 
-                               p4f(pspec[2]),", ",
-                               p4f(pspec[3]),")",
+  p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", formatz(ssr),", residual standard deviation = ",formatz(df2)," \nPredict at input of ", 
+                               formatz(Xspec) ,", the estimate of Y is ",
+                               formatz(pspec[1])," with 95%CI: (", 
+                               formatz(pspec[2]),", ",
+                               formatz(pspec[3]),")",
                                "\nRead back at response of ", 
-                               p2f(yspec) ,", the estimate of X is ",
-                               p2f(txpre)," with 95%CI: (", 
-                               p2f(txlow),", ",
-                               p2f(txup),")",  
+                               formatz(yspec) ,", the estimate of X is ",
+                               formatz(txpre)," with 95%CI: (", 
+                               formatz(txlow),", ",
+                               formatz(txup),")",  
                                sep=" "),
                 caption = paste0("If X specification is missing, the mean of X is used. If Y specification is missing the prediction of X used as the Y value to read back from (dashed lines).")
   )  #   +
@@ -687,16 +719,16 @@ loq1 <- function (x, y, model, spec, print.plot=1, Xspec)  {
                   
   )   
   
-  p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", p2f(ssr),", residual standard deviation = ",p2f(df2)," \nPredict at input of ", 
-                               p2f(Xspec) ,", the estimate of Y is ",
-                               p4f(pspec[1])," with 95%CI: (", 
-                               p4f(pspec[2]),", ",
-                               p4f(pspec[3]),")",
+  p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", formatz(ssr),", residual standard deviation = ",formatz(df2)," \nPredict at input of ", 
+                               formatz(Xspec) ,", the estimate of Y is ",
+                               formatz(pspec[1])," with 95%CI: (", 
+                               formatz(pspec[2]),", ",
+                               formatz(pspec[3]),")",
                                "\nRead back at response of ", 
-                               p2f(yspec) ,", the estimate of X is ",
-                               p2f(txpre)," with 95%CI: (", 
-                               p2f(txlow),", ",
-                               p2f(txup),")",  
+                               formatz(yspec) ,", the estimate of X is ",
+                               formatz(txpre)," with 95%CI: (", 
+                               formatz(txlow),", ",
+                               formatz(txup),")",  
                                sep=" "),
                 caption = paste0("If X specification is missing, the mean of X is used. If Y specification is missing the prediction of X used as the Y value to read back from (dashed lines).")
   )  #   +
@@ -1153,7 +1185,11 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                                         h4(paste("To do:")),
                                         h4(paste("* Deal with read back when fitted and or limits cross multiple times the  y of interest (specification).")),
                                         h4(paste("* Convert main plot to plotly.")),
-                                        
+                                        h4(paste("* Known issue, the line below used in loq1 function will sometimes throw the 'Warning: Error in unit: 'x' and 'units' must have length > 0' and no plot will be displayed. However enter a Y read back value and a plot will appear. So some read back values cause the error when log transformation plot is requested. This line can be removed to eliminate error, but then the log ticks are removed.")),
+                                        tags$hr(),
+                                        h4(paste("p <- p + annotation_logticks(sides = 'lr')")),
+  
+ 
                                         
                                )
                                
@@ -1342,15 +1378,18 @@ server <- shinyServer(function(input, output   ) {
       A[j,2] <- res$mod    # model
       
       A[j,3] <- p0f(res$dfs)    # d.f.
-      A[j,4] <- p4f(res$ssr)    # sum of squared residuals
-      A[j,5] <- p4f(res$rsd2)   # sigma
-      A[j,6] <- p4f(sqrt(res$ssr/res$dfs))
+      A[j,4] <- (res$ssr)    # sum of squared residuals
+      A[j,5] <- (res$rsd2)   # sigma
+      A[j,6] <- (sqrt(res$ssr/res$dfs))
       
     }
     
     A <- data.frame( A[,c(1,2)],  apply(A[,c(3,4,5,6)],2, as.numeric))
     
     A <- plyr::arrange(A,A[,4])
+    
+    A <- data.frame( A[,c(1,2,3)],  apply(A[,c(4,5,6)],2, formatz))
+
     return(list(  ssr=A, M=M))
     
   })
@@ -1476,9 +1515,9 @@ server <- shinyServer(function(input, output   ) {
       , tags$span(style="color:red",  mod) ,
       
       ", we have our data, with mean X "
-      , tags$span(style="color:red",  p4f(mean(d$x))) ,
+      , tags$span(style="color:red",  formatz(mean(d$x))) ,
       " mean Y "
-      , tags$span(style="color:red",  p4f(mean(d$y))) ,
+      , tags$span(style="color:red",  formatz(mean(d$y))) ,
       
       br(), br(),
       
@@ -1486,25 +1525,25 @@ server <- shinyServer(function(input, output   ) {
       , tags$span(style="color:red",  mod2) ,
       
       ", so now we have our transformed data, mean X "
-      , tags$span(style="color:red",  p4f(mean(res$txbar))) ,
+      , tags$span(style="color:red",  formatz(mean(res$txbar))) ,
       " mean Y "
-      , tags$span(style="color:red",  p4f(mean(res$tybar))),
+      , tags$span(style="color:red",  formatz(mean(res$tybar))),
       
       br(), br(),
       
       " Step 3 We also have our X specification, the mean of the (potentially) transformed X if no user X specification entered "
-      , tags$span(style="color:red",  p4f(mean(Xspec))) ,
+      , tags$span(style="color:red",  formatz(mean(Xspec))) ,
       
       br(), br(),
       
       " Step 4 Using our data transformed according to "  
       , tags$span(style="color:red",  mod2) ,
       " and our X specification on the transformed data shown in step 3 let us analyse with Y~X ordinary least squares (OLS) regression on the transformed data and predict Y to give "
-      , tags$span(style="color:red",  p4f(res$tp[1])) , 
+      , tags$span(style="color:red",  formatz(res$tp[1])) , 
       ", 95%CI ( "
-      , tags$span(style="color:red",  p4f(res$tp[2])) ,
+      , tags$span(style="color:red",  formatz(res$tp[2])) ,
       ", "
-      , tags$span(style="color:red",  p4f(res$tp[3])) ,
+      , tags$span(style="color:red",  formatz(res$tp[3])) ,
       " ) ",
       
       br(), br(),
@@ -1515,11 +1554,11 @@ server <- shinyServer(function(input, output   ) {
       # br(), br(),
       
       " Step 5 Finally let us back transform (if required) the prediction shown in step 4 to give "
-      , tags$span(style="color:red",  p4f(res$pspec[1])) , 
+      , tags$span(style="color:red",  formatz(res$pspec[1])) , 
       ", 95%CI ( "
-      , tags$span(style="color:red",  p4f(res$pspec[2])) ,
+      , tags$span(style="color:red",  formatz(res$pspec[2])) ,
       ", "
-      , tags$span(style="color:red",  p4f(res$pspec[3])) ,
+      , tags$span(style="color:red",  formatz(res$pspec[3])) ,
       " ) "
       
     ))
@@ -1573,6 +1612,7 @@ server <- shinyServer(function(input, output   ) {
     d <- md2()$ssr
     d <- as.data.frame(d)
     names(d) <- c("model #","Model description", "d.f.", "Sum of square of residuals","Model Sigma" ,"Back transf. sigma")
+   # d <- plyr::arrange(d,  `Sum of square of residuals`)
     return(print(d, row.names = FALSE))
     
   })  
@@ -1796,15 +1836,18 @@ server <- shinyServer(function(input, output   ) {
       A[j,2] <- res$mod    # model
       
       A[j,3] <- p0f(res$dfs)    # d.f.
-      A[j,4] <- p4f(res$ssr)    # sum of squared residuals
-      A[j,5] <- p4f(res$rsd2)   # sigma
-      A[j,6] <- p4f(sqrt(res$ssr/res$dfs))
+      A[j,4] <- (res$ssr)    # sum of squared residuals
+      A[j,5] <- (res$rsd2)   # sigma
+      A[j,6] <- (sqrt(res$ssr/res$dfs))
       
     }
     
     A <- data.frame( A[,c(1,2)],  apply(A[,c(3,4,5,6)],2, as.numeric))
     
     A <- plyr::arrange(A,A[,4])
+    
+    A <- data.frame( A[,c(1,2,3)],  apply(A[,c(4,5,6)],2, formatz))
+    
     return(list(  ssr=A, M=M))
     
   })
