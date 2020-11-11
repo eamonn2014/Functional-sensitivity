@@ -78,15 +78,16 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   breaks_5log10 <- function(x) {
-    low <- floor(log10(min(x)/5))
-    high <- ceiling(log10(max(x)/5))
+    
+    low <-    floor(log10(min(x, na.rm=TRUE)-100000/5))
+    high <- ceiling(log10(max(x, na.rm=TRUE)-100000/5))
     
     c(2:9 %o% 10^(low:high))
   }
   
   breaks_log10 <- function(x) {
-    low <- floor(log10(min(x)))
-    high <- ceiling(log10(max(x)))
+    low <-    floor(log10(min(x, na.rm=TRUE)-100000))
+    high <- ceiling(log10(max(x, na.rm=TRUE)-100000))
     
     10^(seq.int(low, high))
   }
