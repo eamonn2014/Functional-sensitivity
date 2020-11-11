@@ -29,12 +29,12 @@ fig.width8 <- 1380
 fig.height7 <- 770
 
 ## convenience functions, see next code for better approach
-p0f <- function(x) {formatC(x, format="f", digits=0)}
-p1f <- function(x) {formatC(x, format="f", digits=1)}
-p2f <- function(x) {formatC(x, format="f", digits=2)}
-p3f <- function(x) {formatC(x, format="f", digits=3)}
-p4f <- function(x) {formatC(x, format="f", digits=4)}
-p5f <- function(x) {formatC(x, format="f", digits=5)}
+# p0f <- function(x) {formatC(x, format="f", digits=0)}
+# p1f <- function(x) {formatC(x, format="f", digits=1)}
+# p2f <- function(x) {formatC(x, format="f", digits=2)}
+# p3f <- function(x) {formatC(x, format="f", digits=3)}
+# p4f <- function(x) {formatC(x, format="f", digits=4)}
+# p5f <- function(x) {formatC(x, format="f", digits=5)}
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # trying new formatting approach
@@ -140,14 +140,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
     ty11 <- y^2;    tx11 <- x^2
     ty12 <- y;      tx12 <- x 
     
-    # transform spec for prediction, note only where x is transformed, above
-    # if (model %in% 4 ) {Xspec <- 1/Xspec}
-    # if (model %in% 5 ) {Xspec <- 1/Xspec}
-    # if (model %in% 6 ) {Xspec <- log(Xspec)}
-    # if (model %in% 7 ) {Xspec <- log(Xspec)}
-    # if (model %in% 8 ) {Xspec <- sqrt(Xspec)}
-    # if (model %in% 10) {Xspec <- 1/Xspec}
-    # if (model %in% 11) {Xspec <- Xspec^2}
+  
     
     if (model %in% c(4,5,10)) {Xspec <- 1/Xspec}
     if (model %in% c(6,7)  )  {Xspec <- log(Xspec)  }
@@ -792,11 +785,11 @@ sidebar <- dashboardSidebar(width=300,
                                     ),
                                     
                                     tags$div(
-                                        textInput(inputId='Intercept', label='Intercept', width = '90%' , "10"),
+                                        textInput(inputId='a', label='Intercept', width = '90%' , "10"),
                                     ),
                                     
                                     tags$div(
-                                        textInput(inputId='Slope', label='Slope', width = '90%' , ".1"),
+                                        textInput(inputId='b', label='Slope', width = '90%' , ".1"),
                                     )
                                     
                                 ),
@@ -899,7 +892,7 @@ frow2 <- fluidRow(
         ,status = "primary"
         ,solidHeader = TRUE 
         ,collapsible = TRUE 
-        ,plotOutput("revenuebyPrd", height = "750px")
+        ,plotOutput("plot1", height = "750px")
     )
     
     ,box(
@@ -990,6 +983,247 @@ server <- function(input, output) {
                                     ,plot.title = element_text(size=15, face="bold")) + 
             ggtitle("Revenue by Region") + labs(fill = "Region")
     })
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # This is where a new sample is instigated and inputs converted to numeric
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    random.sample <- reactive({
+        
+        foo <- input$resample
+        
+        a <- as.numeric(input$a)
+        
+        b <-as.numeric(input$b)
+        
+        sigma1 <- as.numeric(input$sigma1)
+        
+        N <- as.numeric(input$N)
+        
+        return(list(  
+            a=a,
+            b=b,
+            sigma1=sigma1,
+            N=N
+        ))
+        
+    })
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # GENERATE THE DATA
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    dat <- reactive({
+        
+        sample <- random.sample()
+        
+        a=sample$a
+        b=sample$b
+        sigma1=sample$sigma1
+        N=sample$N
+        
+        # x <-  array(runif(N, lowerV, upperV))  # no negative values
+        x <-  array(runif(N, 0, 100))  # no negative values
+        noise <-  rnorm(N,0, sigma1)
+        
+        if (input$truth %in% "model1") {
+            y <-  a+ x*b +    noise
+        } else if (input$truth %in% "model2") {
+            y <-  exp(a+ x*b + noise)
+        } else if (input$truth %in% "model3") {
+            y <-  1/(a+ x*b +  noise)
+        } else if (input$truth %in% "model4") {
+            y <-  a + b*(1/x) + noise
+        } else if (input$truth %in% "model5") {
+            y <-  1/(a + b/x +  noise)
+        } else if (input$truth %in% "model6") {
+            y <-  a + log(x)*b +    noise   
+        } else if (input$truth %in% "model7") {
+            y <-  a * x^b +    noise
+        } else if (input$truth %in% "model8") {
+            y <-  a + sqrt(x)*b +    noise
+        } else if (input$truth %in% "model9") {
+            y <-  (a + x*b + noise)^2 
+        } else if (input$truth %in% "model10") {
+            y <-  exp(a+ b/x + noise)
+        } else if (input$truth %in% "model11") {
+            y <-  ( a + (x^2)/b + noise)^.5
+        }
+        
+        d <- cbind(x,y)
+        
+        return(list(  y=y, x=x, d=d))
+        
+    })
+    
+    
+    
+    
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Execute analysis
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    md <- reactive({
+        
+        spec <- as.numeric(input$spec)
+        Xspec <- as.numeric(input$Xspec)
+        d <- dat()  # Get the  data
+        y <- d$y
+        x <- d$x
+        
+        ssr <- rep(NA,12)
+        
+        mdata <- list(NA)
+        
+        if (input$ana %in% 99) {
+            
+            for (j in 1:12) {
+                
+                res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0, Xspec=Xspec) # don't print
+                ssr[j] <- res$ssr
+                
+            }
+            
+            model <- which(ssr==min(ssr)) 
+            mdata <- res$foo
+            res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=1,  Xspec=Xspec)  # run best model
+            f=res2$f   
+            mod<- res2$mod
+            
+        } else {
+            
+            res <- loq(x=x, y=y, model=as.numeric(input$ana), spec= spec,  Xspec=Xspec) 
+            mdata <- res$foo
+            model <- as.numeric(input$ana)
+            f=res$f
+            mod<- res$mod
+            
+        }
+        
+        return(list(  model=model, foo=mdata, f=f, mod=mod))
+        
+    }) 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # collect for listing here
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # md2 <- reactive({
+    #     
+    #     spec <- as.numeric(input$spec)
+    #     Xspec <- as.numeric(input$Xspec)
+    #     d <- dat()  # Get the data
+    #     y <- d$y
+    #     x <- d$x
+    #     
+    #     A <- array(NA, dim=c(12,6))
+    #     M <- list(NA, dim=c(24,1))
+    #     M <- array(NA, dim=c(24,1))
+    #     
+    #     for (j in 1:12) {
+    #         
+    #         res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0,  Xspec=Xspec) # don't print
+    #         
+    #         k <- j*2
+    #         m <- k-1
+    #         
+    #         M[k] <- res$f 
+    #         M[m] <- res$mod
+    #         
+    #         A[j,1] <- j          # model no
+    #         A[j,2] <- res$mod    # model
+    #         
+    #         A[j,3] <- p0f(res$dfs)    # d.f.
+    #         A[j,4] <- (res$ssr)    # sum of squared residuals
+    #         A[j,5] <- (res$rsd2)   # sigma
+    #         A[j,6] <- (sqrt(res$ssr/res$dfs))
+    #         
+    #     }
+    #     
+    #     A <- data.frame( A[,c(1,2)],  apply(A[,c(3,4,5,6)],2, as.numeric))
+    #     
+    #     A <- plyr::arrange(A,A[,4])
+    #     
+    #     A <- data.frame( A[,c(1,2,3)],  apply(A[,c(4,5,6)],2, formatz))
+    #     
+    #     return(list(  ssr=A, M=M))
+    #     
+    # })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # X summary stats
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # output$X <- renderPrint({
+    #     
+    #     d <- md()$foo
+    #     return(print(summary(d$x), digits=6))
+    #     
+    # }) 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Y summary stats
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # output$Y <- renderPrint({
+    #     
+    #     d <- md()$foo
+    #     return(print(summary(d$obsy), digits=6))
+    #     
+    # }) 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # MAIN PLOT! updated with log transformation  option
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    output$plot1 <-renderPlot({     
+        
+        model <- md()$model
+        foo <- md()$foo
+        
+        spec <- as.numeric(input$spec)
+        Xspec <- as.numeric(input$Xspec)
+        d <- dat()  # Get the  data
+        y <- d$y
+        x <- d$x
+        
+       # if(values$uno)
+            loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+        #else 
+         #   if(values$dos)
+           #     loq1(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+        #else
+            return()  
+        
+    })
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
