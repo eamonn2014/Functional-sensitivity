@@ -888,7 +888,7 @@ frow1 <- fluidRow(
 frow2 <- fluidRow(
     
     box(
-        title = "Revenue per Account"
+        title = "Fitted Analysis Model"
         ,status = "primary"
         ,solidHeader = TRUE 
         ,collapsible = TRUE 
@@ -896,11 +896,11 @@ frow2 <- fluidRow(
     )
     
     ,box(
-        title = "Revenue per Product"
+        title = "Fitted Analysis Model with logarithmic transformation"
         ,status = "primary"
         ,solidHeader = TRUE 
         ,collapsible = TRUE 
-        ,plotOutput("revenuebyRegion", height = "750px")
+        ,plotOutput("plot2", height = "750px")
     ) 
     
 )
@@ -926,15 +926,16 @@ server <- function(input, output) {
     total.revenue <- sum(recommendation$Revenue)
     sales.account <- recommendation %>% group_by(Account) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
     prof.prod <- recommendation %>% group_by(Product) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
-    
-    
-    #creating the valueBoxOutput content
+     
+ 
     output$value1 <- renderValueBox({
-        valueBox(
-            formatC(sales.account$value, format="d", big.mark=',')
-            ,paste('Residual sum of squares:',sales.account$Account)
-            ,icon = icon("stats",lib='glyphicon')
-            ,color = "purple")
+      
+        valueBox(setUpByName(),
+         # verbatimTextOutput("ssr"),
+        #   formatC(setUpByName(), format="d", big.mark=','),
+            subtitle = "Unit Sales",
+                 icon = icon("server"),
+                 color = "purple")
         
         
     })
@@ -1089,6 +1090,7 @@ server <- function(input, output) {
             res2 <- loq(x=x, y=y, model=model, spec= spec, print.plot=1,  Xspec=Xspec)  # run best model
             f=res2$f   
             mod<- res2$mod
+            ssr <- min(ssr)
             
         } else {
             
@@ -1097,12 +1099,21 @@ server <- function(input, output) {
             model <- as.numeric(input$ana)
             f=res$f
             mod<- res$mod
+            ssr <- min(res$ssr)
             
         }
         
-        return(list(  model=model, foo=mdata, f=f, mod=mod))
+        return(list(  model=model, foo=mdata, f=f, mod=mod, ssr=as.numeric(ssr)))
         
     }) 
+    
+    
+    setUpByName <- reactive ({
+        d <- md()  # Get the  data
+        y <- as.numeric(as.character(d$ssr))
+        storage.mode(y) <- 'numeric'
+        return(y)
+    })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # collect for listing here
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1165,6 +1176,12 @@ server <- function(input, output) {
     #     return(print(summary(d$obsy), digits=6))
     #     
     # }) 
+    # output$ssr <- renderPrint({
+    # 
+    #     d <- md()$ssr
+    #     return(d)
+    # 
+    # })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # MAIN PLOT! updated with log transformation  option
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1193,7 +1210,26 @@ server <- function(input, output) {
     
     
     
-    
+    output$plot2<-renderPlot({     
+        
+        model <- md()$model
+        foo <- md()$foo
+        
+        spec <- as.numeric(input$spec)
+        Xspec <- as.numeric(input$Xspec)
+        d <- dat()  # Get the  data
+        y <- d$y
+        x <- d$x
+        
+        # if(values$uno)
+        #loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+        #else 
+        #   if(values$dos)
+        loq1(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+        #else
+        return()  
+        
+    })
     
     
     
