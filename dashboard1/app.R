@@ -10,63 +10,25 @@ library(dplyr)
 set.seed(333) # reproducible
 library(directlabels)
 library(shiny) 
-# library(shinyjs)  
-# library(shinyWidgets)
-# library(shinythemes)  # more funky looking apps
 library(shinyalert)
 library(Hmisc)
 library(rms)
 library(ggplot2)
 library(tidyverse)
-#library(shinycssloaders)
-#library(tvthemes)  # nice ggplot addition
 library(scales) # For the trans_format function
 options(max.print=1000000)    
 
-fig.width6 <- 1100
-fig.height6 <- 600
-fig.width8 <- 1380
-fig.height7 <- 770
-
-## convenience functions, see next code for better approach
-# p0f <- function(x) {formatC(x, format="f", digits=0)}
-# p1f <- function(x) {formatC(x, format="f", digits=1)}
-# p2f <- function(x) {formatC(x, format="f", digits=2)}
-# p3f <- function(x) {formatC(x, format="f", digits=3)}
-# p4f <- function(x) {formatC(x, format="f", digits=4)}
-# p5f <- function(x) {formatC(x, format="f", digits=5)}
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# trying new formatting approach
-formatz <- function(x){
-    
-    if (!is.na(x)  ) {
+   # https://stackoverflow.com/questions/3245862/format-numbers-to-significant-figures-nicely-in-r
+    formatz <- function(x){
         
-        if (abs(x) > 1000000) {
-            
-            formatC(x, format="f", digits=0,  big.mark=",")
-            
-        } else if (abs(x) > 1000 & abs(x) <=1000000) {
-            
-            formatC(x, format="f", digits=2,  big.mark=",")
-            
-        } else if (abs(x) >= 1 & abs(x) <=1000) {
-            
-            formatC(x, format="f", digits=2,  big.mark=",")
-            
-        } else if (abs(x) < 1) {
-            
-            formatC(x, format="f", digits=7,  big.mark=",")
-            
-        } else {
-            
-            formatC(x, format="f", digits=2,  big.mark=",")
-            
-        }
+        if (!is.na(x)  ) {
+                  
+                formatC(signif(x,digits=5), digits=5,format="fg", flag="#",big.mark=",")
+             
+         }
         
     }
-    
-}
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 logit <- function(p) log(1/(1/p-1))
 expit <- function(x) 1/(1/exp(x) + 1)
@@ -93,18 +55,6 @@ breaks_log10 <- function(x) {
     
     10^(seq.int(low, high))
 }
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-# function to create ticks, not used
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# https://stackoverflow.com/questions/46412250/ggplot2-displaying-unlabeled-tick-marks-between-labeled-tick-marks
-# breaks <- seq(lowerV, upperV, 10)
-# breaks <- seq(lowerV, upperV, 1)
-# labels <- as.character(breaks)
-# labels[!(breaks %% 5 == 0)] <- ''
-# tick.sizes <- rep(.5, length(breaks))
-# tick.sizes[(breaks %% lowerV == 0)] <- 1
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function that does all the work!
@@ -355,22 +305,13 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
         geom_line( ) +
         geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
         geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  #+
-    #    scale_x_continuous(limits = c(lowerV, upperV), breaks=seq(lowerV, upperV)) #, by=((upperV-lowerV)/10))) + # breaks = seq(0, 100, by = 20)
-    # scale_y_continuous(limits = c(ymin1, ymax1))   
-    
+ 
     p <- p1  + geom_hline(yintercept=yspec,  colour="#990000", linetype="dashed")
     p <- p   + geom_vline(xintercept=Xspec, colour="#008000", linetype="dashed")
     
-    #p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
     p <- p + scale_color_manual(values=c("Red","blue"))
     p <- p + theme_bw()
-    # p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
-    # p <- p + scale_y_continuous(trans="log", breaks=c(0.001, 0.1, 1, 10, 1e2, 1e3, 1e4, 1e5, 1e6))
-    
-    # p <- p + scale_y_continuous(minor_breaks = waiver()        )
-    
-    #p <- p + scale_x_continuous(breaks = breaks, labels = labels, limits = c(lowerV, upperV)) 
-    #p <- p + scale_x_continuous(breaks = waiver() , labels = waiver() ) 
+
     p <- p + scale_y_continuous(labels = scales::comma) 
     p <- p + labs(x = "Independent variable", y = "Response") 
     
@@ -387,9 +328,6 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
                     axis.title.y = element_text(size = rel(1.1), angle = 90),
                     axis.title.x = element_text(size = rel(1.1), angle = 00),
                     axis.title = element_text(size = 16, angle = 00),
-                    #panel.grid.minor = element_line(colour="gainsboro", size=0.3 , linetype = 'solid'),
-                    # panel.grid.major = element_line(size = 0.1, linetype = 'solid', colour = "gray88"),
-                    #  panel.grid = element_blank(), axis.ticks.x = element_line(size = tick.sizes)
                     panel.grid.minor.x = element_line( size=0.5 ,  linetype = 'solid', colour = "gray93"),
                     panel.grid.minor.y = element_line( size=0.5 ,  linetype = 'solid', colour = "gray88"),
                     panel.grid.major = element_line(size =0.5,   linetype = 'solid', colour = "gray88"),            
@@ -410,7 +348,7 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
                                   formatz(txlow),", ",
                                   formatz(txup),")",  
                                  sep=" "),
-                  caption = paste0("If X specification is missing, the mean of X is used. If Y specification is missing the prediction of X used as the Y value to read back from (dashed lines).")
+                  caption = paste0("If X specification is missing, the mean of X is used. \nIf Y specification is missing the prediction of X used as the Y value to read back from (dashed lines).")
     )  #   +
     
     # tried this package for plots themes but got errors
@@ -658,43 +596,23 @@ loq1 <- function (x, y, model, spec, print.plot=1, Xspec)  {
     tick.sizes <- rep(.5, length(breaks))
     tick.sizes[(breaks %% lowerV == 0)] <- 1
     
-    
-    
     # plot and present the estimated read back
     p1 <- ggplot(foo, aes(x=x,y=pred)) + 
         geom_line( ) +
         geom_ribbon(data=foo , aes(ymin= p2a,ymax= p3),alpha=0.2,   fill="green") +
         geom_point(data=foo, aes(x=x ,y=obsy), size=2, color='blue')  #+
-    #    scale_x_continuous(limits = c(lowerV, upperV), breaks=seq(lowerV, upperV)) #, by=((upperV-lowerV)/10))) + # breaks = seq(0, 100, by = 20)
-    # scale_y_continuous(limits = c(ymin1, ymax1))   
-    
+
     p <- p1  + geom_hline(yintercept=yspec,  colour="#990000", linetype="dashed")
     p <- p   + geom_vline(xintercept=Xspec,  colour="#008000", linetype="dashed")
     
-    # p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size=13,color="darkred"))
     p <- p + scale_color_manual(values=c("Red","blue"))
     p <- p + theme_bw()
-    
-    # p <- p + scale_y_continuous(trans="log10", breaks=lseq(),
-    #                          minor_breaks = breaks_5log10,
-    #                             )  # see lseq function
-    # 
-    p <- p + scale_y_log10(breaks = breaks_log10,
+     p <- p + scale_y_log10(breaks = breaks_log10,
                            minor_breaks = breaks_5log10,
                            labels = trans_format(log10, math_format(10^.x))) 
     
     p <- p + annotation_logticks(sides = "lr")
     
-    #p <- p + scale_x_continuous(breaks = breaks, labels = labels, limits = c(0,100)) 
-    #p <- p + scale_x_continuous(breaks = waiver() , labels = waiver() ) 
-    # memory error if I use this!
-    # p <- p +scale_x_log10(
-    #   breaks = scales::trans_breaks("log10", function(x) 10^x),
-    #   labels = scales::trans_format("log10", scales::math_format(10^.x))
-    # )
-    # 
-    # p <- p + annotation_logticks(sides = "lr")   + theme(panel.grid.minor = element_blank())
-    #p <- p + scale_y_continuous(labels = function(x) format(x, scientific = TRUE))
     p <- p + labs(x = "Independent variable", y = "Response")  
     
     p <- p +  theme(panel.background=element_blank(),
@@ -716,12 +634,7 @@ loq1 <- function (x, y, model, spec, print.plot=1, Xspec)  {
                     panel.grid = element_blank(), axis.ticks.x = element_line(size = tick.sizes)
                     
                     
-                    
-                    
-                    
-                    
-                    
-    )   
+   )   
     
     p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),#"\nResidual sum of squares = ", formatz(ssr),", residual standard deviation = ",formatz(df2),
     # " \nPredict at input of ", 
@@ -735,7 +648,7 @@ loq1 <- function (x, y, model, spec, print.plot=1, Xspec)  {
                                   formatz(txlow),", ",
                                   formatz(txup),")",  
                                  sep=" "),
-                  caption = paste0("If X specification is missing, the mean of X is used. If Y specification is missing the prediction of X used as the Y value to read back from (dashed lines).")
+                  caption = paste0("If X specification is missing, the mean of X is used. \nIf Y specification is missing the prediction of X used as the Y value to read back from (dashed lines).")
     )  #   +
     
     # tried this package for plots themes but got errors
@@ -753,8 +666,6 @@ loq1 <- function (x, y, model, spec, print.plot=1, Xspec)  {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-recommendation <- read.csv('C:\\Users\\Lenovo\\Documents/recommendation.csv',stringsAsFactors = F,header=T)
 
 #Dashboard header carrying the title of the dashboard
 header <- dashboardHeader(title = "Transformations")  
@@ -777,8 +688,7 @@ sidebar <- dashboardSidebar(width=300,
                                                      href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R")),
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                
-                                
+
                                 splitLayout(
                                     
                                     tags$div(
@@ -810,7 +720,6 @@ sidebar <- dashboardSidebar(width=300,
                                     )
                                     
                                 ),
-                                
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("Data generating mechanism ", icon = icon("bar-chart-o"),
@@ -876,65 +785,50 @@ sidebar <- dashboardSidebar(width=300,
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             )
                             
-                            
 )
 
-
-frow1 <- fluidRow(
-    valueBoxOutput("value1")
-    ,valueBoxOutput("value2")
-    ,valueBoxOutput("value3")
-    #,valueBoxOutput("value4")
-)
-
-frow2 <- fluidRow(
+    frow1 <- fluidRow(
+        valueBoxOutput("value1")
+        ,valueBoxOutput("value2")
+        ,valueBoxOutput("value3")
+     )
     
-    box(
-        title = "Fitted Analysis Model"
-        ,status = "primary"
-        ,solidHeader = TRUE 
-        ,collapsible = TRUE 
-        ,plotOutput("plot1", height = "750px")
+    frow2 <- fluidRow(
+        
+        box(
+            title = "Fitted Analysis Model"
+            ,status = "primary"
+            ,solidHeader = TRUE 
+            ,collapsible = TRUE 
+            ,plotOutput("plot1", height = "750px")
+        )
+        
+        ,box(
+            title = "Fitted Analysis Model with logarithmic transformation"
+            ,status = "primary"
+            ,solidHeader = TRUE 
+            ,collapsible = TRUE 
+            ,plotOutput("plot2", height = "750px")
+        ) 
+        
     )
+
+
+    # combine the two fluid rows to make the body
+    body <- dashboardBody(frow1, frow2)
+    #completing the ui part with dashboardPage
     
-    ,box(
-        title = "Fitted Analysis Model with logarithmic transformation"
-        ,status = "primary"
-        ,solidHeader = TRUE 
-        ,collapsible = TRUE 
-        ,plotOutput("plot2", height = "750px")
-    ) 
-    
-)
-
-
-
-
-# combine the two fluid rows to make the body
-body <- dashboardBody(frow1, frow2)
-#completing the ui part with dashboardPage
-
-
-ui <- dashboardPage(title = 'This is my Page title', header, sidebar, body, skin='blue')
+    ui <- dashboardPage(title = 'This is my Page title', header, sidebar, body, skin='blue')
 
 
 # create the server functions for the dashboard  
 server <- function(input, output) { 
     
-    
-    
-    
-    #some data manipulation to derive the values of KPI boxes
-    total.revenue <- sum(recommendation$Revenue)
-    sales.account <- recommendation %>% group_by(Account) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
-    prof.prod <- recommendation %>% group_by(Product) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
-     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # https://stackoverflow.com/questions/55043092/r-shinydashboard-display-sum-of-selected-input-in-a-valuebox
     output$value1 <- renderValueBox({
       
         valueBox( 
-        # formatC(setUpByName(), format="f", big.mark=','),  # this works
          formatz(setUpByName())
          , subtitle = tags$p("Sum of squares of residuals (smaller the better)", style = "font-size: 150%;")
           
@@ -949,11 +843,10 @@ server <- function(input, output) {
             formatz(setUpByName2())
            , subtitle = tags$p('Model sigma', style = "font-size: 150%;")
             
-            ,icon = icon("gbp",lib='glyphicon')
+            ,icon = icon("stats",lib='glyphicon')
             ,color = "green")
         
     })
-    
     
     output$value3 <- renderValueBox({
         
@@ -961,46 +854,13 @@ server <- function(input, output) {
             value =  tags$p(paste0(formatz(setUpByName3())," ( ",formatz(setUpByName4()),"; ",formatz(setUpByName5())," )")
                                  , style = "font-size: 100%;"),
             subtitle = tags$p(paste0("Prediction at ",formatz(setUpByName6())," with 95% confidence"), style = "font-size: 150%;")
-         #    paste0(formatz(setUpByName3()[1]), " 95%CI (", formatz(setUpByName3()[2]),")")
-             
-            # ,paste('Prediction',prof.prod$Product)
-            ,icon = icon("menu-hamburger",lib='glyphicon')
+            ,icon = icon("education",lib='glyphicon')
             ,color = "yellow")
         
     })
-    
-    # output$value4 <- renderValueBox({
-    #     
-    #     valueBox(
-    #         # formatC(prof.prod$value, format="d", big.mark=',')
-    #         paste0(formatz(setUpByName2()), " 95%CI (", formatz(setUpByName()),")")
-    #         ,paste('Prediction at:',prof.prod$Product)
-    #         ,icon = icon("menu-hamburger",lib='glyphicon')
-    #         ,color = "blue")
-    #     
-    # })
+
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    output$revenuebyPrd <- renderPlot({
-        ggplot(data = recommendation, 
-               aes(x=Product, y=Revenue, fill=factor(Region))) + 
-            geom_bar(position = "dodge", stat = "identity") + ylab("Revenue (in Euros)") + 
-            xlab("Product") + theme(legend.position="bottom" 
-                                    ,plot.title = element_text(size=15, face="bold")) + 
-            ggtitle("Revenue by Product") + labs(fill = "Region")
-    })
-    
-    
-    output$revenuebyRegion <- renderPlot({
-        ggplot(data = recommendation, 
-               aes(x=Account, y=Revenue, fill=factor(Region))) + 
-            geom_bar(position = "dodge", stat = "identity") + ylab("Revenue (in Euros)") + 
-            xlab("Account") + theme(legend.position="bottom" 
-                                    ,plot.title = element_text(size=15, face="bold")) + 
-            ggtitle("Revenue by Region") + labs(fill = "Region")
-    })
-    
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # This is where a new sample is instigated and inputs converted to numeric
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1071,10 +931,6 @@ server <- function(input, output) {
         
     })
     
-    
-    
-    
-    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Execute analysis
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1130,112 +986,39 @@ server <- function(input, output) {
     setUpByName <- reactive ({
         d <- md()  # Get the  data
         y <- as.numeric(as.character(d$ssr))
-      #  storage.mode(y) <- 'numeric'
         return(y)
     })
     
     setUpByName2 <- reactive ({
         d <- md()  # Get the  data
         y <- as.numeric(as.character(d$rsd2))
-       # storage.mode(y) <- 'numeric'
         return(y)
     })
-    
-    
+
     setUpByName3 <- reactive ({
         d <- md()  # Get the  data
         y <-  d$p[1]
-        
         return(y)
     })
+    
     setUpByName4 <- reactive ({
         d <- md()  # Get the  data
         y <-  d$p[2]
-        
         return(y)
     })
+    
     setUpByName5 <- reactive ({
         d <- md()  # Get the  data
         y <-  d$p[3]
-        
         return(y)
     })
+    
     setUpByName6 <- reactive ({
         d <- md()  # Get the  data
         y <-  d$Xspec
-        
         return(y)
     })
-    #~~~~~~~~~~~~~~~~~~
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # collect for listing here
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # md2 <- reactive({
-    #     
-    #     spec <- as.numeric(input$spec)
-    #     Xspec <- as.numeric(input$Xspec)
-    #     d <- dat()  # Get the data
-    #     y <- d$y
-    #     x <- d$x
-    #     
-    #     A <- array(NA, dim=c(12,6))
-    #     M <- list(NA, dim=c(24,1))
-    #     M <- array(NA, dim=c(24,1))
-    #     
-    #     for (j in 1:12) {
-    #         
-    #         res <- loq(x=x, y=y, model=j, spec= spec, print.plot=0,  Xspec=Xspec) # don't print
-    #         
-    #         k <- j*2
-    #         m <- k-1
-    #         
-    #         M[k] <- res$f 
-    #         M[m] <- res$mod
-    #         
-    #         A[j,1] <- j          # model no
-    #         A[j,2] <- res$mod    # model
-    #         
-    #         A[j,3] <- p0f(res$dfs)    # d.f.
-    #         A[j,4] <- (res$ssr)    # sum of squared residuals
-    #         A[j,5] <- (res$rsd2)   # sigma
-    #         A[j,6] <- (sqrt(res$ssr/res$dfs))
-    #         
-    #     }
-    #     
-    #     A <- data.frame( A[,c(1,2)],  apply(A[,c(3,4,5,6)],2, as.numeric))
-    #     
-    #     A <- plyr::arrange(A,A[,4])
-    #     
-    #     A <- data.frame( A[,c(1,2,3)],  apply(A[,c(4,5,6)],2, formatz))
-    #     
-    #     return(list(  ssr=A, M=M))
-    #     
-    # })
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # X summary stats
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # output$X <- renderPrint({
-    #     
-    #     d <- md()$foo
-    #     return(print(summary(d$x), digits=6))
-    #     
-    # }) 
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # Y summary stats
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # output$Y <- renderPrint({
-    #     
-    #     d <- md()$foo
-    #     return(print(summary(d$obsy), digits=6))
-    #     
-    # }) 
-    # output$ssr <- renderPrint({
-    # 
-    #     d <- md()$ssr
-    #     return(d)
-    # 
-    # })
+  
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # MAIN PLOT! updated with log transformation  option
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1250,18 +1033,10 @@ server <- function(input, output) {
         y <- d$y
         x <- d$x
         
-       # if(values$uno)
-            loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
-        #else 
-         #   if(values$dos)
-           #     loq1(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
-        #else
-            return()  
+        loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
+        return()  
         
     })
-    
-    
-    
     
     
     output$plot2<-renderPlot({     
@@ -1275,47 +1050,11 @@ server <- function(input, output) {
         y <- d$y
         x <- d$x
         
-        # if(values$uno)
-        #loq(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
-        #else 
-        #   if(values$dos)
         loq1(x= x, y= y, model=model, spec= spec, print.plot=1,  Xspec=Xspec) # print plot
-        #else
         return()  
         
     })
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     
 }
 
