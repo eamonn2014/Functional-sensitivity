@@ -785,7 +785,7 @@ sidebar <- dashboardSidebar(width=300,
                                     ),
                                     
                                     tags$div(
-                                        textInput(inputId='a', label='Intercept', width = '90%' , "10"),
+                                        textInput(inputId='a', label='Intercept', width = '90%' , "2"),
                                     ),
                                     
                                     tags$div(
@@ -927,13 +927,13 @@ server <- function(input, output) {
     sales.account <- recommendation %>% group_by(Account) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
     prof.prod <- recommendation %>% group_by(Product) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
      
- 
+ #https://stackoverflow.com/questions/55043092/r-shinydashboard-display-sum-of-selected-input-in-a-valuebox
     output$value1 <- renderValueBox({
       
-        valueBox(setUpByName(),
-         # verbatimTextOutput("ssr"),
-        #   formatC(setUpByName(), format="d", big.mark=','),
-            subtitle = "Unit Sales",
+        valueBox( 
+        # formatC(setUpByName(), format="f", big.mark=','),
+         formatz(setUpByName()),
+            subtitle = "Sum of squares of residuals (smaller the better)",
                  icon = icon("server"),
                  color = "purple")
         
@@ -945,7 +945,8 @@ server <- function(input, output) {
     output$value2 <- renderValueBox({
         
         valueBox(
-            formatC(total.revenue, format="d", big.mark=',')
+       #     formatC(total.revenue, format="d", big.mark=',')
+            formatz(setUpByName2())
             ,'Model sigma'
             ,icon = icon("gbp",lib='glyphicon')
             ,color = "green")
@@ -1091,6 +1092,7 @@ server <- function(input, output) {
             f=res2$f   
             mod<- res2$mod
             ssr <- min(ssr)
+            rsd2 <- (sqrt(res2$ssr/res2$dfs))
             
         } else {
             
@@ -1100,10 +1102,10 @@ server <- function(input, output) {
             f=res$f
             mod<- res$mod
             ssr <- min(res$ssr)
-            
+            rsd2 <- (sqrt(res$ssr/res$dfs))
         }
         
-        return(list(  model=model, foo=mdata, f=f, mod=mod, ssr=as.numeric(ssr)))
+        return(list(  model=model, foo=mdata, f=f, mod=mod, ssr=as.numeric(ssr),  rsd2 =rsd2))
         
     }) 
     
@@ -1111,6 +1113,13 @@ server <- function(input, output) {
     setUpByName <- reactive ({
         d <- md()  # Get the  data
         y <- as.numeric(as.character(d$ssr))
+        storage.mode(y) <- 'numeric'
+        return(y)
+    })
+    
+    setUpByName2 <- reactive ({
+        d <- md()  # Get the  data
+        y <- as.numeric(as.character(d$rsd2))
         storage.mode(y) <- 'numeric'
         return(y)
     })
