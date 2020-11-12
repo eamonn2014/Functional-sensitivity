@@ -399,16 +399,16 @@ loq <- function (x, y, model, spec, print.plot=1, Xspec)  {
                     
     )   
     
-    p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", formatz(ssr),", residual standard deviation = ",formatz(df2)," \nPredict at input of ", 
-                                 formatz(Xspec) ,", the estimate of Y is ",
-                                 formatz(pspec[1])," with 95%CI: (", 
-                                 formatz(pspec[2]),", ",
-                                 formatz(pspec[3]),")",
+    p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),#"\nResidual sum of squares = ", formatz(ssr),", residual standard deviation = ",formatz(df2)," \nPredict at input of ", 
+                                 # formatz(Xspec) ,", the estimate of Y is ",
+                                 # formatz(pspec[1])," with 95%CI: (", 
+                                 # formatz(pspec[2]),", ",
+                                 # formatz(pspec[3]),")",
                                  "\nRead back at response of ", 
-                                 formatz(yspec) ,", the estimate of X is ",
-                                 formatz(txpre)," with 95%CI: (", 
-                                 formatz(txlow),", ",
-                                 formatz(txup),")",  
+                                  formatz(yspec) ,", the estimate of X is ",
+                                  formatz(txpre)," with 95%CI: (", 
+                                  formatz(txlow),", ",
+                                  formatz(txup),")",  
                                  sep=" "),
                   caption = paste0("If X specification is missing, the mean of X is used. If Y specification is missing the prediction of X used as the Y value to read back from (dashed lines).")
     )  #   +
@@ -723,16 +723,17 @@ loq1 <- function (x, y, model, spec, print.plot=1, Xspec)  {
                     
     )   
     
-    p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),"\nResidual sum of squares = ", formatz(ssr),", residual standard deviation = ",formatz(df2)," \nPredict at input of ", 
-                                 formatz(Xspec) ,", the estimate of Y is ",
-                                 formatz(pspec[1])," with 95%CI: (", 
-                                 formatz(pspec[2]),", ",
-                                 formatz(pspec[3]),")",
-                                 "\nRead back at response of ", 
-                                 formatz(yspec) ,", the estimate of X is ",
-                                 formatz(txpre)," with 95%CI: (", 
-                                 formatz(txlow),", ",
-                                 formatz(txup),")",  
+    p <- p + labs(title = paste0("Fitted analysis model '",mod,"' with 95% confidence and raw data. N = ",length(!is.na(foo$x)),#"\nResidual sum of squares = ", formatz(ssr),", residual standard deviation = ",formatz(df2),
+    # " \nPredict at input of ", 
+                                 # formatz(Xspec) ,", the estimate of Y is ",
+                                 # formatz(pspec[1])," with 95%CI: (", 
+                                 # formatz(pspec[2]),", ",
+                                 # formatz(pspec[3]),")",
+                                  "\nRead back at response of ", 
+                                  formatz(yspec) ,", the estimate of X is ",
+                                  formatz(txpre)," with 95%CI: (", 
+                                  formatz(txlow),", ",
+                                  formatz(txup),")",  
                                  sep=" "),
                   caption = paste0("If X specification is missing, the mean of X is used. If Y specification is missing the prediction of X used as the Y value to read back from (dashed lines).")
     )  #   +
@@ -883,6 +884,7 @@ frow1 <- fluidRow(
     valueBoxOutput("value1")
     ,valueBoxOutput("value2")
     ,valueBoxOutput("value3")
+    #,valueBoxOutput("value4")
 )
 
 frow2 <- fluidRow(
@@ -927,46 +929,57 @@ server <- function(input, output) {
     sales.account <- recommendation %>% group_by(Account) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
     prof.prod <- recommendation %>% group_by(Product) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
      
- #https://stackoverflow.com/questions/55043092/r-shinydashboard-display-sum-of-selected-input-in-a-valuebox
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # https://stackoverflow.com/questions/55043092/r-shinydashboard-display-sum-of-selected-input-in-a-valuebox
     output$value1 <- renderValueBox({
       
         valueBox( 
-        # formatC(setUpByName(), format="f", big.mark=','),
-         formatz(setUpByName()),
-            subtitle = "Sum of squares of residuals (smaller the better)",
-                 icon = icon("server"),
+        # formatC(setUpByName(), format="f", big.mark=','),  # this works
+         formatz(setUpByName())
+         , subtitle = tags$p("Sum of squares of residuals (smaller the better)", style = "font-size: 150%;")
+          
+                 ,icon = icon("server"),
                  color = "purple")
         
-        
     })
-    
-    
     
     output$value2 <- renderValueBox({
         
         valueBox(
-       #     formatC(total.revenue, format="d", big.mark=',')
             formatz(setUpByName2())
-            ,'Model sigma'
+           , subtitle = tags$p('Model sigma', style = "font-size: 150%;")
+            
             ,icon = icon("gbp",lib='glyphicon')
             ,color = "green")
         
     })
     
     
-    
     output$value3 <- renderValueBox({
         
         valueBox(
-            formatC(prof.prod$value, format="d", big.mark=',')
-            ,paste('N:',prof.prod$Product)
+            value =  tags$p(paste0(formatz(setUpByName3())," ( ",formatz(setUpByName4()),"; ",formatz(setUpByName5())," )")
+                                 , style = "font-size: 100%;"),
+            subtitle = tags$p(paste0("Prediction at ",formatz(setUpByName6())," with 95% confidence"), style = "font-size: 150%;")
+         #    paste0(formatz(setUpByName3()[1]), " 95%CI (", formatz(setUpByName3()[2]),")")
+             
+            # ,paste('Prediction',prof.prod$Product)
             ,icon = icon("menu-hamburger",lib='glyphicon')
             ,color = "yellow")
         
     })
     
-    #creating the plotOutput content
-    
+    # output$value4 <- renderValueBox({
+    #     
+    #     valueBox(
+    #         # formatC(prof.prod$value, format="d", big.mark=',')
+    #         paste0(formatz(setUpByName2()), " 95%CI (", formatz(setUpByName()),")")
+    #         ,paste('Prediction at:',prof.prod$Product)
+    #         ,icon = icon("menu-hamburger",lib='glyphicon')
+    #         ,color = "blue")
+    #     
+    # })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     output$revenuebyPrd <- renderPlot({
         ggplot(data = recommendation, 
                aes(x=Product, y=Revenue, fill=factor(Region))) + 
@@ -1093,6 +1106,8 @@ server <- function(input, output) {
             mod<- res2$mod
             ssr <- min(ssr)
             rsd2 <- (sqrt(res2$ssr/res2$dfs))
+            p <- res2$pspec
+            Xspec=res2$Xspec
             
         } else {
             
@@ -1103,9 +1118,11 @@ server <- function(input, output) {
             mod<- res$mod
             ssr <- min(res$ssr)
             rsd2 <- (sqrt(res$ssr/res$dfs))
+            p <- res$pspec
+            Xspec=res$Xspec
         }
         
-        return(list(  model=model, foo=mdata, f=f, mod=mod, ssr=as.numeric(ssr),  rsd2 =rsd2))
+        return(list(  model=model, foo=mdata, f=f, mod=mod, ssr=as.numeric(ssr),  rsd2 =rsd2, p=p, Xspec=Xspec))
         
     }) 
     
@@ -1113,16 +1130,44 @@ server <- function(input, output) {
     setUpByName <- reactive ({
         d <- md()  # Get the  data
         y <- as.numeric(as.character(d$ssr))
-        storage.mode(y) <- 'numeric'
+      #  storage.mode(y) <- 'numeric'
         return(y)
     })
     
     setUpByName2 <- reactive ({
         d <- md()  # Get the  data
         y <- as.numeric(as.character(d$rsd2))
-        storage.mode(y) <- 'numeric'
+       # storage.mode(y) <- 'numeric'
         return(y)
     })
+    
+    
+    setUpByName3 <- reactive ({
+        d <- md()  # Get the  data
+        y <-  d$p[1]
+        
+        return(y)
+    })
+    setUpByName4 <- reactive ({
+        d <- md()  # Get the  data
+        y <-  d$p[2]
+        
+        return(y)
+    })
+    setUpByName5 <- reactive ({
+        d <- md()  # Get the  data
+        y <-  d$p[3]
+        
+        return(y)
+    })
+    setUpByName6 <- reactive ({
+        d <- md()  # Get the  data
+        y <-  d$Xspec
+        
+        return(y)
+    })
+    #~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # collect for listing here
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
