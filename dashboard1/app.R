@@ -679,20 +679,13 @@ sidebar <- dashboardSidebar(width=300,
                             
                             sidebarMenu(
                                 id = "tabs",
-                                br(),
+                             #  br(),
+                             
                                 
-                                menuItem("Code", icon = icon("bar-chart-o"),
-                                         menuSubItem("Shiny",  
-                                                     icon = icon("send",lib='glyphicon'), 
-                                                     href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/dashboard1/app.R"),
-                                         
-                                         
-                                         menuSubItem("R",  
-                                                     icon = icon("send",lib='glyphicon'), 
-                                                     href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R")),
+                          
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+                             menuItem("Define parameters ", icon = icon("bar-chart-o"),
                                 splitLayout(
                                     
                                     tags$div(
@@ -723,10 +716,10 @@ sidebar <- dashboardSidebar(width=300,
                                         textInput(inputId='Xspec', label='X spec', width = '90%' , ""),
                                     )
                                     
-                                ),
-                                
+                                )
+                             ),
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                menuItem("Data generating mechanism ", icon = icon("bar-chart-o"),
+                                menuItem("Select data generating mechanism ", icon = icon("bar-chart-o"),
                                          menuSubItem( 
                                              
                                              radioButtons(
@@ -756,7 +749,7 @@ sidebar <- dashboardSidebar(width=300,
                                 ),  # end main
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 
-                                menuItem("Analysis transformation", icon = icon("bar-chart-o"),
+                                menuItem("Select analysis transformation", icon = icon("bar-chart-o"),
                                          
                                          menuSubItem( 
                                              
@@ -785,10 +778,43 @@ sidebar <- dashboardSidebar(width=300,
                                              )
                                          )    
                                          
-                                )
+                                ),
+                             
+                             
+                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                             
+                             
+                             
+                             
+                             menuItem("Code & link to explanation", icon = icon("bar-chart-o"),
+                                      menuSubItem("Shiny",  
+                                                  icon = icon("send",lib='glyphicon'), 
+                                                  href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/dashboard1/app.R"),
+                                      
+                                      
+                                      menuSubItem("R",  
+                                                  icon = icon("send",lib='glyphicon'), 
+                                                  href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") ,
+                                      
+                                      
+                                      
+                                      menuSubItem("Click for bells and whistles main app.",  
+                                                  icon = icon("send",lib='glyphicon'), 
+                                                  href = "https://eamonn3.shinyapps.io/LoQs/")
+                                      
+                                      
+                                      
+                                      
+                                      
+                             )
+                             
+                             
+                             
+                          
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             )
                             
+                                                 
 )
 
     frow1 <- fluidRow(
@@ -819,7 +845,9 @@ sidebar <- dashboardSidebar(width=300,
 
 
     # combine the two fluid rows to make the body
-    body <- dashboardBody(frow1, frow2)
+    body <- dashboardBody(frow1, frow2 
+                          
+                          )
     #completing the ui part with dashboardPage
     
     ui <- dashboardPage(title = 'This is my Page title', header, sidebar, body, skin='blue')
