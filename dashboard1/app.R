@@ -720,7 +720,7 @@ sidebar <- dashboardSidebar(width=300,
                              ),
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("Select data generating mechanism ", icon = icon("bar-chart-o"),
-                                         menuSubItem( 
+                                        # menuSubItem( 
                                              
                                              radioButtons(
                                                  inputId = "truth",
@@ -744,14 +744,14 @@ sidebar <- dashboardSidebar(width=300,
                                                                    "model7", "model8", "model9",  "model10", "model11"),
                                                  selected=c("model2")
                                              )
-                                         )  # end sub
+                                       #  )  # end sub
                                          
                                 ),  # end main
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 
                                 menuItem("Select analysis transformation", icon = icon("bar-chart-o"),
                                          
-                                         menuSubItem( 
+                                       #  menuSubItem( 
                                              
                                              radioButtons(
                                                  inputId = "ana",
@@ -776,7 +776,7 @@ sidebar <- dashboardSidebar(width=300,
                                                  ,
                                                  selected=c("2")
                                              )
-                                         )    
+                                      #   )    
                                          
                                 ),
                              
