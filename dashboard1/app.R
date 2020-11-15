@@ -850,7 +850,7 @@ sidebar <- dashboardSidebar(width=300,
                           )
     #completing the ui part with dashboardPage
     
-    ui <- dashboardPage(title = 'This is my Page title', header, sidebar, body, skin='blue')
+    ui <- dashboardPage(title = 'Examples of transformaing data for anlaysis', header, sidebar, body, skin='blue')
 
 
 # create the server functions for the dashboard  
